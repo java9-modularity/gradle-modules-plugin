@@ -1,0 +1,50 @@
+package org.javamodularity.moduleplugin;
+
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.modules.ModuleDeclaration;
+import org.gradle.api.Project;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
+import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.tasks.SourceSet;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
+
+public class ModuleName {
+    private static final Logger LOGGER = Logging.getLogger(ModuleName.class);
+
+    public Optional<String> findModuleName(Project project) {
+        JavaPluginConvention javaConvention =
+                project.getConvention().getPlugin(JavaPluginConvention.class);
+        SourceSet main = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        java.util.Optional<File> moduleInfoSrcDir = main.getAllJava().getSourceDirectories().getFiles().stream().filter(dir -> dir.toPath().resolve("module-info.java").toFile().exists()).findAny();
+
+        if (moduleInfoSrcDir.isPresent()) {
+            Path moduleInfoJava = moduleInfoSrcDir.get().toPath().resolve("module-info.java");
+            try {
+                JavaParser.getStaticConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+                Optional<ModuleDeclaration> module = JavaParser.parse(moduleInfoJava).getModule();
+                if (module.isPresent()) {
+                    Name name = module.get().getName();
+                    LOGGER.lifecycle("Found module name '{}'", name);
+                    return java.util.Optional.of(name.toString());
+                } else {
+                    LOGGER.warn("module-info.java found, but module name could not be parsed");
+                    return java.util.Optional.empty();
+                }
+            } catch (IOException e) {
+                LOGGER.error("Error opening module-info.java in source dir {}", moduleInfoJava);
+                return java.util.Optional.empty();
+            }
+
+        } else {
+            LOGGER.debug("No module-info.java found in module {}", project.getName());
+            return java.util.Optional.empty();
+        }
+    }
+}
