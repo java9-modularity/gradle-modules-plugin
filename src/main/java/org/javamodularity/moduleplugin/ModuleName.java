@@ -5,6 +5,7 @@ import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import org.gradle.api.Project;
+import org.gradle.api.UnknownDomainObjectException;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPluginConvention;
@@ -15,13 +16,19 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public class ModuleName {
+class ModuleName {
     private static final Logger LOGGER = Logging.getLogger(ModuleName.class);
 
-    public Optional<String> findModuleName(Project project) {
-        JavaPluginConvention javaConvention =
-                project.getConvention().getPlugin(JavaPluginConvention.class);
-        SourceSet main = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+    Optional<String> findModuleName(Project project) {
+        SourceSet main = null;
+        try {
+            JavaPluginConvention javaConvention =
+                    project.getConvention().getPlugin(JavaPluginConvention.class);
+            main = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+        } catch (IllegalStateException | UnknownDomainObjectException e) {
+            LOGGER.warn("Cannot obtain JavaPluginConvention", e);
+            return Optional.empty();
+        }
         java.util.Optional<File> moduleInfoSrcDir = main.getAllJava().getSourceDirectories().getFiles().stream().filter(dir -> dir.toPath().resolve("module-info.java").toFile().exists()).findAny();
 
         if (moduleInfoSrcDir.isPresent()) {
