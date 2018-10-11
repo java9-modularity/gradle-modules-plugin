@@ -1,3 +1,31 @@
-plugins {
-    id 'java'
+subprojects {
+    apply plugin: 'java'
+//    apply plugin:'org.javamodularity.moduleplugin'
+
+    version "1.0.0"
+
+    sourceCompatibility = 11
+    targetCompatibility = 11
+
+
+    repositories {
+        mavenCentral()
+    }
+
+    test {
+        useJUnitPlatform()
+
+        testLogging {
+            events 'PASSED', 'FAILED', 'SKIPPED'
+        }
+    }
+
+    dependencies {
+        testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+        testCompile 'org.junit.jupiter:junit-jupiter-params:5.2.0'
+        testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+
+    }
+
+
 }

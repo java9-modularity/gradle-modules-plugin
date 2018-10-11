@@ -1,0 +1,18 @@
+apply plugin: 'application'
+
+dependencies {
+    compile project(':greeter.api')
+    runtime project(':greeter.provider')
+}
+
+mainClassName = "$moduleName/examples.Runner"
+
+run {
+    jvmArgs = [
+            "-XX:+PrintGCDetails"
+    ]
+
+    applicationDefaultJvmArgs = [
+            "-XX:+PrintGCDetails"
+    ]
+}
