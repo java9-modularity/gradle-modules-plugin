@@ -1,6 +1,5 @@
 subprojects {
     apply plugin: 'java'
-//    apply plugin:'org.javamodularity.moduleplugin'
 
     version "1.0.0"
 
