@@ -2,6 +2,7 @@ Introduction
 ===
 
 This Gradle plugin helps working with the Java Platform Module System.
+It makes building, testing and running modules seamless from the Gradle perspective.
 It sets up compiler and jvm settings with flags such as `--module-path`, so that you can build, test and run JPMS modules without manually setting up your build files.
 
 The plugin is designed to work in repositories that contain multiple modules.
