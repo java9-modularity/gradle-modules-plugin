@@ -311,3 +311,16 @@ Requirements
 ===
 
 This plugin requires JDK 11 to be used when running Gradle.
+
+Contributing
+===
+
+Please tell us if you're using the plugin on [@javamodularity](https://twitter.com/javamodularity)!
+We would also like to hear about any issues or limitations you run into.
+Please file issues in the Github project.
+Bonus points for providing a test case that illustrates the issue.
+
+Contributions are very much welcome. 
+Please open a Pull Request with your changes.
+Make sure to rebase before creating the PR so that the PR only contains your changes, this makes the review process much easier.
+Again, bonus points for providing tests for your changes.
