@@ -2,6 +2,7 @@ Introduction
 ===
 
 This Gradle plugin helps working with the Java Platform Module System.
+The plugin is published in the [Gradle plugin repository](https://plugins.gradle.org/plugin/org.javamodularity.moduleplugin). 
 It makes building, testing and running modules seamless from the Gradle perspective.
 It sets up compiler and jvm settings with flags such as `--module-path`, so that you can build, test and run JPMS modules without manually setting up your build files.
 
@@ -43,9 +44,20 @@ For this guide we assume the following directory structure:
 The main build file should look as follows:
 
 ```groovy
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "gradle.plugin.org.javamodularity:moduleplugin:1.0.0"
+  }
+}
+
 subprojects {
     apply plugin: 'java'
-    apply plugin:'org.javamodularity.moduleplugin'
+    apply plugin: "org.javamodularity.moduleplugin"
 
     version "1.0.0"
 
