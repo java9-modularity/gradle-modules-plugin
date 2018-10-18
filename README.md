@@ -86,7 +86,8 @@ subprojects {
 }
 ```
 
-The most important line in this build file is: `apply plugin:'org.javamodularity.moduleplugin'` which enables the module plugin for sub projects.
+The most important line in this build file is: `apply plugin: "org.javamodularity.moduleplugin"` which enables the module plugin for sub projects.
+Because this is an external plugin, we need to tell Gradle where to find it, which is done in the `buildscript` section.
 The subprojects typically don't need extra configuration in their build files related to modules.
 
 To build the project simply run `./gradlew build` like you're used to.
