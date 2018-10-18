@@ -1,10 +1,11 @@
 plugins {
     id 'java'
     id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '0.10.0'
 }
 
 group 'org.javamodularity'
-version '1.0-SNAPSHOT'
+version '1.0.0'
 
 sourceCompatibility = 11
 targetCompatibility = 11
@@ -46,4 +47,22 @@ task createClasspathManifest {
 // Add the classpath file to the test runtime classpath
 dependencies {
     testRuntime files(createClasspathManifest)
+}
+
+gradlePlugin {
+    plugins {
+        modulesPlugin {
+            id = 'org.javamodularity.moduleplugin'
+            displayName = 'Java Modularity Gradle Plugin'
+            description = 'Plugin that makes it easy to work with the Java Platform Module System'
+            implementationClass = 'org.javamodularity.moduleplugin.ModuleSystemPlugin'
+        }
+    }
+}
+
+
+pluginBundle {
+    website = 'https://github.com/java9-modularity/gradle-modules-plugin'
+    vcsUrl = 'git@github.com:java9-modularity/gradle-modules-plugin.git'
+    tags = ['java', 'modules', 'jpms', 'modularity']
 }
