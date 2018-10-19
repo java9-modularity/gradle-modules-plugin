@@ -20,6 +20,8 @@ The plugin supports the following test engines:
 * Junit 4
 * TestNG
 
+An example application using this plugin is available [here](https://github.com/java9-modularity/gradle-modules-plugin-example). 
+
 Setup
 ===
 
