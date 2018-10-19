@@ -1,5 +1,23 @@
+buildscript {
+    if (!project.hasProperty("INTERNAL_TEST_IN_PROGRESS")) {
+        repositories {
+            maven {
+                url "https://plugins.gradle.org/m2/"
+            }
+        }
+        dependencies {
+            classpath "gradle.plugin.org.javamodularity:moduleplugin:1.0.0"
+        }
+    }
+}
+
+
 subprojects {
     apply plugin: 'java'
+    if (!project.hasProperty("INTERNAL_TEST_IN_PROGRESS")) {
+        apply plugin: "org.javamodularity.moduleplugin"
+    }
+
 
     version "1.0.0"
 

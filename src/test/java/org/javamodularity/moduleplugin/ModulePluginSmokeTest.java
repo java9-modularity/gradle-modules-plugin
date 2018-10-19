@@ -34,7 +34,6 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File("test-project"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion("4.10.2")
-                .withArguments("clean", "build")
                 .build();
 
 
