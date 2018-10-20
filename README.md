@@ -1,6 +1,8 @@
 Introduction
 ===
 
+Build status: [![Build Status](https://travis-ci.com/java9-modularity/gradle-modules-plugin.svg?branch=master)](https://travis-ci.com/java9-modularity/gradle-modules-plugin)
+
 This Gradle plugin helps working with the Java Platform Module System.
 The plugin is published in the [Gradle plugin repository](https://plugins.gradle.org/plugin/org.javamodularity.moduleplugin). 
 It makes building, testing and running modules seamless from the Gradle perspective.
