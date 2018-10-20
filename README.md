@@ -83,7 +83,6 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.2.0'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
     }
-
 }
 ```
 
