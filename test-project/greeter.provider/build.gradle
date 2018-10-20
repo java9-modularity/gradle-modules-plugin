@@ -3,5 +3,5 @@ plugins {
 }
 
 dependencies {
-    compile project(':greeter.api')
+    implementation project(':greeter.api')
 }

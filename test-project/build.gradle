@@ -11,20 +11,17 @@ buildscript {
     }
 }
 
-
 subprojects {
     apply plugin: 'java'
     if (!project.hasProperty("INTERNAL_TEST_IN_PROGRESS")) {
         apply plugin: "org.javamodularity.moduleplugin"
     }
-
-
+    
     version "1.0.0"
 
     sourceCompatibility = 11
     targetCompatibility = 11
-
-
+    
     repositories {
         mavenCentral()
     }
@@ -42,6 +39,5 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.2.0'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
     }
-
-
+    
 }
