@@ -66,7 +66,6 @@ subprojects {
     sourceCompatibility = 11
     targetCompatibility = 11
 
-
     repositories {
         mavenCentral()
     }
@@ -80,11 +79,11 @@ subprojects {
     }
 
     dependencies {
-        testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
-        testCompile 'org.junit.jupiter:junit-jupiter-params:5.2.0'
-        testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
-
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.2.0'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
     }
+
 }
 ```
 
@@ -119,8 +118,8 @@ First it needs to be declared in the `dependencies` section of the gradle build 
 
 ```groovy
 dependencies {
-    compile project(':greeter.api') //Example of dependency on another module in the project
-    compile "com.fasterxml.jackson.core:jackson-databind:2.9.5" //Example of an external dependency
+    implementation project(':greeter.api') //Example of dependency on another module in the project
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.5" //Example of an external dependency
 }
 ```
 
@@ -270,8 +269,8 @@ In the `build.gradle` we should add dependencies to do this.
 
 ```gradle
 dependencies {
-    compile project(':greeter.api')
-    runtime project(':greeter.provider')
+    implementation project(':greeter.api')
+    runtimeOnly project(':greeter.provider')
 }
 
 ```  

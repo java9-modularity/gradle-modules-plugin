@@ -3,6 +3,6 @@ plugins {
 
 }
 dependencies {
-    compile project(':greeter.api')
-    runtime project(':greeter.provider')
+    implementation project(':greeter.api')
+    runtimeOnly project(':greeter.provider')
 }
