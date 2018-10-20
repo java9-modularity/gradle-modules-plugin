@@ -11,21 +11,17 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UncheckedIOException;
 import java.util.*;
-import java.util.stream.Stream;
 
 public class TestTask {
 
     private static final Logger LOGGER = Logging.getLogger(TestTask.class);
 
     public void configureTestJava(Project project, String moduleName) {
-        final Test testJava = (Test) project.getTasks().findByName(JavaPlugin.TEST_TASK_NAME);
-        JavaPluginConvention javaConvention =
-                project.getConvention().getPlugin(JavaPluginConvention.class);
-
+        Test testJava = (Test) project.getTasks().findByName(JavaPlugin.TEST_TASK_NAME);
+        JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
 
         SourceSet testSourceSet = javaConvention.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
         testJava.getExtensions().create("moduleOptions", TestModuleOptions.class, project);
@@ -46,26 +42,13 @@ public class TestTask {
                     "--add-modules", "ALL-MODULE-PATH"
             ));
 
-            var configurations = project.getConfigurations();
-            var testImplementation = configurations.getByName("testImplementation").getDependencies().stream();
-            var testCompile = configurations.getByName("testCompile").getDependencies().stream();
-            Optional<TestEngine> testEngine = Stream.concat(testImplementation, testCompile)
-                    .map(d -> TestEngine.select(d.getGroup(), d.getName()))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .findAny();
+            TestEngine.select(project).ifPresent(testEngine -> {
+                args.addAll(List.of("--add-reads", moduleName + "=" + testEngine.moduleName));
 
-            if (testEngine.isPresent()) {
-                String testEngineModuleName = testEngine.get().getModuleName();
-                args.addAll(List.of(
-                        "--add-reads", moduleName + "=" + testEngineModuleName));
-
-                Iterator<File> iterator = testSourceSet.getJava().iterator();
                 Set<String> testPackages = new HashSet<>();
-
-                while (iterator.hasNext()) {
+                for (var sourceFile : testSourceSet.getJava()) {
                     try {
-                        Optional<PackageDeclaration> optionalPackageDeclaration = JavaParser.parse(iterator.next()).getPackageDeclaration();
+                        Optional<PackageDeclaration> optionalPackageDeclaration = JavaParser.parse(sourceFile).getPackageDeclaration();
                         if (optionalPackageDeclaration.isPresent()) {
                             PackageDeclaration packageDeclaration = optionalPackageDeclaration.get();
                             testPackages.add(packageDeclaration.getNameAsString());
@@ -77,9 +60,9 @@ public class TestTask {
 
                 testPackages.forEach(p -> {
                     args.add("--add-opens");
-                    args.add(String.format("%s/%s=%s", moduleName, p, testEngine.get().getAddOpens()));
+                    args.add(String.format("%s/%s=%s", moduleName, p, testEngine.addOpens));
                 });
-            }
+            });
 
             testJava.setJvmArgs(args);
             testJava.setClasspath(project.files());

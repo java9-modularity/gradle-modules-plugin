@@ -11,6 +11,7 @@ import org.javamodularity.moduleplugin.tasks.TestTask;
 import java.util.Optional;
 
 public class ModuleSystemPlugin implements Plugin<Project> {
+
     @Override
     public void apply(Project project) {
         project.getPlugins().apply(JavaPlugin.class);
@@ -23,4 +24,5 @@ public class ModuleSystemPlugin implements Plugin<Project> {
             new RunTask().configureRun(project, moduleName);
         });
     }
+
 }

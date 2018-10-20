@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RunTask {
+
     private static final String LIBS_PLACEHOLDER = "APP_HOME_LIBS_PLACEHOLDER";
     private static final Logger LOGGER = Logging.getLogger(RunTask.class);
 
@@ -24,7 +25,7 @@ public class RunTask {
         project.getPluginManager().withPlugin(ApplicationPlugin.APPLICATION_PLUGIN_NAME, plugin -> {
             if (project.getPlugins().hasPlugin("application")) {
                 JavaExec execTask = (JavaExec) project.getTasks().findByName(ApplicationPlugin.TASK_RUN_NAME);
-                updateJavaExecTask(project, execTask, moduleName);
+                updateJavaExecTask(execTask, moduleName);
                 updateStartScriptsTask(project, execTask, moduleName);
             }
         });
@@ -55,9 +56,8 @@ public class RunTask {
         });
     }
 
-    private void updateJavaExecTask(Project project, JavaExec execTask, String moduleName) {
+    private void updateJavaExecTask(JavaExec execTask, String moduleName) {
         execTask.doFirst(task -> {
-
 
             var moduleJvmArgs = List.of(
                     "--module-path", execTask.getClasspath().getAsPath(),
@@ -94,4 +94,5 @@ public class RunTask {
             throw new GradleException("Couldn't replace placeholder in " + path);
         }
     }
+
 }

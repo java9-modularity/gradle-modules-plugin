@@ -17,19 +17,24 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 class ModuleName {
+
     private static final Logger LOGGER = Logging.getLogger(ModuleName.class);
 
     Optional<String> findModuleName(Project project) {
-        SourceSet main = null;
+        SourceSet main;
         try {
-            JavaPluginConvention javaConvention =
-                    project.getConvention().getPlugin(JavaPluginConvention.class);
+            JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
             main = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
         } catch (IllegalStateException | UnknownDomainObjectException e) {
             LOGGER.warn("Cannot obtain JavaPluginConvention", e);
             return Optional.empty();
         }
-        java.util.Optional<File> moduleInfoSrcDir = main.getAllJava().getSourceDirectories().getFiles().stream().filter(dir -> dir.toPath().resolve("module-info.java").toFile().exists()).findAny();
+        Optional<File> moduleInfoSrcDir = main.getAllJava()
+                .getSourceDirectories()
+                .getFiles()
+                .stream()
+                .filter(dir -> dir.toPath().resolve("module-info.java").toFile().exists())
+                .findAny();
 
         if (moduleInfoSrcDir.isPresent()) {
             Path moduleInfoJava = moduleInfoSrcDir.get().toPath().resolve("module-info.java");
@@ -39,19 +44,20 @@ class ModuleName {
                 if (module.isPresent()) {
                     Name name = module.get().getName();
                     LOGGER.lifecycle("Found module name '{}'", name);
-                    return java.util.Optional.of(name.toString());
+                    return Optional.of(name.toString());
                 } else {
                     LOGGER.warn("module-info.java found, but module name could not be parsed");
-                    return java.util.Optional.empty();
+                    return Optional.empty();
                 }
             } catch (IOException e) {
                 LOGGER.error("Error opening module-info.java in source dir {}", moduleInfoJava);
-                return java.util.Optional.empty();
+                return Optional.empty();
             }
 
         } else {
             LOGGER.debug("No module-info.java found in module {}", project.getName());
-            return java.util.Optional.empty();
+            return Optional.empty();
         }
     }
+
 }

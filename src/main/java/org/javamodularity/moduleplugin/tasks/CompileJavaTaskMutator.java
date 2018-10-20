@@ -15,4 +15,5 @@ class CompileJavaTaskMutator {
         compileJava.getOptions().setCompilerArgs(compilerArgs);
         compileJava.setClasspath(project.files());
     }
+
 }
