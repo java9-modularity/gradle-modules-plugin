@@ -7,6 +7,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class FailingTest {
     @Test
     public void mustFail() {
-        fail("This is supposed to fail, testing Travis builds");
+//        fail("This is supposed to fail, testing Travis builds");
     }
 }
