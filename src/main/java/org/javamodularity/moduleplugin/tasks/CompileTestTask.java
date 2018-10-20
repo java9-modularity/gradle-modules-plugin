@@ -10,6 +10,7 @@ import org.javamodularity.moduleplugin.TestEngine;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class CompileTestTask {
     public void configureCompileTestJava(Project project, String moduleName) {
@@ -26,7 +27,10 @@ public class CompileTestTask {
                     "--patch-module", moduleName + "=" + testSourceSet.getJava().getSourceDirectories().getAsPath()
             ));
 
-            Optional<TestEngine> testEngine = project.getConfigurations().getByName("testCompile").getDependencies().stream()
+            var configurations = project.getConfigurations();
+            var testImplementation = configurations.getByName("testImplementation").getDependencies().stream();
+            var testCompile = configurations.getByName("testCompile").getDependencies().stream();
+            Optional<TestEngine> testEngine = Stream.concat(testImplementation, testCompile)
                     .map(d -> TestEngine.select(d.getGroup(), d.getName()))
                     .filter(Optional::isPresent)
                     .map(Optional::get)

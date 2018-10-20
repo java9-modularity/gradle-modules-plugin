@@ -13,9 +13,12 @@ import org.javamodularity.moduleplugin.TestEngine;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.UncheckedIOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class TestTask {
+
     private static final Logger LOGGER = Logging.getLogger(TestTask.class);
 
     public void configureTestJava(Project project, String moduleName) {
@@ -30,7 +33,7 @@ public class TestTask {
         testJava.doFirst(task -> {
 
             TestModuleOptions testModuleOptions = testJava.getExtensions().getByType(TestModuleOptions.class);
-            if(testModuleOptions.isRunOnClasspath()) {
+            if (testModuleOptions.isRunOnClasspath()) {
                 LOGGER.lifecycle("Running tests on classpath");
                 return;
             }
@@ -43,7 +46,10 @@ public class TestTask {
                     "--add-modules", "ALL-MODULE-PATH"
             ));
 
-            Optional<TestEngine> testEngine = project.getConfigurations().getByName("testCompile").getDependencies().stream()
+            var configurations = project.getConfigurations();
+            var testImplementation = configurations.getByName("testImplementation").getDependencies().stream();
+            var testCompile = configurations.getByName("testCompile").getDependencies().stream();
+            Optional<TestEngine> testEngine = Stream.concat(testImplementation, testCompile)
                     .map(d -> TestEngine.select(d.getGroup(), d.getName()))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
@@ -58,7 +64,6 @@ public class TestTask {
                 Set<String> testPackages = new HashSet<>();
 
                 while (iterator.hasNext()) {
-
                     try {
                         Optional<PackageDeclaration> optionalPackageDeclaration = JavaParser.parse(iterator.next()).getPackageDeclaration();
                         if (optionalPackageDeclaration.isPresent()) {
@@ -66,15 +71,13 @@ public class TestTask {
                             testPackages.add(packageDeclaration.getNameAsString());
                         }
                     } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                        throw new UncheckedIOException(e);
                     }
                 }
 
                 testPackages.forEach(p -> {
                     args.add("--add-opens");
                     args.add(String.format("%s/%s=%s", moduleName, p, testEngine.get().getAddOpens()));
-
-
                 });
             }
 
