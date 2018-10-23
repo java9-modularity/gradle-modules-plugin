@@ -31,6 +31,8 @@ public class CompileTestTask {
                         "--add-reads", moduleName + "=" + testEngine.moduleName));
             });
 
+            ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
+
             compileTestJava.getOptions().setCompilerArgs(args);
             compileTestJava.setClasspath(project.files());
         });
