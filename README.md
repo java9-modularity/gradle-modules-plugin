@@ -244,9 +244,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class GreeterTest {
+class GreeterTest {
     @Test
-    public void testLocate() {
+    void testLocate() {
         Greeter greeter = new GreeterLocator().findGreeter();
         assertFalse(greeter.hello().isBlank());
     }
