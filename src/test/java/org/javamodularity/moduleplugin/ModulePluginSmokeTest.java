@@ -34,7 +34,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File("test-project"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion("4.10.2")
-                .withArguments("clean", "build", "-PINTERNAL_TEST_IN_PROGRESS")
+                .withArguments("clean", "build", "javadoc", "-PINTERNAL_TEST_IN_PROGRESS")
                 .build();
 
 
