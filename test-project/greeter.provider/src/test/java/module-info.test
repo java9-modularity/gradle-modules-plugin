@@ -1,0 +1,7 @@
+// make module visible
+--add-modules
+  java.scripting
+
+// "requires java.scripting"
+--add-reads
+  greeter.provider=java.scripting
