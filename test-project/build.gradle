@@ -17,7 +17,7 @@ subprojects {
         apply plugin: "org.javamodularity.moduleplugin"
     }
     
-    version "1.0.0"
+    version "1.0.1"
 
     sourceCompatibility = 11
     targetCompatibility = 11
@@ -41,6 +41,7 @@ subprojects {
     }
 
     javadoc {
-
     }
+
+    build.dependsOn javadoc
 }
