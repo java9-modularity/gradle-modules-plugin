@@ -42,6 +42,12 @@ public class TestTask {
                     "--add-modules", "ALL-MODULE-PATH"
             ));
 
+            if(!testModuleOptions.getAddModules().isEmpty()) {
+                String addModules = String.join(",", testModuleOptions.getAddModules());
+                args.add("--add-modules");
+                args.add(addModules);
+            }
+
             TestEngine.select(project).ifPresent(testEngine -> {
                 args.addAll(List.of("--add-reads", moduleName + "=" + testEngine.moduleName));
 

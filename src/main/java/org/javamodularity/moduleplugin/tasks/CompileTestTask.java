@@ -15,7 +15,7 @@ public class CompileTestTask {
     public void configureCompileTestJava(Project project, String moduleName) {
         JavaCompile compileTestJava = (JavaCompile) project.getTasks().findByName(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME);
         JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
-
+        compileTestJava.getExtensions().create("moduleOptions", ModuleOptions.class, project);
         SourceSet testSourceSet = javaConvention.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
 
         compileTestJava.doFirst(task -> {
@@ -30,6 +30,13 @@ public class CompileTestTask {
                         "--add-modules", testEngine.moduleName,
                         "--add-reads", moduleName + "=" + testEngine.moduleName));
             });
+
+            ModuleOptions moduleOptions = compileTestJava.getExtensions().getByType(ModuleOptions.class);
+            if(!moduleOptions.getAddModules().isEmpty()) {
+                String addModules = String.join(",", moduleOptions.getAddModules());
+                args.add("--add-modules");
+                args.add(addModules);
+            }
 
             ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
 
