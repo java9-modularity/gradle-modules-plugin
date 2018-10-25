@@ -3,10 +3,7 @@ package org.javamodularity.moduleplugin;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
-import org.javamodularity.moduleplugin.tasks.CompileTask;
-import org.javamodularity.moduleplugin.tasks.CompileTestTask;
-import org.javamodularity.moduleplugin.tasks.RunTask;
-import org.javamodularity.moduleplugin.tasks.TestTask;
+import org.javamodularity.moduleplugin.tasks.*;
 
 import java.util.Optional;
 
@@ -22,6 +19,7 @@ public class ModuleSystemPlugin implements Plugin<Project> {
             new CompileTestTask().configureCompileTestJava(project, moduleName);
             new TestTask().configureTestJava(project, moduleName);
             new RunTask().configureRun(project, moduleName);
+            new JavadocTask().configureJavaDoc(project);
         });
     }
 

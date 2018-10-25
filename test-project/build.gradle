@@ -17,7 +17,7 @@ subprojects {
         apply plugin: "org.javamodularity.moduleplugin"
     }
     
-    version "1.0.0"
+    version "1.0.1"
 
     sourceCompatibility = 11
     targetCompatibility = 11
@@ -39,5 +39,9 @@ subprojects {
         testImplementation 'org.junit.jupiter:junit-jupiter-params:5.3.1'
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     }
-    
+
+    javadoc {
+    }
+
+    build.dependsOn javadoc
 }
