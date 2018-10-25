@@ -25,6 +25,7 @@ public class RunTask {
         project.getPluginManager().withPlugin(ApplicationPlugin.APPLICATION_PLUGIN_NAME, plugin -> {
             if (project.getPlugins().hasPlugin("application")) {
                 JavaExec execTask = (JavaExec) project.getTasks().findByName(ApplicationPlugin.TASK_RUN_NAME);
+                execTask.getExtensions().create("moduleOptions", ModuleOptions.class, project);
                 updateJavaExecTask(execTask, moduleName);
                 updateStartScriptsTask(project, execTask, moduleName);
             }
@@ -42,6 +43,14 @@ public class RunTask {
             );
 
             var jvmArgs = new ArrayList<String>();
+
+            ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
+            System.out.println("ModuleOptions: " + moduleOptions);
+            if(!moduleOptions.getAddModules().isEmpty()) {
+                String addModules = String.join(",", moduleOptions.getAddModules());
+                jvmArgs.add("--add-modules");
+                jvmArgs.add(addModules);
+            }
             startScriptsTask.getDefaultJvmOpts().forEach(jvmArgs::add);
             jvmArgs.addAll(moduleJvmArgs);
 
@@ -65,8 +74,18 @@ public class RunTask {
             );
 
             var jvmArgs = new ArrayList<String>();
+
+            ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
+            if(!moduleOptions.getAddModules().isEmpty()) {
+                String addModules = String.join(",", moduleOptions.getAddModules());
+                jvmArgs.add("--add-modules");
+                jvmArgs.add(addModules);
+            }
+
             jvmArgs.addAll(execTask.getJvmArgs());
             jvmArgs.addAll(moduleJvmArgs);
+
+
 
             execTask.setJvmArgs(jvmArgs);
 

@@ -2,11 +2,12 @@ package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.Project;
 
-public class TestModuleOptions {
+public class TestModuleOptions extends ModuleOptions {
 
     private boolean runOnClasspath;
 
     public TestModuleOptions(Project project) {
+        super(project);
     }
 
     public boolean isRunOnClasspath() {

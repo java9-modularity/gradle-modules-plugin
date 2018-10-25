@@ -11,6 +11,10 @@ dependencies {
 mainClassName = "$moduleName/examples.Runner"
 
 run {
+    moduleOptions {
+        addModules = ['java.sql']
+    }
+
     jvmArgs = [
             "-XX:+PrintGCDetails"
     ]

@@ -9,11 +9,18 @@ import java.util.List;
 class CompileJavaTaskMutator {
 
     static void mutateJavaCompileTask(Project project, JavaCompile compileJava) {
+        ModuleOptions moduleOptions = compileJava.getExtensions().getByType(ModuleOptions.class);
+
         var compilerArgs = new ArrayList<>(compileJava.getOptions().getCompilerArgs());
         compilerArgs.addAll(List.of("--module-path", compileJava.getClasspath().getAsPath()));
 
-        ModuleInfoTestHelper.mutateArgs(project, project.getName(), compilerArgs::add);
+        if(!moduleOptions.getAddModules().isEmpty()) {
+            String addModules = String.join(",", moduleOptions.getAddModules());
+            compilerArgs.add("--add-modules");
+            compilerArgs.add(addModules);
+        }
 
+        ModuleInfoTestHelper.mutateArgs(project, project.getName(), compilerArgs::add);
         compileJava.getOptions().setCompilerArgs(compilerArgs);
         compileJava.setClasspath(project.files());
     }
