@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FriendlyTest {
     @Test
-    public void testGreeting() {
+    void testGreeting() {
         String greeting = new Friendly().hello();
         assertTrue(greeting.contains("welcome"));
     }

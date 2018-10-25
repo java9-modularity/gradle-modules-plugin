@@ -64,6 +64,8 @@ public class TestTask {
                 });
             });
 
+            ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
+
             testJava.setJvmArgs(args);
             testJava.setClasspath(project.files());
         });

@@ -18,8 +18,8 @@ The plugin currently supports:
 
 The plugin supports the following test engines:
 
-* Junit 5
-* Junit 4
+* JUnit 5
+* JUnit 4
 * TestNG
 
 An example application using this plugin is available [here](https://github.com/java9-modularity/gradle-modules-plugin-example). 
@@ -81,9 +81,9 @@ subprojects {
     }
 
     dependencies {
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.2.0'
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.3.1'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     }
 }
 ```
@@ -191,7 +191,7 @@ Essentially, the plugin enables the following compiler flags:
 
 * `--module-path` containing all dependencies
 * `--patch-module` to merge the test classes into the modules
-* `--add-modules` to add the test runtime (Junit 5, Junit 4 and TestNG are supported)
+* `--add-modules` to add the test runtime (JUnit 5, JUnit 4 and TestNG are supported)
 * `--add-reads` for the test runtime. This way we don't have to `require` the test engine in our module.
 * `--add-opens` so that the test engine can access the tests without having to export/open them in `--module-info.java`.
 
@@ -244,9 +244,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class GreeterTest {
+class GreeterTest {
     @Test
-    public void testLocate() {
+    void testLocate() {
         Greeter greeter = new GreeterLocator().findGreeter();
         assertFalse(greeter.hello().isBlank());
     }
