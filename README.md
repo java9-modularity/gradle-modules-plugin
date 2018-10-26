@@ -55,7 +55,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.org.javamodularity:moduleplugin:1.0.1"
+    classpath "gradle.plugin.org.javamodularity:moduleplugin:1.1.0"
   }
 }
 
@@ -63,7 +63,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: "org.javamodularity.moduleplugin"
 
-    version "1.1.0"
+    version "1.0-SNAPSHOT"
 
     sourceCompatibility = 11
     targetCompatibility = 11
