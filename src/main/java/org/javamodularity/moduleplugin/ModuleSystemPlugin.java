@@ -13,13 +13,15 @@ public class ModuleSystemPlugin implements Plugin<Project> {
     public void apply(Project project) {
         project.getPlugins().apply(JavaPlugin.class);
         Optional<String> foundModuleName = new ModuleName().findModuleName(project);
-        foundModuleName.ifPresent(moduleName -> {
+        foundModuleName.ifPresentOrElse(moduleName -> {
             project.getExtensions().add("moduleName", moduleName);
             new CompileTask().configureCompileJava(project);
             new CompileTestTask().configureCompileTestJava(project, moduleName);
             new TestTask().configureTestJava(project, moduleName);
             new RunTask().configureRun(project, moduleName);
             new JavadocTask().configureJavaDoc(project);
+        }, () -> {
+            new RunTask().configureRun(project, "");
         });
     }
 

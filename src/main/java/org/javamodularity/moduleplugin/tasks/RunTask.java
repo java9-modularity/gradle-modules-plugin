@@ -37,10 +37,14 @@ public class RunTask {
         startScriptsTask.doFirst(task -> {
             startScriptsTask.setClasspath(project.files());
 
-            var moduleJvmArgs = List.of(
-                    "--module-path", LIBS_PLACEHOLDER,
-                    "--module", getMainClass(moduleName, execTask)
+            var moduleJvmArgs = new ArrayList<>(List.of(
+                    "--module-path", LIBS_PLACEHOLDER)
             );
+            if (!moduleName.isEmpty()) {
+                moduleJvmArgs.addAll(List.of(
+                        "--module", getMainClass(moduleName, execTask))
+                );
+            }
 
             var jvmArgs = new ArrayList<String>();
 
@@ -68,10 +72,14 @@ public class RunTask {
     private void updateJavaExecTask(JavaExec execTask, String moduleName) {
         execTask.doFirst(task -> {
 
-            var moduleJvmArgs = List.of(
-                    "--module-path", execTask.getClasspath().getAsPath(),
-                    "--module", getMainClass(moduleName, execTask)
+            var moduleJvmArgs = new ArrayList<>(List.of(
+                    "--module-path", execTask.getClasspath().getAsPath())
             );
+            if (!moduleName.isEmpty()) {
+                moduleJvmArgs.addAll(List.of(
+                        "--module", getMainClass(moduleName, execTask))
+                );
+            }
 
             var jvmArgs = new ArrayList<String>();
 
