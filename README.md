@@ -55,7 +55,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.org.javamodularity:moduleplugin:1.0.1"
+    classpath "gradle.plugin.org.javamodularity:moduleplugin:1.1.0"
   }
 }
 
@@ -63,7 +63,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: "org.javamodularity.moduleplugin"
 
-    version "1.1.0"
+    version "1.0-SNAPSHOT"
 
     sourceCompatibility = 11
     targetCompatibility = 11
@@ -194,6 +194,25 @@ Essentially, the plugin enables the following compiler flags:
 * `--add-modules` to add the test runtime (JUnit 5, JUnit 4 and TestNG are supported)
 * `--add-reads` for the test runtime. This way we don't have to `require` the test engine in our module.
 * `--add-opens` so that the test engine can access the tests without having to export/open them in `--module-info.java`.
+
+The plugin also integrates additional compiler flags specified in a `module-info.test` file.
+For example, if your tests need to access types from a module shipping with the JDK (here: `java.scripting`).
+Note that each non-comment line represents a single argument that is passed to the compiler as an option.
+
+```text
+// Make module visible.
+--add-modules
+  java.scripting
+
+// Same "requires java.scripting" in a regular module descriptor.
+--add-reads
+  greeter.provider=java.scripting
+```
+
+See `src/test/java/module-info.test` and `src/test/java/greeter/ScriptingTest.java` in `test-project/greeter.provider` for details.
+
+Fall-back to classpath mode
+----
 
 If for whatever reason this is unwanted or introduces problems, you can enable classpath mode, which essentially turns of the plugin while running tests.
 
