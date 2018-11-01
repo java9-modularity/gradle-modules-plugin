@@ -31,17 +31,13 @@ class ModulePluginSmokeTest {
     @Test
     void smokeTest() {
         var result = GradleRunner.create()
-                .withProjectDir(new File("test-project"))
+                .withProjectDir(new File("test-project/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion("4.10.2")
-                .withArguments("clean", "build", "-PINTERNAL_TEST_IN_PROGRESS", "--debug", "--stacktrace")
+                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "--stacktrace")
+                .forwardOutput()
                 .build();
 
-
-        System.out.println("Build result");
-        System.out.println("============");
-        System.out.println(result.getOutput());
-        System.out.println("============");
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.api:build").getOutcome(), "Failed Build!");
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.provider:build").getOutcome(), "Failed Build!");
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.provider.test:build").getOutcome(), "Failed Build!");
