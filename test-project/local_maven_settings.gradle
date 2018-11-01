@@ -1,0 +1,8 @@
+rootProject.name = 'moduleplugintests'
+rootProject.buildFileName = 'local_maven_build.gradle'
+include 'greeter.api'
+
+include 'greeter.provider'
+include 'greeter.runner'
+include 'greeter.provider.test'
+

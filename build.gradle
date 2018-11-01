@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.10.0'
+    id 'maven-publish' // used for publishing to local maven repository
 }
 
 group 'org.javamodularity'
@@ -64,4 +65,14 @@ pluginBundle {
     website = 'https://github.com/java9-modularity/gradle-modules-plugin'
     vcsUrl = 'git@github.com:java9-modularity/gradle-modules-plugin.git'
     tags = ['java', 'modules', 'jpms', 'modularity']
+}
+
+publishing { // used for publishing to local maven repository
+    publications {
+        maven(MavenPublication) {
+            groupId = 'org.javamodularity'
+            artifactId = 'moduleplugin'
+            version = project.version
+        }
+    }
 }
