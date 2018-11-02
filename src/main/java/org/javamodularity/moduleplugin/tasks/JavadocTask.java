@@ -20,7 +20,7 @@ public class JavadocTask {
 
                 if(!moduleOptions.getAddModules().isEmpty()) {
                     String addModules = String.join(",", moduleOptions.getAddModules());
-                    options.addStringOption("-add-module", addModules);
+                    options.addStringOption("-add-modules", addModules);
                 }
 
                 javadoc.setClasspath(project.files());
