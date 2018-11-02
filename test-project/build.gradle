@@ -5,7 +5,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "gradle.plugin.org.javamodularity:moduleplugin:1.+"
+        classpath "org.javamodularity:moduleplugin:1.+"
     }
 }
 
