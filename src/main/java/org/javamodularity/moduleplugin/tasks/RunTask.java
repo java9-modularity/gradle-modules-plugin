@@ -65,7 +65,7 @@ public class RunTask {
             File bashScript = new File(startScriptsTask.getOutputDir(), startScriptsTask.getApplicationName());
             replaceLibsPlaceHolder(bashScript.toPath(), "\\$APP_HOME/lib");
             File batFile = new File(startScriptsTask.getOutputDir(), startScriptsTask.getApplicationName() + ".bat");
-            replaceLibsPlaceHolder(batFile.toPath(), "%APP_HOME%\\lib");
+            replaceLibsPlaceHolder(batFile.toPath(), "%APP_HOME%\\\\lib");
         });
     }
 
@@ -114,7 +114,7 @@ public class RunTask {
     private void replaceLibsPlaceHolder(Path path, String newText) {
         try {
             String bashScript = Files.readString(path, StandardCharsets.UTF_8);
-            String updatedBashScript = bashScript.replace(LIBS_PLACEHOLDER, newText);
+            String updatedBashScript = bashScript.replaceAll(LIBS_PLACEHOLDER, newText);
 
             Files.write(path, updatedBashScript.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
