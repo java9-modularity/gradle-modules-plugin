@@ -114,7 +114,7 @@ public class RunTask {
     private void replaceLibsPlaceHolder(Path path, String newText) {
         try {
             String bashScript = Files.readString(path, StandardCharsets.UTF_8);
-            String updatedBashScript = bashScript.replaceAll(LIBS_PLACEHOLDER, newText);
+            String updatedBashScript = bashScript.replace(LIBS_PLACEHOLDER, newText);
 
             Files.write(path, updatedBashScript.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
