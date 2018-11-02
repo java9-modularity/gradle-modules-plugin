@@ -55,7 +55,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.org.javamodularity:moduleplugin:1.1.1"
+    classpath "gradle.plugin.org.javamodularity:moduleplugin:1.1.0"
   }
 }
 
