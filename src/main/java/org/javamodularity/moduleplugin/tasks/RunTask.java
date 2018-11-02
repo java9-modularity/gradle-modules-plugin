@@ -5,7 +5,9 @@ import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.ApplicationPlugin;
+import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.application.CreateStartScripts;
 
 import java.io.File;
@@ -72,8 +74,13 @@ public class RunTask {
     private void updateJavaExecTask(JavaExec execTask, String moduleName) {
         execTask.doFirst(task -> {
 
+            JavaPluginConvention javaConvention = execTask.getProject().getConvention().getPlugin(JavaPluginConvention.class);
+
+            SourceSet mainSourceSet = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+
             var moduleJvmArgs = new ArrayList<>(List.of(
-                    "--module-path", execTask.getClasspath().getAsPath())
+                    "--module-path", execTask.getClasspath().getAsPath(),
+                    "--patch-module", moduleName + "=" + mainSourceSet.getOutput().getResourcesDir().toPath())
             );
             if (!moduleName.isEmpty()) {
                 moduleJvmArgs.addAll(List.of(

@@ -24,6 +24,7 @@ public class TestTask {
         JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
 
         SourceSet testSourceSet = javaConvention.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
+        SourceSet mainSourceSet = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
         testJava.getExtensions().create("moduleOptions", TestModuleOptions.class, project);
 
         testJava.doFirst(task -> {
@@ -38,7 +39,9 @@ public class TestTask {
 
             args.addAll(List.of(
                     "--module-path", testJava.getClasspath().getAsPath(),
-                    "--patch-module", moduleName + "=" + testSourceSet.getJava().getOutputDir().toPath(),
+                    "--patch-module", moduleName + "=" + testSourceSet.getJava().getOutputDir().toPath()
+                            + ":" + mainSourceSet.getOutput().getResourcesDir().toPath()
+                            + ":" + testSourceSet.getOutput().getResourcesDir().toPath(),
                     "--add-modules", "ALL-MODULE-PATH"
             ));
 
