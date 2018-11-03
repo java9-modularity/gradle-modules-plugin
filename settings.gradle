@@ -1,2 +1,4 @@
+enableFeaturePreview('STABLE_PUBLISHING')
+
 rootProject.name = 'moduleplugin'
 
