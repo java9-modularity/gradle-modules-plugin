@@ -51,7 +51,6 @@ public class RunTask {
             var jvmArgs = new ArrayList<String>();
 
             ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
-            System.out.println("ModuleOptions: " + moduleOptions);
             if(!moduleOptions.getAddModules().isEmpty()) {
                 String addModules = String.join(",", moduleOptions.getAddModules());
                 jvmArgs.add("--add-modules");
