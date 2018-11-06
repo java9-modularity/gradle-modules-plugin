@@ -15,6 +15,8 @@ import java.io.FileNotFoundException;
 import java.io.UncheckedIOException;
 import java.util.*;
 
+import static java.io.File.pathSeparator;
+
 public class TestTask {
 
     private static final Logger LOGGER = Logging.getLogger(TestTask.class);
@@ -40,8 +42,8 @@ public class TestTask {
             args.addAll(List.of(
                     "--module-path", testJava.getClasspath().getAsPath(),
                     "--patch-module", moduleName + "=" + testSourceSet.getJava().getOutputDir().toPath()
-                            + ":" + mainSourceSet.getOutput().getResourcesDir().toPath()
-                            + ":" + testSourceSet.getOutput().getResourcesDir().toPath(),
+                            + pathSeparator + mainSourceSet.getOutput().getResourcesDir().toPath()
+                            + pathSeparator + testSourceSet.getOutput().getResourcesDir().toPath(),
                     "--add-modules", "ALL-MODULE-PATH"
             ));
 
