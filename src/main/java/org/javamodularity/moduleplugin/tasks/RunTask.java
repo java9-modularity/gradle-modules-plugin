@@ -78,13 +78,13 @@ public class RunTask {
             SourceSet mainSourceSet = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 
             var moduleJvmArgs = new ArrayList<>(List.of(
-                    "--module-path", execTask.getClasspath().getAsPath(),
-                    "--patch-module", moduleName + "=" + mainSourceSet.getOutput().getResourcesDir().toPath())
-            );
+                    "--module-path", execTask.getClasspath().getAsPath()
+            ));
             if (!moduleName.isEmpty()) {
                 moduleJvmArgs.addAll(List.of(
-                        "--module", getMainClass(moduleName, execTask))
-                );
+                        "--module", getMainClass(moduleName, execTask),
+                        "--patch-module", moduleName + "=" + mainSourceSet.getOutput().getResourcesDir().toPath()
+                ));
             }
 
             var jvmArgs = new ArrayList<String>();
