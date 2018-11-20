@@ -82,8 +82,8 @@ public class RunTask {
             ));
             if (!moduleName.isEmpty()) {
                 moduleJvmArgs.addAll(List.of(
-                        "--module", getMainClass(moduleName, execTask),
-                        "--patch-module", moduleName + "=" + mainSourceSet.getOutput().getResourcesDir().toPath()
+                        "--patch-module", moduleName + "=" + mainSourceSet.getOutput().getResourcesDir().toPath(),
+                        "--module", getMainClass(moduleName, execTask)
                 ));
             }
 
