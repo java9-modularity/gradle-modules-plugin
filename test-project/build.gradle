@@ -39,6 +39,9 @@ subprojects {
     }
 
     javadoc {
+        moduleOptions {
+            addModules = ['java.sql']
+        }
     }
 
     build.dependsOn javadoc
