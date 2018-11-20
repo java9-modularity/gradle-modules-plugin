@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SuppressWarnings("ConstantConditions")
 class ModulePluginSmokeTest {
@@ -34,7 +33,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File("test-project/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion("4.10.2")
-                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "--stacktrace")
+                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();
 
@@ -42,5 +41,6 @@ class ModulePluginSmokeTest {
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.provider:build").getOutcome(), "Failed Build!");
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.provider.test:build").getOutcome(), "Failed Build!");
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.runner:build").getOutcome(), "Failed Build!");
+        assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.runner:run").getOutcome(), "Failed Build!");
     }
 }
