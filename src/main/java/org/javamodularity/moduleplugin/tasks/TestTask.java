@@ -11,9 +11,11 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UncheckedIOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.io.File.pathSeparator;
 
@@ -39,9 +41,12 @@ public class TestTask {
 
             var args = new ArrayList<>(testJava.getJvmArgs());
 
+            String testClassesDirs = testSourceSet.getOutput().getClassesDirs().getFiles()
+                    .stream().map(File::getPath).collect(Collectors.joining(pathSeparator));
+
             args.addAll(List.of(
                     "--module-path", testJava.getClasspath().getAsPath(),
-                    "--patch-module", moduleName + "=" + testSourceSet.getJava().getOutputDir().toPath()
+                    "--patch-module", moduleName + "=" + testClassesDirs
                             + pathSeparator + mainSourceSet.getOutput().getResourcesDir().toPath()
                             + pathSeparator + testSourceSet.getOutput().getResourcesDir().toPath(),
                     "--add-modules", "ALL-MODULE-PATH"
