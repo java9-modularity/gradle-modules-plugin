@@ -18,6 +18,7 @@ repositories {
 dependencies {
     implementation gradleApi()
     implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.6.23'
+    implementation 'org.ow2.asm:asm:7.0'
 
     testImplementation gradleTestKit()
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'

@@ -1,7 +1,5 @@
 package org.javamodularity.moduleplugin.tasks;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.PackageDeclaration;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -12,9 +10,10 @@ import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.UncheckedIOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.io.File.pathSeparator;
@@ -62,16 +61,10 @@ public class TestTask {
                 args.addAll(List.of("--add-reads", moduleName + "=" + testEngine.moduleName));
 
                 Set<String> testPackages = new HashSet<>();
-                for (var sourceFile : testSourceSet.getJava()) {
-                    try {
-                        Optional<PackageDeclaration> optionalPackageDeclaration = JavaParser.parse(sourceFile).getPackageDeclaration();
-                        if (optionalPackageDeclaration.isPresent()) {
-                            PackageDeclaration packageDeclaration = optionalPackageDeclaration.get();
-                            testPackages.add(packageDeclaration.getNameAsString());
-                        }
-                    } catch (FileNotFoundException e) {
-                        throw new UncheckedIOException(e);
-                    }
+                for (var testDir: testSourceSet.getOutput().getClassesDirs().getFiles()) {
+                    PackageScanner scanner = new PackageScanner();
+                    scanner.scan(testDir);
+                    testPackages.addAll(scanner.getPackages());
                 }
 
                 testPackages.forEach(p -> {
