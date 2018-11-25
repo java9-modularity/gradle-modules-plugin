@@ -23,6 +23,7 @@ class CompileJavaTaskMutator {
 
         ModuleInfoTestHelper.mutateArgs(project, project.getName(), compilerArgs::add);
         compileJava.getOptions().setCompilerArgs(compilerArgs);
+        compileJava.setClasspath(project.files());
 
         AbstractCompile compileKotlin = (AbstractCompile)project.getTasks().findByName("compileKotlin");
         if (compileKotlin != null) {
