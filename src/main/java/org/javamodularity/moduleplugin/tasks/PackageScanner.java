@@ -17,6 +17,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
+/**
+ * A class visitor that collects the packages of the visited classes into a set.
+ */
 public class PackageScanner extends ClassVisitor {
     private static final Logger LOGGER = Logging.getLogger(PackageScanner.class);
 
@@ -30,13 +33,18 @@ public class PackageScanner extends ClassVisitor {
         return packages;
     }
 
+    /**
+     * For each Java class file in the file tree of the specified directory retrieves its package and adds it to the {@link #packages} set.
+     * @param dir the directory to be scanned
+     */
     public void scan(File dir) {
         LOGGER.debug("Scanning packages in " + dir);
         if(!dir.isDirectory()) {
             LOGGER.debug("Not a directory: " + dir);
             return;
         }
-        try(Stream<Path> entries = Files.walk(dir.toPath())) {
+        try(Stream<Path> entries = Files.walk(dir.toPath())
+                .filter(entry -> entry.toFile().isFile())) {
             entries.forEach(entry -> {
                 String path = entry.toString();
                 if(isValidClassFileReference(path)) {
@@ -55,10 +63,13 @@ public class PackageScanner extends ClassVisitor {
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        addClass(name);
+        addPackageOf(name);
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
+    /**
+     * Checks if the {@code path} parameter represents a Java class file.
+     */
     private static boolean isValidClassFileReference(String path) {
         if(!path.endsWith(".class")) return false;
         String name = path.substring(0, path.length() - ".class".length());
@@ -66,30 +77,23 @@ public class PackageScanner extends ClassVisitor {
         if(tokens.length == 0) return false;
         return Utilities.isJavaIdentifier(tokens[tokens.length - 1]);
     }
-
-
-    private void addClass(String className) {
+    
+    /**
+     * Adds the package of the fully qualified {@code className} parameter to the {@link #packages} set.
+     */
+    private void addPackageOf(String className) {
         if(className == null || className.isEmpty()) return;
-        String pkg = getPackageName(adjust(className));
+        String pkg = getPackageName(className);
         if(!pkg.isEmpty()) packages.add(pkg);
     }
 
+    /**
+     * Retrieves the package of the fully qualified {@code className} parameter.
+     */
     private static String getPackageName(String className) {
-        int pos = className.lastIndexOf('.');
-        if(pos < 0) throw new IllegalArgumentException("Cannot find '.' in " + className);
-        return className.substring(0, pos);
-    }
-
-    private static String adjust(String s) {
-        if(s == null || s.isBlank()) return "";
-        while(!Character.isJavaIdentifierStart(s.charAt(0))){
-            s = s.substring(1);
-            if(s.isEmpty()) return "";
-        }
-        while(!Character.isJavaIdentifierPart(s.charAt(s.length() - 1))) {
-            s = s.substring(0, s.length()-1);
-            if(s.isEmpty()) return "";
-        }
-        return s.replace('/', '.');
+        String dottedClassName = className.replace('/', '.');
+        int pos = dottedClassName.lastIndexOf('.');
+        if(pos < 0) throw new IllegalArgumentException("Cannot retrieve the package of " + className);
+        return dottedClassName.substring(0, pos);
     }
 }
