@@ -1,99 +1,65 @@
 package org.javamodularity.moduleplugin.tasks;
 
-import org.codehaus.groovy.tools.Utilities;
-import org.gradle.api.GradleException;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Opcodes;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Stream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * A class visitor that collects the packages of the visited classes into a set.
+ * Utility class for retrieving and collecting package names from source files (Java, Kotlin, Groovy, or Scala).
  */
-public class PackageScanner extends ClassVisitor {
+public class PackageScanner {
     private static final Logger LOGGER = Logging.getLogger(PackageScanner.class);
 
-    private final Set<String> packages = new TreeSet<>();
+    private static final String WS = "[ \t\r\n\\u000C]";
+    private static final String LETTER = "[a-zA-Z$_]|[^\\u0000-\\u007F\\uD800-\\uDBFF]|[\\uD800-\\uDBFF]|[\\uDC00-\\uDFFF]";
+    private static final String LETTER_OR_DIGIT = LETTER + "|[0-9]";
+    private static final String IDENTIFIER = "((" + LETTER + ")(" + LETTER_OR_DIGIT + ")*)";
+    private static final String QUALIFIED_NAME = IDENTIFIER + "(\\." + IDENTIFIER + ")*";
 
-    public PackageScanner() {
-        super(Opcodes.ASM7);
-    }
+    private static final String LINE_COMMENT = "//[^\r\n]*";
+    private static final String MULTILINE_COMMENT = "/\\*.*?\\*/";
+    private static final String IGNORE =  "(" + WS + "|" + LINE_COMMENT + "|" + MULTILINE_COMMENT + ")*";
+
+    private static final String PACKAGE_DECLARATION = "(?s)" + IGNORE + "package" + IGNORE + "(?<PACKAGE>" + QUALIFIED_NAME + ").*?";
+
+    private static final Pattern PATTERN = Pattern.compile(PACKAGE_DECLARATION);
+
+    private final Set<String> packages = new TreeSet<>();
 
     public Set<String> getPackages() {
         return packages;
     }
 
     /**
-     * For each Java class file in the file tree of the specified directory retrieves its package and adds it to the {@link #packages} set.
-     * @param dir the directory to be scanned
+     * Determines the package name of the specified source file and adds it to the {@link #packages} set.
+     * @param file the file to be scanned
+     * @return the package name, or null if the package declaration is missing or an error occurred.
      */
-    public void scan(File dir) {
-        LOGGER.debug("Scanning packages in " + dir);
-        if(!dir.isDirectory()) {
-            LOGGER.debug("Not a directory: " + dir);
-            return;
-        }
-        try(Stream<Path> entries = Files.walk(dir.toPath())
-                .filter(entry -> entry.toFile().isFile())) {
-            entries.forEach(entry -> {
-                String path = entry.toString();
-                if(isValidClassFileReference(path)) {
-                    try(InputStream is = Files.newInputStream(entry)) {
-                        ClassReader cr = new ClassReader(is);
-                        cr.accept(this, 0);
-                    } catch (Exception e) {
-                        throw new GradleException("Failed to analyze " + path, e);
-                    }
+    public String scan(File file) {
+        if(!file.isFile()) {
+            LOGGER.warn("Not a source file: " + file);
+        } else {
+            try {
+                String text = new String(Files.readAllBytes(file.toPath()));
+                Matcher matcher = PATTERN.matcher(text);
+                if(matcher.matches()) {
+                    String packageName = matcher.group("PACKAGE");
+                    packages.add(packageName);
+                    return packageName;
+                } else {
+                    LOGGER.warn("Package declaration not found in: " + file);
                 }
-            });
-        } catch (IOException e) {
-            throw new GradleException("Failed to scan " + dir, e);
+            } catch (Exception e) {
+                LOGGER.warn("Cannot scan " + file);
+                LOGGER.debug("Scan error", e);
+            }
         }
-    }
-
-    @Override
-    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        addPackageOf(name);
-        super.visit(version, access, name, signature, superName, interfaces);
-    }
-
-    /**
-     * Checks if the {@code path} parameter represents a Java class file.
-     */
-    private static boolean isValidClassFileReference(String path) {
-        if(!path.endsWith(".class")) return false;
-        String name = path.substring(0, path.length() - ".class".length());
-        String[] tokens = name.split("[./\\\\]");
-        if(tokens.length == 0) return false;
-        return Utilities.isJavaIdentifier(tokens[tokens.length - 1]);
-    }
-    
-    /**
-     * Adds the package of the fully qualified {@code className} parameter to the {@link #packages} set.
-     */
-    private void addPackageOf(String className) {
-        if(className == null || className.isEmpty()) return;
-        String pkg = getPackageName(className);
-        if(!pkg.isEmpty()) packages.add(pkg);
-    }
-
-    /**
-     * Retrieves the package of the fully qualified {@code className} parameter.
-     */
-    private static String getPackageName(String className) {
-        String dottedClassName = className.replace('/', '.');
-        int pos = dottedClassName.lastIndexOf('.');
-        if(pos < 0) throw new IllegalArgumentException("Cannot retrieve the package of " + className);
-        return dottedClassName.substring(0, pos);
+        return null;
     }
 }

@@ -11,9 +11,7 @@ import org.javamodularity.moduleplugin.TestEngine;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.io.File.pathSeparator;
@@ -60,14 +58,11 @@ public class TestTask {
             TestEngine.select(project).ifPresent(testEngine -> {
                 args.addAll(List.of("--add-reads", moduleName + "=" + testEngine.moduleName));
 
-                Set<String> testPackages = new HashSet<>();
-                for (var testDir: testSourceSet.getOutput().getClassesDirs().getFiles()) {
-                    PackageScanner scanner = new PackageScanner();
-                    scanner.scan(testDir);
-                    testPackages.addAll(scanner.getPackages());
+                PackageScanner scanner = new PackageScanner();
+                for (var sourceFile : testSourceSet.getAllSource()) {
+                    scanner.scan(sourceFile);
                 }
-
-                testPackages.forEach(p -> {
+                scanner.getPackages().forEach(p -> {
                     args.add("--add-opens");
                     args.add(String.format("%s/%s=%s", moduleName, p, testEngine.addOpens));
                 });
