@@ -16,14 +16,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.io.File.pathSeparator;
 
 public class TestTask {
-
     private static final Logger LOGGER = Logging.getLogger(TestTask.class);
+    private static Pattern CLASS_FILE_SPLITTER = Pattern.compile("[./\\\\]");
 
     public void configureTestJava(Project project, String moduleName) {
         Test testJava = (Test) project.getTasks().findByName(JavaPlugin.TEST_TASK_NAME);
@@ -105,7 +106,7 @@ public class TestTask {
     private static boolean isValidClassFileReference(String path) {
         if(!path.endsWith(".class")) return false;
         String name = path.substring(0, path.length() - ".class".length());
-        String[] tokens = name.split("[./\\\\]");
+        String[] tokens = CLASS_FILE_SPLITTER.split(name);
         if(tokens.length == 0) return false;
         return Utilities.isJavaIdentifier(tokens[tokens.length - 1]);
     }
