@@ -1,5 +1,7 @@
 package org.javamodularity.moduleplugin.tasks;
 
+import org.codehaus.groovy.tools.Utilities;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -10,9 +12,12 @@ import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.io.File.pathSeparator;
 
@@ -58,11 +63,8 @@ public class TestTask {
             TestEngine.select(project).ifPresent(testEngine -> {
                 args.addAll(List.of("--add-reads", moduleName + "=" + testEngine.moduleName));
 
-                PackageScanner scanner = new PackageScanner();
-                for (var sourceFile : testSourceSet.getAllSource()) {
-                    scanner.scan(sourceFile);
-                }
-                scanner.getPackages().forEach(p -> {
+                Set<File> testDirs = testSourceSet.getOutput().getClassesDirs().getFiles();
+                getPackages(testDirs).forEach(p -> {
                     args.add("--add-opens");
                     args.add(String.format("%s/%s=%s", moduleName, p, testEngine.addOpens));
                 });
@@ -75,5 +77,37 @@ public class TestTask {
         });
     }
 
+    private static Set<String> getPackages(Collection<File> dirs) {
+        Set<String> packages = new TreeSet<>();
+        for(File dir : dirs) {
+            LOGGER.debug("Scanning packages in " + dir);
+            if(dir.isDirectory()) {
+                Path dirPath = dir.toPath();
+                try(Stream<Path> entries = Files.walk(dirPath)) {
+                    entries.forEach(entry -> {
+                        if(entry.toFile().isFile()) {
+                            String path = entry.toString();
+                            if(isValidClassFileReference(path)) {
+                                Path relPath = dirPath.relativize(entry.getParent());
+                                packages.add(relPath.toString().replace(File.separatorChar, '.'));
+                            }
+                        }
+                    });
+                } catch (IOException e) {
+                    throw new GradleException("Failed to scan " + dir, e);
+                }
+            }
+        }
+        LOGGER.debug("Found packages: " + packages);
+        return packages;
+    }
+
+    private static boolean isValidClassFileReference(String path) {
+        if(!path.endsWith(".class")) return false;
+        String name = path.substring(0, path.length() - ".class".length());
+        String[] tokens = name.split("[./\\\\]");
+        if(tokens.length == 0) return false;
+        return Utilities.isJavaIdentifier(tokens[tokens.length - 1]);
+    }
 }
 
