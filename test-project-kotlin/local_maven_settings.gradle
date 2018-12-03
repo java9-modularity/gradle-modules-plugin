@@ -1,0 +1,7 @@
+rootProject.name = 'moduleplugintestskotlin'
+rootProject.buildFileName = 'local_maven_build.gradle.kts'
+include 'greeter.api'
+
+include 'greeter.provider'
+include 'greeter.runner'
+include 'greeter.provider.test'

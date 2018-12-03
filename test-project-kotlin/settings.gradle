@@ -1,0 +1,6 @@
+rootProject.name = 'moduleplugintestskotlin'
+include 'greeter.api'
+
+include 'greeter.provider'
+include 'greeter.runner'
+include 'greeter.provider.test'

@@ -5,7 +5,8 @@ import com.google.common.io.Resources;
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +28,11 @@ class ModulePluginSmokeTest {
                 .collect(Collectors.toList());
     }
 
-    @Test
-    void smokeTest() {
+    @ParameterizedTest
+    @ValueSource(strings = { "test-project", "test-project-kotlin" })
+    void smokeTest(String projectName) {
         var result = GradleRunner.create()
-                .withProjectDir(new File("test-project/"))
+                .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion("4.10.2")
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "run", "--stacktrace")

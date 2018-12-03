@@ -1,6 +1,7 @@
 package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.Project;
+import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 
 import java.util.ArrayList;
@@ -23,6 +24,11 @@ class CompileJavaTaskMutator {
         ModuleInfoTestHelper.mutateArgs(project, project.getName(), compilerArgs::add);
         compileJava.getOptions().setCompilerArgs(compilerArgs);
         compileJava.setClasspath(project.files());
+
+        AbstractCompile compileKotlin = (AbstractCompile)project.getTasks().findByName("compileKotlin");
+        if (compileKotlin != null) {
+            compileJava.setDestinationDir(compileKotlin.getDestinationDir());
+        }
     }
 
 }
