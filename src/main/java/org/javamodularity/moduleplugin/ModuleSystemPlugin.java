@@ -20,9 +20,11 @@ public class ModuleSystemPlugin implements Plugin<Project> {
             new TestTask().configureTestJava(project, moduleName);
             new RunTask().configureRun(project, moduleName);
             new JavadocTask().configureJavaDoc(project);
+            ModularJavaExec.configure(project, moduleName);
         }, () -> {
             new RunTask().configureRun(project, "");
         });
+
     }
 
 }
