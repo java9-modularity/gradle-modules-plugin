@@ -45,4 +45,20 @@ class ModulePluginSmokeTest {
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.runner:build").getOutcome(), "Failed Build!");
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.runner:run").getOutcome(), "Failed Build!");
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "test-project", "test-project-kotlin" })
+    void smokeTestRunDemo(String projectName) {
+        var result = GradleRunner.create()
+                .withProjectDir(new File(projectName + "/"))
+                .withPluginClasspath(pluginClasspath)
+                .withGradleVersion("4.10.2")
+                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build",
+                        ":greeter.javaexec:runDemo1", ":greeter.javaexec:runDemo2", "--info", "--stacktrace")
+                .forwardOutput()
+                .build();
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.javaexec:runDemo1").getOutcome(), "Failed Build!");
+        assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.javaexec:runDemo2").getOutcome(), "Failed Build!");
+    }
 }
