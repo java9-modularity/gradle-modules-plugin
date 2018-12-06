@@ -14,6 +14,7 @@ new File("$projectDir/src/main/java/demo").eachFileMatch(~/Demo.*\.java/) { file
     task "run$demoClassName"(type: ModularJavaExec) {
         group = "Demo"
         description = "Run the $demoClassName program"
-        main = "greeter.demo/demo.$demoClassName"
+        main = "greeter.javaexec/demo.$demoClassName"
+        jvmArgs = ["-XX:+PrintGCDetails"]
     }
 }

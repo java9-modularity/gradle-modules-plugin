@@ -34,7 +34,7 @@ For this guide we assume the following directory structure:
 ├── build.gradle
 ├── gradle
 ├── greeter.api
-├── greeter.demo
+├── greeter.javaexec
 ├── greeter.provider
 ├── greeter.provider.test
 ├── greeter.runner
@@ -42,7 +42,7 @@ For this guide we assume the following directory structure:
 ```
 
 * greeter.api: Exports an interface
-* greeter.demo: Applications that can be started with `ModularJavaExec` tasks
+* greeter.javaexec: Applications that can be started with `ModularJavaExec` tasks
 * greeter.provider: Provides a service implementation for the interface provided by `greeter.api`
 * greeter.provider.test: Blackbox module test for `greeter.provider`
 * greeter.runner: Main class that uses the `Greeter` service, that can be started/packaged with the `application plugin`
@@ -331,14 +331,15 @@ The `application` plugin can handle only one executable application.
 To start multiple applications, you typically need to create a `JavaExec` task for each executable application. 
 The module plugin offers a similar task named `ModularJavaExec`, which helps executing modular applications.
 This task automatically configures the JVM with the correct arguments such as `--module-path`.
-It exposes the same properties and methods as the `JavaExec` task, the only difference being that
-the module name should also be provided when setting the `main` property.  
+It exposes the same properties and methods as the [`JavaExec`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html) task,
+the only difference being that the module name should also be provided when setting the `main` property.  
 
 ```gradle
 task runDemo1(type: ModularJavaExec) {
     group = "Demo"
     description = "Run the Demo1 program"
-    main = "greeter.demo/demo.Demo1"
+    main = "greeter.javaexec/demo.Demo1"
+    jvmArgs = ["-Xmx128m"]
 }
 ```
 

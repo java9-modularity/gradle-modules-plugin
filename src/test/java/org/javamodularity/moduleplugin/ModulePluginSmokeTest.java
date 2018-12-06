@@ -54,11 +54,11 @@ class ModulePluginSmokeTest {
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion("4.10.2")
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build",
-                        ":greeter.demo:runDemo1", ":greeter.demo:runDemo2", "--info", "--stacktrace")
+                        ":greeter.javaexec:runDemo1", ":greeter.javaexec:runDemo2", "--info", "--stacktrace")
                 .forwardOutput()
                 .build();
 
-        assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.demo:runDemo1").getOutcome(), "Failed Build!");
-        assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.demo:runDemo2").getOutcome(), "Failed Build!");
+        assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.javaexec:runDemo1").getOutcome(), "Failed Build!");
+        assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.javaexec:runDemo2").getOutcome(), "Failed Build!");
     }
 }

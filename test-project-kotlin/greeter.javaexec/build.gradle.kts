@@ -17,6 +17,7 @@ for(file in File("${project.projectDir}/src/main/kotlin/demo")
         group = "Demo"
         description = "Run the $demoClassName program"
         main = "$moduleName/demo.${demoClassName}Kt"
+        jvmArgs = listOf("-Xmx128m")
     }
 }
 
