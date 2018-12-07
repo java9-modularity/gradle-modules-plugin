@@ -46,14 +46,10 @@ public class RunTaskMutator {
         startScriptsTask.doFirst(task -> {
             startScriptsTask.setClasspath(project.files());
 
-            var moduleJvmArgs = new ArrayList<>(List.of(
-                    "--module-path", LIBS_PLACEHOLDER)
+            var moduleJvmArgs = List.of(
+                    "--module-path", LIBS_PLACEHOLDER,
+                    "--module", getMainClass()
             );
-            if (!moduleName.isEmpty()) {
-                moduleJvmArgs.addAll(List.of(
-                        "--module", getMainClass())
-                );
-            }
 
             var jvmArgs = new ArrayList<String>();
 
@@ -84,15 +80,11 @@ public class RunTaskMutator {
 
             SourceSet mainSourceSet = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
 
-            var moduleJvmArgs = new ArrayList<>(List.of(
-                    "--module-path", execTask.getClasspath().getAsPath()
-            ));
-            if (!moduleName.isEmpty()) {
-                moduleJvmArgs.addAll(List.of(
-                        "--patch-module", moduleName + "=" + mainSourceSet.getOutput().getResourcesDir().toPath(),
-                        "--module", getMainClass()
-                ));
-            }
+            var moduleJvmArgs = List.of(
+                    "--module-path", execTask.getClasspath().getAsPath(),
+                    "--patch-module", moduleName + "=" + mainSourceSet.getOutput().getResourcesDir().toPath(),
+                    "--module", getMainClass()
+            );
 
             var jvmArgs = new ArrayList<String>();
 
