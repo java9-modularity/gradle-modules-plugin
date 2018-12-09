@@ -21,8 +21,7 @@ public class ModuleSystemPlugin implements Plugin<Project> {
             new RunTask().configureRun(project, moduleName);
             new JavadocTask().configureJavaDoc(project);
             ModularJavaExec.configure(project, moduleName);
+            ModularCreateStartScripts.configure(project, moduleName);
         });
-
     }
-
 }
