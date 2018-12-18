@@ -1,14 +1,17 @@
 package org.javamodularity.moduleplugin.tasks;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
+import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.TestEngine;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class CompileTestTask {
 
@@ -18,30 +21,46 @@ public class CompileTestTask {
         compileTestJava.getExtensions().create("moduleOptions", ModuleOptions.class, project);
         SourceSet testSourceSet = javaConvention.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
 
-        compileTestJava.doFirst(task -> {
-            var args = new ArrayList<>(compileTestJava.getOptions().getCompilerArgs());
-            args.addAll(List.of(
-                    "--module-path", compileTestJava.getClasspath().getAsPath(),
-                    "--patch-module", moduleName + "=" + testSourceSet.getJava().getSourceDirectories().getAsPath()
-            ));
+        compileTestJava.doFirst(new Action<Task>() {
 
-            TestEngine.select(project).ifPresent(testEngine -> {
+            /* (non-Javadoc)
+             * @see org.gradle.api.Action#execute(java.lang.Object)
+             */
+            @Override
+            public void execute(Task task) {
+                var args = new ArrayList<>(compileTestJava.getOptions().getCompilerArgs());
                 args.addAll(List.of(
-                        "--add-modules", testEngine.moduleName,
-                        "--add-reads", moduleName + "=" + testEngine.moduleName));
-            });
+                        "--module-path", compileTestJava.getClasspath().getAsPath(),
+                        "--patch-module", moduleName + "=" + testSourceSet.getJava().getSourceDirectories().getAsPath()
+                ));
 
-            ModuleOptions moduleOptions = compileTestJava.getExtensions().getByType(ModuleOptions.class);
-            if(!moduleOptions.getAddModules().isEmpty()) {
-                String addModules = String.join(",", moduleOptions.getAddModules());
-                args.add("--add-modules");
-                args.add(addModules);
+                TestEngine.select(project).ifPresent(new Consumer<TestEngine>() {
+
+                    /* (non-Javadoc)
+                     * @see java.util.function.Consumer#accept(java.lang.Object)
+                     */
+                    @Override
+                    public void accept(TestEngine testEngine) {
+                        args.addAll(List.of(
+                            "--add-modules", testEngine.moduleName,
+                            "--add-reads", moduleName + "=" + testEngine.moduleName));
+                    }
+
+                });
+
+                ModuleOptions moduleOptions = compileTestJava.getExtensions().getByType(ModuleOptions.class);
+                if(!moduleOptions.getAddModules().isEmpty()) {
+                    String addModules = String.join(",", moduleOptions.getAddModules());
+                    args.add("--add-modules");
+                    args.add(addModules);
+                }
+
+                ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
+
+                compileTestJava.getOptions().setCompilerArgs(args);
+                compileTestJava.setClasspath(project.files());
             }
 
-            ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
-
-            compileTestJava.getOptions().setCompilerArgs(args);
-            compileTestJava.setClasspath(project.files());
         });
     }
 
