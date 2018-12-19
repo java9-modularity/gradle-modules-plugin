@@ -45,6 +45,9 @@ public class RunTaskMutator {
     public void updateStartScriptsTask(CreateStartScripts startScriptsTask) {
         startScriptsTask.doFirst(task -> {
             startScriptsTask.setClasspath(project.files());
+            if(ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME.equals(startScriptsTask.getMainClassName())) {
+                startScriptsTask.setMainClassName(/* moduleName + "/" + */ execTask.getMain());
+            }
 
             var moduleJvmArgs = List.of(
                     "--module-path", LIBS_PLACEHOLDER,
@@ -99,7 +102,6 @@ public class RunTaskMutator {
             jvmArgs.addAll(moduleJvmArgs);
 
             execTask.setJvmArgs(jvmArgs);
-
         });
     }
 

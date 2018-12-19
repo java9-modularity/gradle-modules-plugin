@@ -1,0 +1,35 @@
+import org.javamodularity.moduleplugin.tasks.ModularJavaExec
+import org.javamodularity.moduleplugin.tasks.ModularCreateStartScripts
+
+plugins {
+    id 'application'
+    id 'org.javamodularity.moduleplugin'
+}
+
+dependencies {
+    implementation project(':greeter.api')
+    runtimeOnly project(':greeter.provider')
+}
+
+application {
+    mainClassName = "greeter.startscripts/startscripts.MainDemo"
+    applicationName = "demo"
+    applicationDefaultJvmArgs = ["-Xmx128m"]
+}
+
+new File("$projectDir/src/main/java/startscripts").eachFileMatch(~/Demo.*\.java/) { file ->
+    def demoClassName = file.name - '.java'
+    task "run$demoClassName"(type: ModularJavaExec) {
+        group = "Demo"
+        description = "Run the $demoClassName program"
+        main = "greeter.startscripts/startscripts.$demoClassName"
+        jvmArgs = ["-Xmx128m"]
+    }
+
+    task "createStartScripts$demoClassName"(type: ModularCreateStartScripts) {
+        runTask = tasks."run$demoClassName"
+        applicationName = demoClassName.uncapitalize()
+    }
+
+    installDist.finalizedBy tasks."createStartScripts$demoClassName"
+}
