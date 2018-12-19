@@ -1,8 +1,26 @@
 package org.javamodularity.moduleplugin.tasks;
 
+import static java.io.File.pathSeparator;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.codehaus.groovy.tools.Utilities;
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
@@ -10,17 +28,6 @@ import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.io.File.pathSeparator;
 
 public class TestTask {
     private static final Logger LOGGER = Logging.getLogger(TestTask.class);
@@ -34,47 +41,70 @@ public class TestTask {
         SourceSet mainSourceSet = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
         testJava.getExtensions().create("moduleOptions", TestModuleOptions.class, project);
 
-        testJava.doFirst(task -> {
+        testJava.doFirst(new Action<Task>() {
 
-            TestModuleOptions testModuleOptions = testJava.getExtensions().getByType(TestModuleOptions.class);
-            if (testModuleOptions.isRunOnClasspath()) {
-                LOGGER.lifecycle("Running tests on classpath");
-                return;
-            }
+            /* (non-Javadoc)
+             * @see org.gradle.api.Action#execute(java.lang.Object)
+             */
+            @Override
+            public void execute(Task task) {
+                TestModuleOptions testModuleOptions = testJava.getExtensions().getByType(TestModuleOptions.class);
+                if (testModuleOptions.isRunOnClasspath()) {
+                    LOGGER.lifecycle("Running tests on classpath");
+                    return;
+                }
 
-            var args = new ArrayList<>(testJava.getJvmArgs());
+                var args = new ArrayList<>(testJava.getJvmArgs());
 
-            String testClassesDirs = testSourceSet.getOutput().getClassesDirs().getFiles()
-                    .stream().map(File::getPath).collect(Collectors.joining(pathSeparator));
+                String testClassesDirs = testSourceSet.getOutput().getClassesDirs().getFiles()
+                        .stream().map(File::getPath).collect(Collectors.joining(pathSeparator));
 
-            args.addAll(List.of(
-                    "--module-path", testJava.getClasspath().getAsPath(),
-                    "--patch-module", moduleName + "=" + testClassesDirs
-                            + pathSeparator + mainSourceSet.getOutput().getResourcesDir().toPath()
-                            + pathSeparator + testSourceSet.getOutput().getResourcesDir().toPath(),
-                    "--add-modules", "ALL-MODULE-PATH"
-            ));
+                args.addAll(List.of(
+                        "--module-path", testJava.getClasspath().getAsPath(),
+                        "--patch-module", moduleName + "=" + testClassesDirs
+                                + pathSeparator + mainSourceSet.getOutput().getResourcesDir().toPath()
+                                + pathSeparator + testSourceSet.getOutput().getResourcesDir().toPath(),
+                        "--add-modules", "ALL-MODULE-PATH"
+                ));
 
-            if(!testModuleOptions.getAddModules().isEmpty()) {
-                String addModules = String.join(",", testModuleOptions.getAddModules());
-                args.add("--add-modules");
-                args.add(addModules);
-            }
+                if(!testModuleOptions.getAddModules().isEmpty()) {
+                    String addModules = String.join(",", testModuleOptions.getAddModules());
+                    args.add("--add-modules");
+                    args.add(addModules);
+                }
 
-            TestEngine.select(project).ifPresent(testEngine -> {
-                args.addAll(List.of("--add-reads", moduleName + "=" + testEngine.moduleName));
+                TestEngine.select(project).ifPresent(new Consumer<TestEngine>() {
 
-                Set<File> testDirs = testSourceSet.getOutput().getClassesDirs().getFiles();
-                getPackages(testDirs).forEach(p -> {
-                    args.add("--add-opens");
-                    args.add(String.format("%s/%s=%s", moduleName, p, testEngine.addOpens));
+                    /* (non-Javadoc)
+                     * @see java.util.function.Consumer#accept(java.lang.Object)
+                     */
+                    @Override
+                    public void accept(TestEngine testEngine) {
+                        args.addAll(List.of("--add-reads", moduleName + "=" + testEngine.moduleName));
+
+                        Set<File> testDirs = testSourceSet.getOutput().getClassesDirs().getFiles();
+                        getPackages(testDirs).forEach(new Consumer<String>() {
+
+                            /* (non-Javadoc)
+                             * @see java.util.function.Consumer#accept(java.lang.Object)
+                             */
+                            @Override
+                            public void accept(String p) {
+                                args.add("--add-opens");
+                                args.add(String.format("%s/%s=%s", moduleName, p, testEngine.addOpens));
+                            }
+
+                        });
+                    }
+
                 });
-            });
 
-            ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
+                ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
 
-            testJava.setJvmArgs(args);
-            testJava.setClasspath(project.files());
+                testJava.setJvmArgs(args);
+                testJava.setClasspath(project.files());
+            }
+
         });
     }
 
@@ -111,4 +141,3 @@ public class TestTask {
         return Utilities.isJavaIdentifier(tokens[tokens.length - 1]);
     }
 }
-
