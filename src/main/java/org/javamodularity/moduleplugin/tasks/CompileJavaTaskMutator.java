@@ -21,7 +21,6 @@ class CompileJavaTaskMutator {
             compilerArgs.add(addModules);
         }
 
-        ModuleInfoTestHelper.mutateArgs(project, project.getName(), compilerArgs::add);
         compileJava.getOptions().setCompilerArgs(compilerArgs);
         compileJava.setClasspath(project.files());
 

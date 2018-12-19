@@ -4,4 +4,5 @@ plugins {
 
 dependencies {
     implementation project(':greeter.api')
+    testImplementation('org.hamcrest:hamcrest:2.1-rc4')
 }
