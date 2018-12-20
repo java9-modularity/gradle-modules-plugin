@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 dependencies {
     implementation(project(":greeter.api"))
-    testImplementation("org.hamcrest:hamcrest:2.1-rc4")
+    testImplementation("org.hamcrest:hamcrest:2.1+")
 }
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
