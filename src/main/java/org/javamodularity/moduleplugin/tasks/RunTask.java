@@ -1,6 +1,12 @@
 package org.javamodularity.moduleplugin.tasks;
 
+import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.distribution.Distribution;
+import org.gradle.api.distribution.DistributionContainer;
+import org.gradle.api.file.CopySpec;
+import org.gradle.api.file.FileCopyDetails;
+import org.gradle.api.file.RelativePath;
 import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.tasks.JavaExec;
 
@@ -12,7 +18,10 @@ public class RunTask {
                 var mutator = new RunTaskMutator(execTask, project, moduleName);
                 mutator.configureRun();
                 mutator.updateStartScriptsTask(ApplicationPlugin.TASK_START_SCRIPTS_NAME);
+                mutator.movePatchedLibs();
             }
         });
     }
+
+
 }

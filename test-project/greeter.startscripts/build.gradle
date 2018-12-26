@@ -11,6 +11,10 @@ dependencies {
     runtimeOnly project(':greeter.provider')
 }
 
+patchModules.config = [
+        "java.annotation=jsr305-3.0.2.jar"
+]
+
 application {
     mainClassName = "greeter.startscripts/startscripts.MainDemo"
     applicationName = "demo"

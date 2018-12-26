@@ -18,6 +18,8 @@ public class CompileTestTask {
     public void configureCompileTestJava(Project project, String moduleName) {
         JavaCompile compileTestJava = (JavaCompile) project.getTasks().findByName(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME);
         JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
+        PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
+
         compileTestJava.getExtensions().create("moduleOptions", ModuleOptions.class, project);
         SourceSet testSourceSet = javaConvention.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
 
@@ -30,7 +32,9 @@ public class CompileTestTask {
             public void execute(Task task) {
                 var args = new ArrayList<>(compileTestJava.getOptions().getCompilerArgs());
                 args.addAll(List.of(
-                        "--module-path", compileTestJava.getClasspath().getAsPath(),
+                        "--module-path", compileTestJava.getClasspath()
+                                .filter(patchModuleExtension::isUnpatched)
+                                .getAsPath(),
                         "--patch-module", moduleName + "=" + testSourceSet.getJava().getSourceDirectories().getAsPath()
                 ));
 
@@ -42,18 +46,20 @@ public class CompileTestTask {
                     @Override
                     public void accept(TestEngine testEngine) {
                         args.addAll(List.of(
-                            "--add-modules", testEngine.moduleName,
-                            "--add-reads", moduleName + "=" + testEngine.moduleName));
+                                "--add-modules", testEngine.moduleName,
+                                "--add-reads", moduleName + "=" + testEngine.moduleName));
                     }
 
                 });
 
                 ModuleOptions moduleOptions = compileTestJava.getExtensions().getByType(ModuleOptions.class);
-                if(!moduleOptions.getAddModules().isEmpty()) {
+                if (!moduleOptions.getAddModules().isEmpty()) {
                     String addModules = String.join(",", moduleOptions.getAddModules());
                     args.add("--add-modules");
                     args.add(addModules);
                 }
+
+                args.addAll(patchModuleExtension.configure(compileTestJava.getClasspath()));
 
                 ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
 

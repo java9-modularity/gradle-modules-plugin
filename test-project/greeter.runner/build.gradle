@@ -10,9 +10,15 @@ dependencies {
 
 mainClassName = "$moduleName/examples.Runner"
 
+patchModules.config = [
+        "java.annotation=jsr305-3.0.2.jar"
+
+]
+
 run {
     moduleOptions {
         addModules = ['java.sql']
+
     }
 
     jvmArgs = [

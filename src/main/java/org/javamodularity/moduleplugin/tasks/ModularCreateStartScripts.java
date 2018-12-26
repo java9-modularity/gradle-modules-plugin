@@ -1,7 +1,11 @@
 package org.javamodularity.moduleplugin.tasks;
 
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.distribution.Distribution;
+import org.gradle.api.distribution.DistributionContainer;
+import org.gradle.api.file.CopySpec;
 import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.application.CreateStartScripts;
@@ -48,7 +52,7 @@ public class ModularCreateStartScripts extends CreateStartScripts {
 
                 var mutator = new RunTaskMutator(runTask, project, moduleName);
                 mutator.updateStartScriptsTask(startScriptsTask);
-
+                mutator.movePatchedLibs();
             });
         });
     }
