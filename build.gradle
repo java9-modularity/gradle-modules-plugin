@@ -64,7 +64,7 @@ gradlePlugin {
 
 pluginBundle {
     website = 'https://github.com/java9-modularity/gradle-modules-plugin'
-    vcsUrl = 'git@github.com:java9-modularity/gradle-modules-plugin.git'
+    vcsUrl = 'https://github.com/java9-modularity/gradle-modules-plugin'
     tags = ['java', 'modules', 'jpms', 'modularity']
 }
 
