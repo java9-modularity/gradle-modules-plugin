@@ -9,11 +9,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("ConstantConditions")
 class ModulePluginSmokeTest {
@@ -44,6 +46,37 @@ class ModulePluginSmokeTest {
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.provider.test:build").getOutcome(), "Failed Build!");
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.runner:build").getOutcome(), "Failed Build!");
         assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.runner:run").getOutcome(), "Failed Build!");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings =  "test-project")
+    void smokeTestDist(String projectName) {
+        var result = GradleRunner.create()
+                .withProjectDir(new File(projectName + "/"))
+                .withPluginClasspath(pluginClasspath)
+                .withGradleVersion("4.10.2")
+                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", ":greeter.runner:installDist", "--stacktrace")
+                .forwardOutput()
+                .build();
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":greeter.runner:installDist").getOutcome(), "Failed Build!");
+        Path installDir =  Path.of(projectName + "/greeter.runner/build/install/greeter.runner");
+        assertTrue(installDir.toFile().exists(), "Install dir was not created");
+
+        Path libDir = installDir.resolve("lib");
+        Path patchlibsDir = installDir.resolve("patchlibs");
+
+        assertTrue(libDir.toFile().exists(), "Lib dir was not created");
+        assertTrue(patchlibsDir.toFile().exists(), "Patchlib dir was not created");
+
+        Path patchedLib = patchlibsDir.resolve("jsr305-3.0.2.jar");
+        assertTrue(patchedLib.toFile().exists(), "Patched lib should be in patchlibs dir");
+
+        assertEquals(0, libDir.toFile().listFiles(f -> f.getName().equals("jsr305-3.0.2.jar")).length, "Patched libs should not be in lib dir");
+        assertEquals(4, libDir.toFile().listFiles().length, "Unexepcted number of jars in lib dir");
+
+        Path binDir = installDir.resolve("bin");
+        assertTrue(getAppOutput(binDir.toString(), "greeter.runner").contains("welcome"));
     }
 
     @ParameterizedTest
