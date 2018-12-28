@@ -8,15 +8,15 @@ cache:
   - "$HOME/.gradle/caches/"
   - "$HOME/.gradle/wrapper/"
 stages:
-- name: build
-- name: release
-  if: branch = master AND tag =~ /^v.*$/
+  - name: build
+  - name: release
+    if: branch = master AND tag =~ /^v.*$/
 jobs:
   include:
-  - stage: build
-    script: "./gradlew build"
-  - stage: release
-    script: "./gradlew publishPlugin"
+    - stage: build
+      script: "./gradlew build"
+    - stage: release
+      script: "./gradlew publishPlugin"
 env:
   global:
   - secure: bT0nLcB4Sh4cwUTHZ+j7UfClFi1B8x2w1OUnENSk+jbQt36DGC7tSyjWDtuDbCZPZ9540iBix1U9/LH6oXE4AheIIb21UDr9YJvRgaR8f4K6ha8nnV3+ZgjKdEZknu2ScnNVAX/CrZ0D8ja7HAqeE4TooWSg5Pg05xvCIrYHviClS1fo3oJqOqKsUFlAFWePGB6DY/j7odkdrMKQB6cQXjnqscdYqQY6N5+ps7q0UUMoXoDfasvoIRjEJjIVYu/CPnsi5W55olNYL2JflZcGuKnxn8AFO1kuqmMhSR6bcvLzmMPGDHPMrJD3UOWnyhOtby4HnsWbmel5Nzf9b6E3iKhTbGePSIPLWz22elI9LGRTPyHw+oSBHMjEqkqQbrhv7M5LVyfGG4QQb00CCZVug1W9F54BhmgweGHksjd+4e5Ere2Vxg+LD9P9MA2jRkhloTJ2h5wVWirumOAIH7pmE7vYzlaR5vz5D4rh+e4duDaBNiVwoq1736o2UIfxOqze+Bl2pnkUsyVBzJRhDps4NlpBf2Xm/l4ek2V8/vEe4e9S4g2JXTACahX1LDqS+YzMTcmepXto924eZ6TW9YoNtAMwRuxFEoQbQPVMAtsTZF3/LX8JEfg7Wm424WHW6V+E4Z2NErBN1R0k8iboRaTppk3b+3WCbamu+3zZjkyKo0E=
