@@ -44,4 +44,11 @@ public class PatchModuleExtension {
     public boolean isUnpatched(File jar) {
         return !indexByJar.containsKey(jar.getName());
     }
+
+    @Override
+    public String toString() {
+        return "PatchModuleExtension{" +
+                "config=" + config +
+                '}';
+    }
 }

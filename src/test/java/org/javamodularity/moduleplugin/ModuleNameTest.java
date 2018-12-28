@@ -14,7 +14,7 @@ class ModuleNameTest {
     @Test
     void findModuleName_ParentProjectWithNoModules() {
         Project project = ProjectBuilder.builder().withProjectDir(new File("test-project/")).build();
-
+        project.getPlugins().apply("java");
         Optional<String> result = new ModuleName().findModuleName(project);
 
         assertTrue(result.isEmpty(), "Found a module in the parent project. It doesn't have any modules or java code so it should not find anything.");
