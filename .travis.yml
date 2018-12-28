@@ -10,7 +10,7 @@ cache:
 stages:
 - name: build
 - name: release
-  if: branch = master AND commit_message =~ /^release v.*$/
+  if: branch = master AND tag =~ /^v.*$/
 jobs:
   include:
   - stage: build
