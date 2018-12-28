@@ -399,6 +399,33 @@ The `ModularCreateStartScripts` task introduces the mandatory property `runTask`
 Additionally, it exposes the same properties and methods as the [`CreateStartScripts`](https://docs.gradle.org/current/dsl/org.gradle.jvm.application.tasks.CreateStartScripts.html) task.
 However, you don't need to set the properties `mainClassName`, `outputDir`, `classpath`, or `defaultJvmOpts`, because they are automatically set by the plugin, based on the configuration of the associated `runTask`.
 
+Patching modules to prevent split packages
+=== 
+
+The Java Platform Module System doesn't allow split packages.
+A split package means that the same package exists in multiple modules.
+While this is a good thing, it can be a roadblock to use the module system, because split packages are very common in (older) libraries, specially libraries related to Java EE.
+The module system has a solution for this problem by allowing to "patch" modules.
+The contents of a JAR file can be added to a module, by patching that module, so that it contains classes from both JARs.
+This way we can drop the second JAR file, which removes the split package.
+
+Patching a module can be done with the `--patch-module module=somelib.jar` syntax for the different Java commands (javac, java, javadoc, ...).
+The plugin helps making patching easy by providing DSL syntax.
+Because patching typically needs to happen on all tasks the patch config is set in the build.gradle file directly.
+
+In this example, the `java.annotation` module is patched with the `jsr305-3.0.2.jar` JAR file.
+The plugin takes care of the following:
+
+* Adding the `--patch-module` to all Java commands
+* Removing the JAR from the module path
+* Moving the JAR to a `patchlibs` folder for distribution tasks
+
+```groovy
+patchModules.config = [
+        "java.annotation=jsr305-3.0.2.jar"
+]
+``` 
+
 Limitations
 ===
 

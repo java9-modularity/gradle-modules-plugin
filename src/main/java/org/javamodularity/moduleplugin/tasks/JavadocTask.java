@@ -4,6 +4,7 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.CoreJavadocOptions;
 
@@ -13,6 +14,7 @@ public class JavadocTask {
         if (javadoc != null) {
 
             javadoc.getExtensions().create("moduleOptions", ModuleOptions.class, project);
+            PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
 
             javadoc.doFirst(new Action<Task>() {
 
@@ -22,14 +24,27 @@ public class JavadocTask {
                 @Override
                 public void execute(Task task) {
                     ModuleOptions moduleOptions = javadoc.getExtensions().getByType(ModuleOptions.class);
-
                     CoreJavadocOptions options = (CoreJavadocOptions) javadoc.getOptions();
-                    options.addStringOption("-module-path", javadoc.getClasspath().getAsPath());
+                    options.addStringOption("-module-path", javadoc.getClasspath()
+                            .filter(patchModuleExtension::isUnpatched)
+                            .getAsPath());
 
-                    if(!moduleOptions.getAddModules().isEmpty()) {
+                    if (!moduleOptions.getAddModules().isEmpty()) {
                         String addModules = String.join(",", moduleOptions.getAddModules());
                         options.addStringOption("-add-modules", addModules);
                     }
+
+                    patchModuleExtension.getConfig().forEach(patch -> {
+                                String[] split = patch.split("=");
+
+                                String asPath = javadoc.getClasspath().filter(jar -> jar.getName().endsWith(split[1])).getAsPath();
+
+                                if (asPath != null && asPath.length() > 0) {
+                                    options.addStringOption("-patch-module", split[0] + "=" + asPath);
+                                }
+
+                            }
+                    );
 
                     javadoc.setClasspath(project.files());
                 }

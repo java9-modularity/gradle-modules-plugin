@@ -15,6 +15,8 @@ public class ModuleSystemPlugin implements Plugin<Project> {
         Optional<String> foundModuleName = new ModuleName().findModuleName(project);
         foundModuleName.ifPresent(moduleName -> {
             project.getExtensions().add("moduleName", moduleName);
+            project.getExtensions().create("patchModules", PatchModuleExtension.class);
+
             new CompileTask().configureCompileJava(project);
             new CompileTestTask().configureCompileTestJava(project, moduleName);
             new TestTask().configureTestJava(project, moduleName);

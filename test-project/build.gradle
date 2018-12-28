@@ -41,8 +41,12 @@ subprojects {
     javadoc {
         moduleOptions {
             addModules = ['java.sql']
+            patchModules = [
+                    "java.annotation=jsr305-3.0.2.jar"
+
+            ]
         }
     }
 
-    build.dependsOn javadoc
+//    build.dependsOn javadoc
 }

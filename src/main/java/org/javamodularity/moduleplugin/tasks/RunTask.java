@@ -11,8 +11,14 @@ public class RunTask {
                 JavaExec execTask = (JavaExec) project.getTasks().findByName(ApplicationPlugin.TASK_RUN_NAME);
                 var mutator = new RunTaskMutator(execTask, project, moduleName);
                 mutator.configureRun();
-                mutator.updateStartScriptsTask(ApplicationPlugin.TASK_START_SCRIPTS_NAME);
+
+                project.afterEvaluate(p -> {
+                    mutator.updateStartScriptsTask(ApplicationPlugin.TASK_START_SCRIPTS_NAME);
+                    mutator.movePatchedLibs();
+                });
             }
         });
     }
+
+
 }
