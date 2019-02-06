@@ -5,17 +5,14 @@ buildscript {
         }
     }
     dependencies {
-        classpath "org.javamodularity:moduleplugin:1.+"
+        classpath "org.javamodularity:moduleplugin:1.4.1"
     }
 }
 
 subprojects {
     apply plugin: 'java'
-    if (!project.hasProperty("INTERNAL_TEST_IN_PROGRESS")) {
-        apply plugin: "org.javamodularity.moduleplugin"
-    }
 
-    version "1.1.1"
+    version "1.4.0"
 
     sourceCompatibility = 11
     targetCompatibility = 11
@@ -38,15 +35,5 @@ subprojects {
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     }
 
-    javadoc {
-        moduleOptions {
-            addModules = ['java.sql']
-            patchModules = [
-                    "java.annotation=jsr305-3.0.2.jar"
-
-            ]
-        }
-    }
-
-//    build.dependsOn javadoc
+    build.dependsOn javadoc
 }
