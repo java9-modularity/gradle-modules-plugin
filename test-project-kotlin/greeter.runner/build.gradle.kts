@@ -32,3 +32,5 @@ val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
     jvmTarget = "1.8"
 }
+
+patchModules.config = listOf("java.annotation=jsr305-3.0.2.jar")
