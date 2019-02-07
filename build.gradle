@@ -4,6 +4,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.10.0'
     id 'maven-publish' // used for publishing to local maven repository
+    id 'com.github.johnrengelman.shadow' version '4.0.4'
 }
 
 group 'org.javamodularity'
@@ -16,15 +17,35 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    plugin.description = 'Plugin\'s dependencies'
+    compile.extendsFrom plugin
+}
+
 dependencies {
     implementation gradleApi()
-    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.6.23'
+    plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.6.23'
 
     testImplementation gradleTestKit()
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.3.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
 }
+
+shadowJar {
+    configurations = [project.configurations.plugin]
+    classifier = null
+    dependencies {
+        include(dependency('com.github.javaparser:javaparser-symbol-solver-core'))
+        include(dependency('com.github.javaparser:javaparser-symbol-solver-logic'))
+        include(dependency('com.github.javaparser:javaparser-symbol-solver-model'))
+        include(dependency('com.github.javaparser:javaparser-core'))
+    }
+    relocate 'com.github.javaparser', 'org.javamodularity.moduleplugin.shadow.javaparser'
+}
+
+jar.enabled = false
+jar.dependsOn shadowJar
 
 test {
     useJUnitPlatform()
