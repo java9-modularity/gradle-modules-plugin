@@ -9,7 +9,7 @@ stages:
 jobs:
   include:
     - stage: build
-      script: "./gradlew build"
+      script: "./gradlew build --scan"
     - stage: release
       script: "./gradlew publishPlugin"
 

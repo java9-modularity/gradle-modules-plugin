@@ -1,10 +1,16 @@
 plugins {
+    id 'com.gradle.build-scan' version '2.1'
     id 'eclipse'
     id 'java'
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.10.0'
     id 'maven-publish' // used for publishing to local maven repository
     id 'com.github.johnrengelman.shadow' version '4.0.4'
+}
+
+buildScan {
+    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 }
 
 group 'org.javamodularity'
