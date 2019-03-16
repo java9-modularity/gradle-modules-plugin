@@ -492,6 +492,16 @@ patchModules.config = [
 ]
 ``` 
 
+Compilation
+===
+
+Separate compilation of `module-info.java`
+----
+
+If you need to compile the main `module-info.java` separately from the rest of `src/main/java`
+files, you can enable `compileModuleInfoSeparately` option on `compileJava` task. It will exclude `module-info.java`
+from `compileJava` and introduce a dedicated `compileModuleInfoJava` task.
+
 Limitations
 ===
 

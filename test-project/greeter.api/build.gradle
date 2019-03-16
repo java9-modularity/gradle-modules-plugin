@@ -6,6 +6,7 @@ plugins {
 compileJava {
     moduleOptions {
         addModules = []
+        compileModuleInfoSeparately = false
     }
 }
 
