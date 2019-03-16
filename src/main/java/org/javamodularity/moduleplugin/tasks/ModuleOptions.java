@@ -52,7 +52,7 @@ public class ModuleOptions {
         this.addOpens = addOpens;
     }
 
-    void mutateArgs(String moduleName, List<String> args) {
+    protected void mutateArgs(String moduleName, List<String> args) {
         if (!getAddModules().isEmpty()) {
             String addModules = String.join(",", getAddModules());
             args.add("--add-modules");

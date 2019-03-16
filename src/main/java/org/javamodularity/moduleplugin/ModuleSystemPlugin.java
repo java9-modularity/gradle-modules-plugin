@@ -20,6 +20,7 @@ public class ModuleSystemPlugin implements Plugin<Project> {
         extensions.create("patchModules", PatchModuleExtension.class);
 
         new CompileTask(project).configureCompileJava();
+        new CompileModuleInfoTask(project).configureCompileModuleInfoJava();
         new CompileTestTask().configureCompileTestJava(project, moduleName);
         new TestTask().configureTestJava(project, moduleName);
         new RunTask().configureRun(project, moduleName);
