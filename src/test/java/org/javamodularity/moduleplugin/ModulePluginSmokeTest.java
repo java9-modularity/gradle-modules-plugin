@@ -5,6 +5,7 @@ import com.google.common.io.Resources;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -47,6 +48,44 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.provider", "build");
         assertTasksSuccessful(result, "greeter.provider.test", "build");
         assertTasksSuccessful(result, "greeter.runner", "build", "run");
+    }
+
+    @Test
+    void smokeTestMixed() throws IOException {
+        var result = GradleRunner.create()
+                .withProjectDir(new File("test-project-mixed"))
+                .withPluginClasspath(pluginClasspath)
+                .withGradleVersion(GRADLE_VERSION)
+                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "--stacktrace")
+                .forwardOutput()
+                .build();
+
+        verifyMixedTestResult(result, "greeter.api-jdk8", 8, 9);
+
+        verifyMixedTestResult(result, "greeter.provider-jdk8", 8, 9);
+        verifyMixedTestResult(result, "greeter.provider-jdk8.test-jdk8", 8, 9);
+        verifyMixedTestResult(result, "greeter.provider-jdk8.test-jdk11", 11, 11);
+
+        verifyMixedTestResult(result, "greeter.provider-jdk11", 11, 11);
+        verifyMixedTestResult(result, "greeter.provider-jdk11.test-jdk11", 11, 11);
+    }
+
+    private static void verifyMixedTestResult(
+            BuildResult result, String subprojectName,
+            int mainJavaRelease, int moduleInfoJavaRelease) throws IOException {
+        assertTasksSuccessful(result, subprojectName, "build");
+        assertExpectedClassFileFormats(subprojectName, mainJavaRelease, moduleInfoJavaRelease);
+    }
+
+    private static void assertExpectedClassFileFormats(
+            String subprojectName, int mainJavaRelease, int moduleInfoJavaRelease) throws IOException {
+        Path classesDir = Path.of("test-project-mixed").resolve(subprojectName).resolve("build/classes/java/main");
+
+        Path moduleInfoClassPath = classesDir.resolve("module-info.class");
+        SmokeTestHelper.assertClassFileJavaVersion(moduleInfoJavaRelease, moduleInfoClassPath);
+
+        Path nonModuleInfoClassPath = SmokeTestHelper.anyNonModuleInfoClassFilePath(classesDir);
+        SmokeTestHelper.assertClassFileJavaVersion(mainJavaRelease, nonModuleInfoClassPath);
     }
 
     @ParameterizedTest

@@ -1,0 +1,9 @@
+rootProject.name = 'moduleplugintests-mixed'
+include 'greeter.api-jdk8'
+
+include 'greeter.provider-jdk8'
+include 'greeter.provider-jdk8.test-jdk8'
+include 'greeter.provider-jdk8.test-jdk11'
+
+include 'greeter.provider-jdk11'
+include 'greeter.provider-jdk11.test-jdk11'
