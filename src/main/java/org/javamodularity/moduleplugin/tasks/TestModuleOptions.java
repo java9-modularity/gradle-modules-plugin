@@ -10,7 +10,7 @@ public class TestModuleOptions extends ModuleOptions {
         super(project);
     }
 
-    public boolean isRunOnClasspath() {
+    public boolean getRunOnClasspath() {
         return runOnClasspath;
     }
 

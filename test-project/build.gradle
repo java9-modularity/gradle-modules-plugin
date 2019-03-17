@@ -26,6 +26,7 @@ subprojects {
 
         testLogging {
             events 'PASSED', 'FAILED', 'SKIPPED'
+            stackTraceFilters = []
         }
     }
 
