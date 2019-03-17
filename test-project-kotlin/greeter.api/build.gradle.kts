@@ -18,6 +18,9 @@ tasks {
         }
     }
 }
+
+modularity {
+}
 //endregion
 
 val compileKotlin: KotlinCompile by tasks

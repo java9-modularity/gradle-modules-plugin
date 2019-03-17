@@ -16,4 +16,7 @@ test {
         runOnClasspath = false
     }
 }
+
+modularity {
+}
 //endregion
