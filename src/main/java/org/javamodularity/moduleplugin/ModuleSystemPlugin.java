@@ -4,6 +4,8 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.JavaPlugin;
+import org.javamodularity.moduleplugin.extensions.DefaultModularityExtension;
+import org.javamodularity.moduleplugin.extensions.ModularityExtension;
 import org.javamodularity.moduleplugin.tasks.*;
 
 public class ModuleSystemPlugin implements Plugin<Project> {
@@ -18,6 +20,7 @@ public class ModuleSystemPlugin implements Plugin<Project> {
         ExtensionContainer extensions = project.getExtensions();
         extensions.add("moduleName", moduleName);
         extensions.create("patchModules", PatchModuleExtension.class);
+        extensions.create(ModularityExtension.class, "modularity", DefaultModularityExtension.class, project);
 
         new CompileTask(project).configureCompileJava();
         new CompileModuleInfoTask(project).configureCompileModuleInfoJava();
