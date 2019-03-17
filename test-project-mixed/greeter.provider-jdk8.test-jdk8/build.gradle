@@ -1,0 +1,7 @@
+modularity.mixedJavaRelease 8
+
+dependencies {
+    runtimeOnly project(':greeter.provider-jdk8')
+}
+
+apply from: "$rootDir/gradle/shared/greeter.provider.test.gradle"

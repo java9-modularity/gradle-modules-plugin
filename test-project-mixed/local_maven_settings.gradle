@@ -1,0 +1,8 @@
+pluginManagement {
+    repositories {
+        mavenLocal() // for moduleplugin published locally
+        mavenCentral() // for dependencies of moduleplugin
+    }
+}
+
+apply from: 'settings.gradle'

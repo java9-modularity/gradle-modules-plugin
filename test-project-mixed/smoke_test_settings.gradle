@@ -1,0 +1,8 @@
+pluginManagement {
+    repositories {
+        // no real repositories (plugin will be added to the classpath by the smoke test)
+        flatDir name: 'empty', dirs: ['.fake-dir']
+    }
+}
+
+apply from: 'settings.gradle'
