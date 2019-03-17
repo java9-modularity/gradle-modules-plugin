@@ -265,7 +265,10 @@ See `src/test/java/module-info.test` and `src/test/java/greeter/ScriptingTest.ja
 Fall-back to classpath mode
 ----
 
-If for whatever reason this is unwanted or introduces problems, you can enable classpath mode, which essentially turns of the plugin while running tests.
+If for whatever reason this is unwanted or introduces problems, you can enable classpath mode, which essentially turns off the plugin while running tests.
+
+<details open>
+<summary>Groovy DSL</summary>
 
 ```groovy
 test {
@@ -274,6 +277,22 @@ test {
     }
 }
 ```
+
+</details>
+<details>
+<summary>Kotlin DSL</summary>
+
+```kotlin
+tasks {
+    test {
+        extensions.configure(TestModuleOptions::class) {
+            runOnClasspath = true
+        }
+    }
+}
+```
+
+</details>
 
 Blackbox testing
 ===
@@ -286,7 +305,7 @@ This module `requires` and/or `uses` the module under test, and tests it's exter
 In the following example we test a module `greeter.provider`, which provides a service implementation of type `Greeter`.
 The `Greeter` type is provided by yet another module `greeter.api`.
 
-The test module would typically be named something similar to the the module it's testing, e.g. `greeter.provider.test`.
+The test module would typically be named something similar to the module it's testing, e.g. `greeter.provider.test`.
 In `src/main/java` it has some code that looks like code that you would normally write to use the module that's being tested.
 For example, we do a service lookup.
 

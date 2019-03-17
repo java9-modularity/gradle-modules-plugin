@@ -37,7 +37,7 @@ class CompileJavaTaskMutatorTest {
     private List<String> twoLastCompilerArgs(JavaCompile compileJava) {
         List<String> allCompilerArgs = compileJava.getOptions().getAllCompilerArgs();
         int size = allCompilerArgs.size();
-        return allCompilerArgs.subList(size-2, size);
+        return allCompilerArgs.subList(size - 2, size);
     }
 
 }

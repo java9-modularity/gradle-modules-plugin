@@ -9,6 +9,8 @@ import java.util.List;
 
 class CompileJavaTaskMutator {
 
+    private static final String COMPILE_KOTLIN_TASK_NAME = "compileKotlin";
+
     static void mutateJavaCompileTask(Project project, JavaCompile compileJava) {
         ModuleOptions moduleOptions = compileJava.getExtensions().getByType(ModuleOptions.class);
         PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
@@ -26,7 +28,8 @@ class CompileJavaTaskMutator {
         compileJava.getOptions().setCompilerArgs(compilerArgs);
         compileJava.setClasspath(project.files());
 
-        AbstractCompile compileKotlin = (AbstractCompile) project.getTasks().findByName("compileKotlin");
+        // https://github.com/java9-modularity/gradle-modules-plugin/issues/45
+        AbstractCompile compileKotlin = (AbstractCompile) project.getTasks().findByName(COMPILE_KOTLIN_TASK_NAME);
         if (compileKotlin != null) {
             compileJava.setDestinationDir(compileKotlin.getDestinationDir());
         }

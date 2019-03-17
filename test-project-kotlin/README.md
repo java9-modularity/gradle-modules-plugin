@@ -33,8 +33,8 @@ Internal test project
 ===
 
 This mode is enabled in `ModulePluginSmokeTest` by passing an extra parameter (`-c smoke_test_settings.gradle`)
-that points to `smoke_test_build.gradle` instead of `build.gradle`. It doesn't resolve a plugin jar.
-Instead, it relies on the smoke test to makes the plugin under development available
+that points to `smoke_test_build.gradle.kts` instead of `build.gradle.kts`. It doesn't resolve a plugin jar.
+Instead, it relies on the smoke test to make the plugin under development available
 to the test project by sharing a classpath (using Gradle TestKit).
 
 __CAUTION:__ This approach won't work outside of the smoke test, it will break the build because the plugin jar won't be resolved.
