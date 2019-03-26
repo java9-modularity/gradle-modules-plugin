@@ -70,11 +70,7 @@ public class TestTask {
                         "--add-modules", "ALL-MODULE-PATH"
                 ));
 
-                if (!testModuleOptions.getAddModules().isEmpty()) {
-                    String addModules = String.join(",", testModuleOptions.getAddModules());
-                    args.add("--add-modules");
-                    args.add(addModules);
-                }
+                testModuleOptions.mutateArgs(moduleName, args);
 
                 args.addAll(patchModuleExtension.configure(testJava.getClasspath()));
 

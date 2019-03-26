@@ -148,6 +148,53 @@ Next, when Gradle invokes the Java compiler, the compiler is set up with the cor
 When using the module system the compiler checks dependencies and encapsulation based on the `requires`, `exports` and `opens` keywords in `module-info-java`.
 These are related, but clearly two different steps.
 
+MonkeyPatching the module
+===
+There are times when explicit modular settings may be needed on compile, test, and run tasks. You have the option to specify these settings using
+a `moduleOptions` extension on the target task, for example
+
+```
+compileJava {
+    moduleOptions {
+        addModules = ['com.acme.foo']
+    }
+}
+```
+
+The following options are supported by the `moduleOptions` extension:
+
+* addModules: Maps to `--add-modules`. Value is of type `List<String>`, e.g, `['com.acme.foo']`.
+* addReads: Maps to `--add-reads`. Value is of type `Map<String, String>`, e.g, `['module1': 'module2']`.
+* addOpens: Maps to `--add-opens`. Value is of type `Map<String, String>`, e.g, `['module1/package': 'module2']`.
+* addExports: Maps to `--add-exports`. Value is of type `Map<String, String>`, e.g, `['module1/package': 'module2']`.
+
+Note that multiple entries matching the same left hand side may be added to `addReads`, `addOpens`, and `addExports` but
+no value accumulation is performed, the last entry overrides the previous one. If you need to combine multiple values then
+you must do so explicitly. The following block resolves to `--add-reads module1=module3`
+
+```
+compileJava {
+    moduleOptions {
+        addReads = [
+            'module1': 'module2',
+            'module1': 'module3'
+        ]
+    }
+}
+```
+
+Where as the following block resolves to `--add-reads module1=module2,module3`
+
+```
+compileJava {
+    moduleOptions {
+        addReads = [
+            'module1': 'module2,module3'
+        ]
+    }
+}
+```
+
 Whitebox testing
 ===
 

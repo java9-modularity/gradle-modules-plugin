@@ -19,11 +19,8 @@ class CompileJavaTaskMutator {
                 .filter(patchModuleExtension::isUnpatched)
                 .getAsPath()));
 
-        if (!moduleOptions.getAddModules().isEmpty()) {
-            String addModules = String.join(",", moduleOptions.getAddModules());
-            compilerArgs.add("--add-modules");
-            compilerArgs.add(addModules);
-        }
+        String moduleName = (String) project.getExtensions().getByName("moduleName");
+        moduleOptions.mutateArgs(moduleName, compilerArgs);
 
         compilerArgs.addAll(patchModuleExtension.configure(compileJava.getClasspath()));
         compileJava.getOptions().setCompilerArgs(compilerArgs);

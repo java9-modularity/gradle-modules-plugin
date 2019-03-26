@@ -53,11 +53,7 @@ public class CompileTestTask {
                 });
 
                 ModuleOptions moduleOptions = compileTestJava.getExtensions().getByType(ModuleOptions.class);
-                if (!moduleOptions.getAddModules().isEmpty()) {
-                    String addModules = String.join(",", moduleOptions.getAddModules());
-                    args.add("--add-modules");
-                    args.add(addModules);
-                }
+                moduleOptions.mutateArgs(moduleName, args);
 
                 args.addAll(patchModuleExtension.configure(compileTestJava.getClasspath()));
 
