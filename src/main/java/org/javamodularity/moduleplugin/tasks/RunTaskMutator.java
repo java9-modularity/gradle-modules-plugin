@@ -70,11 +70,7 @@ public class RunTaskMutator {
                 var jvmArgs = new ArrayList<String>();
 
                 ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
-                if (!moduleOptions.getAddModules().isEmpty()) {
-                    String addModules = String.join(",", moduleOptions.getAddModules());
-                    jvmArgs.add("--add-modules");
-                    jvmArgs.add(addModules);
-                }
+                moduleOptions.mutateArgs(moduleName, jvmArgs);
 
                 patchModuleExtension.getConfig().forEach(patch -> {
                             String[] split = patch.split("=");
