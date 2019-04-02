@@ -1,11 +1,11 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.1'
+    id 'com.gradle.build-scan' version '2.2.1'
     id 'eclipse'
-    id 'java'
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '0.10.0'
     id 'maven-publish' // used for publishing to local maven repository
-    id 'com.github.johnrengelman.shadow' version '4.0.4'
+    id 'com.gradle.plugin-publish' version '0.10.1'
+    id 'com.github.johnrengelman.shadow' version '5.0.0'
+    id 'com.github.ben-manes.versions' version '0.21.0'
 }
 
 buildScan {
@@ -24,18 +24,18 @@ repositories {
 }
 
 configurations {
-    plugin.description = 'Plugin\'s dependencies'
+    plugin.description = "Plugin's dependencies"
     compile.extendsFrom plugin
 }
 
 dependencies {
     implementation gradleApi()
-    plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.6.23'
+    plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.13.5'
 
     testImplementation gradleTestKit()
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.3.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.1'
 }
 
 shadowJar {
@@ -62,14 +62,14 @@ test {
 }
 
 task createClasspathManifest {
-    def outputDir = file("$buildDir/$name")
+    File outputDir = file("$buildDir/$name")
 
     inputs.files sourceSets.main.runtimeClasspath
     outputs.dir outputDir
 
     doLast {
         outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join('\n')
     }
 }
 
