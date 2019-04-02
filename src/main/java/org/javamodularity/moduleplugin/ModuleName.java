@@ -2,6 +2,7 @@ package org.javamodularity.moduleplugin;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
 import org.gradle.api.Project;
@@ -39,14 +40,21 @@ class ModuleName {
         if (moduleInfoSrcDir.isPresent()) {
             Path moduleInfoJava = moduleInfoSrcDir.get().toPath().resolve("module-info.java");
             try {
-                JavaParser.getStaticConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
-                Optional<ModuleDeclaration> module = JavaParser.parse(moduleInfoJava).getModule();
-                if (module.isPresent()) {
-                    Name name = module.get().getName();
-                    LOGGER.lifecycle("Found module name '{}'", name);
-                    return Optional.of(name.toString());
+                JavaParser parser = new JavaParser();
+                parser.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+                Optional<CompilationUnit> compilationUnit = parser.parse(moduleInfoJava).getResult();
+                if (compilationUnit.isPresent()) {
+                    Optional<ModuleDeclaration> module = compilationUnit.get().getModule();
+                    if (module.isPresent()) {
+                        Name name = module.get().getName();
+                        LOGGER.lifecycle("Found module name '{}'", name);
+                        return Optional.of(name.toString());
+                    } else {
+                        LOGGER.warn("module-info.java found, but module name could not be parsed");
+                        return Optional.empty();
+                    }
                 } else {
-                    LOGGER.warn("module-info.java found, but module name could not be parsed");
+                    LOGGER.debug("Compilation unit is empty");
                     return Optional.empty();
                 }
             } catch (IOException e) {
