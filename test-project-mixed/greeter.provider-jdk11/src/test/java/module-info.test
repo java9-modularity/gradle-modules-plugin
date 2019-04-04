@@ -1,0 +1,7 @@
+// make module visible
+--add-modules
+  java.scripting,org.hamcrest
+
+// "requires java.scripting"
+--add-reads
+  greeter.provider=java.scripting,org.hamcrest

@@ -58,6 +58,7 @@ test {
 
     testLogging {
         events 'PASSED', 'FAILED', 'SKIPPED'
+        stackTraceFilters = []
     }
 }
 

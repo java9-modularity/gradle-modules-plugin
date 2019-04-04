@@ -265,7 +265,10 @@ See `src/test/java/module-info.test` and `src/test/java/greeter/ScriptingTest.ja
 Fall-back to classpath mode
 ----
 
-If for whatever reason this is unwanted or introduces problems, you can enable classpath mode, which essentially turns of the plugin while running tests.
+If for whatever reason this is unwanted or introduces problems, you can enable classpath mode, which essentially turns off the plugin while running tests.
+
+<details open>
+<summary>Groovy DSL</summary>
 
 ```groovy
 test {
@@ -274,6 +277,22 @@ test {
     }
 }
 ```
+
+</details>
+<details>
+<summary>Kotlin DSL</summary>
+
+```kotlin
+tasks {
+    test {
+        extensions.configure(TestModuleOptions::class) {
+            runOnClasspath = true
+        }
+    }
+}
+```
+
+</details>
 
 Blackbox testing
 ===
@@ -286,7 +305,7 @@ This module `requires` and/or `uses` the module under test, and tests it's exter
 In the following example we test a module `greeter.provider`, which provides a service implementation of type `Greeter`.
 The `Greeter` type is provided by yet another module `greeter.api`.
 
-The test module would typically be named something similar to the the module it's testing, e.g. `greeter.provider.test`.
+The test module would typically be named something similar to the module it's testing, e.g. `greeter.provider.test`.
 In `src/main/java` it has some code that looks like code that you would normally write to use the module that's being tested.
 For example, we do a service lookup.
 
@@ -473,6 +492,75 @@ patchModules.config = [
 ]
 ``` 
 
+Compilation
+===
+
+Compilation to a specific Java release
+----
+
+You might want to run your builds on a recent JDK (e.g. JDK 12), but target an older version of Java, e.g.:
+- Java 11, which is the current [Long-Term Support (LTS) release](https://www.oracle.com/technetwork/java/java-se-support-roadmap.html),
+- Java 8, whose production use in 2018 was almost 85%, according to [this survey](https://www.baeldung.com/java-in-2018).
+
+You can do that by setting the Java compiler [`--release`][javacRelease] option
+(e.g. to `6` for Java 6, etc.). Note that when you build using:
+- JDK 11: you can only target Java 6-11 using its
+[`--release`](https://docs.oracle.com/en/java/javase/11/tools/javac.html) option,
+- JDK 12: you can only target Java 7-12 using its
+[`--release`](https://docs.oracle.com/en/java/javase/12/tools/javac.html) option,
+- etc.
+
+Finally, note that JPMS was introduced in Java 9, so you can't compile `module-info.java` to Java release 6-8
+(this plugin provides a workaround for that, though &mdash; see below).
+
+Concluding, to configure your project to support JPMS and target:
+- Java **6-8**: call the [`modularity.mixedJavaRelease`][ModularityExtension] function
+(see [Separate compilation of `module-info.java`](#separate-compilation-of-module-infojava) for details),
+- Java **9+**: call the [`modularity.standardJavaRelease`][ModularityExtension] function,
+
+and the plugin will take care of setting the [`--release`][javacRelease] option(s) appropriately.
+
+
+Separate compilation of `module-info.java`
+----
+
+If you need to compile the main `module-info.java` separately from the rest of `src/main/java`
+files, you can enable `compileModuleInfoSeparately` option on `compileJava` task. It will exclude `module-info.java`
+from `compileJava` and introduce a dedicated `compileModuleInfoJava` task.
+
+Typically, this feature would be used by libraries which target JDK 6-8 but want to make the most of JPMS by:
+- providing `module-info.class` for consumers who put the library on module path,
+- compiling `module-info.java` against the remaining classes of this module and against other modules
+(which provides better encapsulation and prevents introducing split packages).
+
+This plugin provides an easy way to do just that by means of its
+[`modularity.mixedJavaRelease`][ModularityExtension] function, which implicitly sets
+`compileJava.compileModuleInfoSeparately = true` and configures the [`--release`][javacRelease] compiler options.
+
+For example, if your library targets JDK 8, and you want your `module-info.class` to target JDK 9
+(default), put the following line in your `build.gradle(.kts)`:
+
+<details open>
+<summary>Groovy DSL</summary>
+
+```groovy
+modularity.mixedJavaRelease 8
+```
+
+</details>
+<details>
+<summary>Kotlin DSL</summary>
+
+```kotlin
+modularity.mixedJavaRelease(8)
+```
+
+</details>
+
+Note that `modularity.mixedJavaRelease` does *not* configure a
+[multi-release JAR](https://docs.oracle.com/javase/9/docs/specs/jar/jar.html#Multi-release)
+(in other words, `module-info.class` remains in the root directory of the JAR).
+
 Limitations
 ===
 
@@ -495,3 +583,7 @@ Contributions are very much welcome.
 Please open a Pull Request with your changes.
 Make sure to rebase before creating the PR so that the PR only contains your changes, this makes the review process much easier.
 Again, bonus points for providing tests for your changes.
+
+
+[javacRelease]: http://openjdk.java.net/jeps/247
+[ModularityExtension]: src/main/java/org/javamodularity/moduleplugin/extensions/ModularityExtension.java

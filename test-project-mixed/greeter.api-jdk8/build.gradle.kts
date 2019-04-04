@@ -1,0 +1,1 @@
+modularity.mixedJavaRelease(8)

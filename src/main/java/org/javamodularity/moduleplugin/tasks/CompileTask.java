@@ -5,26 +5,45 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 
-public class CompileTask {
+public class CompileTask extends AbstractCompileTask {
 
-    public void configureCompileJava(Project project) {
-        JavaCompile compileJava = (JavaCompile) project.getTasks().findByName(JavaPlugin.COMPILE_JAVA_TASK_NAME);
-        if (compileJava != null) {
-            compileJava.getExtensions().create("moduleOptions", ModuleOptions.class, project);
+    public CompileTask(Project project) {
+        super(project);
+    }
 
-            compileJava.doFirst(new Action<Task>() {
+    /**
+     * @see CompileModuleInfoTask#configureCompileModuleInfoJava()
+     */
+    public void configureCompileJava() {
+        helper().findCompileJavaTask(JavaPlugin.COMPILE_JAVA_TASK_NAME)
+                .ifPresent(this::configureCompileJava);
+    }
 
-                /* (non-Javadoc)
-                 * @see org.gradle.api.Action#execute(java.lang.Object)
-                 */
-                @Override
-                public void execute(Task task) {
-                    CompileJavaTaskMutator.mutateJavaCompileTask(project, compileJava);
-                }
+    private void configureCompileJava(JavaCompile compileJava) {
+        var moduleOptions = compileJava.getExtensions().create("moduleOptions", CompileModuleOptions.class, project);
+        project.afterEvaluate(p -> {
+            if (moduleOptions.getCompileModuleInfoSeparately()) {
+                compileJava.exclude("module-info.java");
+            } else {
+                configureModularityForCompileJava(compileJava, moduleOptions);
+            }
+        });
+    }
 
-            });
-        }
+    /**
+     * @see CompileModuleInfoTask#configureModularityForCompileModuleInfoJava
+     */
+    void configureModularityForCompileJava(JavaCompile compileJava, CompileModuleOptions moduleOptions) {
+        CompileJavaTaskMutator mutator = createCompileJavaTaskMutator(compileJava, moduleOptions);
+        // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
+        compileJava.doFirst(new Action<Task>() {
+            @Override
+            public void execute(Task task) {
+                mutator.modularizeJavaCompileTask(compileJava);
+            }
+        });
     }
 
 }

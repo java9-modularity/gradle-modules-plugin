@@ -6,8 +6,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.distribution.Distribution;
 import org.gradle.api.distribution.DistributionContainer;
-import org.gradle.api.file.CopySpec;
-import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.RelativePath;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPluginConvention;
@@ -21,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class RunTaskMutator {
@@ -54,6 +52,7 @@ public class RunTaskMutator {
     public void updateStartScriptsTask(CreateStartScripts startScriptsTask) {
         PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
 
+        // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         startScriptsTask.doFirst(new Action<Task>() {
             @Override
             public void execute(final Task task) {
@@ -86,6 +85,7 @@ public class RunTaskMutator {
             }
         });
 
+        // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         startScriptsTask.doLast(new Action<Task>() {
             @Override
             public void execute(final Task task) {
@@ -100,20 +100,18 @@ public class RunTaskMutator {
     public void movePatchedLibs() {
         PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
 
-        if(!patchModuleExtension.getConfig().isEmpty()) {
+        if (!patchModuleExtension.getConfig().isEmpty()) {
             Distribution distribution = ((DistributionContainer) project.getExtensions().getByName("distributions")).getByName("main");
-            distribution.contents(new Action<CopySpec>() {
-                @Override
-                public void execute(CopySpec copySpec) {
-                    copySpec.filesMatching(patchModuleExtension.getJars(), (action) -> {
-                        action.setRelativePath(action.getRelativePath().getParent().getParent().append(true, "patchlibs", action.getName()));
-                    });
-                }
-            });
+            distribution.contents(copySpec -> copySpec.filesMatching(patchModuleExtension.getJars(), action -> {
+                RelativePath relativePath = action.getRelativePath().getParent().getParent()
+                        .append(true, "patchlibs", action.getName());
+                action.setRelativePath(relativePath);
+            }));
         }
     }
 
     private void updateJavaExecTask() {
+        // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         execTask.doFirst(new Action<Task>() {
             @Override
             public void execute(final Task task) {

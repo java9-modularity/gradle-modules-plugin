@@ -4,27 +4,30 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.testfixtures.ProjectBuilder;
+import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CompileJavaTaskMutatorTest {
 
     @Test
-    void mutateJavaCompileTask() {
+    void modularizeJavaCompileTask() {
         // given
         Project project = ProjectBuilder.builder().withProjectDir(new File("test-project/")).build();
         project.getPlugins().apply("java");
-        final JavaCompile compileJava = (JavaCompile) project.getTasks().findByName(JavaPlugin.COMPILE_JAVA_TASK_NAME);
-        compileJava.getExtensions().create("moduleOptions", ModuleOptions.class, project);
+        JavaCompile compileJava = (JavaCompile) project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME);
+        CompileModuleOptions moduleOptions = compileJava.getExtensions()
+                .create("moduleOptions", CompileModuleOptions.class, project);
         project.getExtensions().create("patchModules", PatchModuleExtension.class);
+        CompileJavaTaskMutator mutator = new CompileJavaTaskMutator(project, compileJava.getClasspath(), moduleOptions);
 
         // when
-        CompileJavaTaskMutator.mutateJavaCompileTask(project, compileJava);
+        mutator.modularizeJavaCompileTask(compileJava);
 
         // then
         List<String> twoLastArguments = twoLastCompilerArgs(compileJava);
@@ -37,7 +40,7 @@ class CompileJavaTaskMutatorTest {
     private List<String> twoLastCompilerArgs(JavaCompile compileJava) {
         List<String> allCompilerArgs = compileJava.getOptions().getAllCompilerArgs();
         int size = allCompilerArgs.size();
-        return allCompilerArgs.subList(size-2, size);
+        return allCompilerArgs.subList(size - 2, size);
     }
 
 }
