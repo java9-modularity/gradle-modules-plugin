@@ -1,56 +1,53 @@
-buildscript {
-    repositories {
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-    }
-    dependencies {
-        classpath("org.javamodularity:moduleplugin:1.+")
-    }
-}
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "1.3.20"
-    kotlin("jvm") version kotlinVersion
+    kotlin("jvm") version "1.3.20" apply false
+    id("org.javamodularity.moduleplugin") version "1.5.0" apply false
 }
 
-repositories {
-    mavenCentral()
-}
 subprojects {
-    repositories {
-        mavenCentral()
-    }
-    apply {
-        plugin("kotlin")
-    }
-    if (!project.hasProperty("INTERNAL_TEST_IN_PROGRESS")) {
-        apply(plugin = "org.javamodularity.moduleplugin")
-    }
+    apply(plugin = "kotlin")
+    apply(plugin = "org.javamodularity.moduleplugin")
 
-    project.version = "1.1.1"
-
-    configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    val test by tasks.getting(Test::class) {
-        useJUnitPlatform()
-
-        testLogging {
-            events("PASSED", "FAILED", "SKIPPED")
-            stackTraceFilters = listOf()
-        }
-    }
+    //region https://docs.gradle.org/current/userguide/kotlin_dsl.html#using_kotlin_delegated_properties
+    val test by tasks.existing(Test::class)
+    val build by tasks
+    val javadoc by tasks
 
     val implementation by configurations
     val testImplementation by configurations
     val testRuntimeOnly by configurations
+
+    val jUnitVersion: String by project
+    //endregion
+
+    //region KOTLIN
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "1.8"
+    }
     dependencies {
         implementation(kotlin("stdlib-jdk8"))
-        testImplementation("org.junit.jupiter:junit-jupiter-api:5.3.1")
-        testImplementation("org.junit.jupiter:junit-jupiter-params:5.3.1")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.1")
     }
+    //endregion
+
+    repositories {
+        mavenCentral()
+    }
+
+    test {
+        useJUnitPlatform()
+
+        testLogging {
+            events("PASSED", "FAILED", "SKIPPED")
+            setStackTraceFilters(listOf())
+        }
+    }
+
+    dependencies {
+        testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
+        testImplementation("org.junit.jupiter:junit-jupiter-params:$jUnitVersion")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
+    }
+
+//    build.dependsOn(javadoc) // TODO: No public or protected classes found to document
 }

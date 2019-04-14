@@ -1,9 +1,16 @@
-rootProject.name = 'moduleplugintests'
-rootProject.buildFileName = 'local_maven_build.gradle'
-include 'greeter.api'
+pluginManagement {
+    repositories {
+        mavenLocal {
+            content {
+                includeGroup 'org.javamodularity.moduleplugin' // by 'publishToMavenLocal' task
+            }
+        }
+        mavenCentral {
+            content {
+                includeGroup 'com.github.javaparser'
+            }
+        }
+    }
+}
 
-include 'greeter.provider'
-include 'greeter.runner'
-include 'greeter.provider.test'
-include 'greeter.javaexec'
-include 'greeter.startscripts'
+apply from: 'settings.gradle'

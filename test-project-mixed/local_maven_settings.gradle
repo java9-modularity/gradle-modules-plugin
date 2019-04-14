@@ -1,7 +1,15 @@
 pluginManagement {
     repositories {
-        mavenLocal() // for moduleplugin published locally
-        mavenCentral() // for dependencies of moduleplugin
+        mavenLocal {
+            content {
+                includeGroup 'org.javamodularity.moduleplugin' // by 'publishToMavenLocal' task
+            }
+        }
+        mavenCentral {
+            content {
+                includeGroup 'com.github.javaparser'
+            }
+        }
     }
 }
 

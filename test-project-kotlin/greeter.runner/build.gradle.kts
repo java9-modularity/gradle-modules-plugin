@@ -1,36 +1,32 @@
-import org.gradle.api.tasks.JavaExec
 import org.javamodularity.moduleplugin.tasks.ModuleOptions
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     application
 }
+
+//region https://docs.gradle.org/current/userguide/kotlin_dsl.html#using_kotlin_delegated_properties
+val moduleName: String by project
+val run by tasks.existing(JavaExec::class) // https://youtrack.jetbrains.com/issue/KT-28013
+//endregion
 
 dependencies {
     implementation(project(":greeter.api"))
     runtimeOnly(project(":greeter.provider"))
 }
 
-val moduleName: String by project
 application {
     mainClassName = "$moduleName/examples.RunnerKt"
     applicationDefaultJvmArgs = listOf("-XX:+PrintGCDetails")
 }
 
-val run by tasks.getting(JavaExec::class) {
-    extensions.configure(typeOf<ModuleOptions>()) {
+patchModules.config = listOf(
+        "java.annotation=jsr305-3.0.2.jar"
+)
+
+(run) {
+    extensions.configure<ModuleOptions> {
         addModules = listOf("java.sql")
     }
+
     jvmArgs = listOf("-XX:+PrintGCDetails")
 }
-
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-
-patchModules.config = listOf("java.annotation=jsr305-3.0.2.jar")

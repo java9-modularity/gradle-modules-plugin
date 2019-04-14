@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SuppressWarnings("ConstantConditions")
 class ModulePluginSmokeTest {
 
-    private static final String GRADLE_VERSION = "5.0";
+    private static final String GRADLE_VERSION = "5.3.1";
 
     private List<File> pluginClasspath;
 

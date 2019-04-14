@@ -1,4 +1,5 @@
-rootProject.name = 'moduleplugintests-mixed'
+rootProject.name = 'test-project-mixed'
+
 include 'greeter.api-jdk8'
 
 include 'greeter.provider-jdk8'
