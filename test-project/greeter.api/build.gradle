@@ -1,7 +1,3 @@
-plugins {
-    id 'org.javamodularity.moduleplugin'
-}
-
 //region NO-OP (DSL testing)
 compileJava {
     moduleOptions {

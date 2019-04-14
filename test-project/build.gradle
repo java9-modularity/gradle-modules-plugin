@@ -1,21 +1,10 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "org.javamodularity:moduleplugin:1.4.1"
-    }
+plugins {
+    id 'org.javamodularity.moduleplugin' version '1.5.0' apply false
 }
 
 subprojects {
     apply plugin: 'java'
-
-    version "1.4.0"
-
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    apply plugin: 'org.javamodularity.moduleplugin'
 
     repositories {
         mavenCentral()
@@ -31,9 +20,9 @@ subprojects {
     }
 
     dependencies {
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.3.1'
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+        testImplementation "org.junit.jupiter:junit-jupiter-api:$jUnitVersion"
+        testImplementation "org.junit.jupiter:junit-jupiter-params:$jUnitVersion"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$jUnitVersion"
     }
 
     build.dependsOn javadoc

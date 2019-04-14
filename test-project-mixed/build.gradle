@@ -1,5 +1,5 @@
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.4.1' apply false
+    id 'org.javamodularity.moduleplugin' version '1.5.0' apply false
 }
 
 subprojects {
@@ -15,6 +15,7 @@ subprojects {
 
         testLogging {
             events 'PASSED', 'FAILED', 'SKIPPED'
+            stackTraceFilters = []
         }
     }
 

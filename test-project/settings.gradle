@@ -1,8 +1,10 @@
-rootProject.name = 'moduleplugintests'
+rootProject.name = 'test-project'
+
 include 'greeter.api'
 
 include 'greeter.provider'
-include 'greeter.runner'
 include 'greeter.provider.test'
+
+include 'greeter.runner'
 include 'greeter.javaexec'
 include 'greeter.startscripts'

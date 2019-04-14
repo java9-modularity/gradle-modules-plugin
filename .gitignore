@@ -17,3 +17,6 @@ userHome/
 # JEnv Java Version
 .java-version
 
+# Gradle wrapper in test projects
+/test-project*/gradlew*
+/test-project*/gradle/wrapper/*

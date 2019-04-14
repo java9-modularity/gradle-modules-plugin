@@ -1,9 +1,11 @@
-rootProject.name = 'moduleplugintests'
-rootProject.buildFileName = 'smoke_test_build.gradle'
-include 'greeter.api'
+pluginManagement {
+    repositories {
+        gradlePluginPortal().with {
+            content {
+                excludeGroup 'org.javamodularity.moduleplugin' // added to the classpath by the smoke test
+            }
+        }
+    }
+}
 
-include 'greeter.provider'
-include 'greeter.runner'
-include 'greeter.provider.test'
-include 'greeter.javaexec'
-include 'greeter.startscripts'
+apply from: 'settings.gradle'

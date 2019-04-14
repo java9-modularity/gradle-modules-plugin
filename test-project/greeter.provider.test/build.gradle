@@ -1,13 +1,8 @@
-plugins {
-    id 'org.javamodularity.moduleplugin'
-
-}
 dependencies {
     implementation project(':greeter.api')
     runtimeOnly project(':greeter.provider')
 }
 
 patchModules.config = [
-        "java.annotation=jsr305-3.0.2.jar"
-
+        'java.annotation=jsr305-3.0.2.jar'
 ]

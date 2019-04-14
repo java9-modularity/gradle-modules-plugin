@@ -1,8 +1,10 @@
-rootProject.name = 'moduleplugintestskotlin'
+rootProject.name = 'test-project-kotlin'
+
 include 'greeter.api'
 
 include 'greeter.provider'
-include 'greeter.runner'
 include 'greeter.provider.test'
+
+include 'greeter.runner'
 include 'greeter.javaexec'
 include 'greeter.startscripts'

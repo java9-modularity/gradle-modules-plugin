@@ -3,7 +3,6 @@ import org.javamodularity.moduleplugin.tasks.ModularCreateStartScripts
 
 plugins {
     id 'application'
-    id 'org.javamodularity.moduleplugin'
 }
 
 dependencies {
@@ -12,28 +11,29 @@ dependencies {
 }
 
 patchModules.config = [
-        "java.annotation=jsr305-3.0.2.jar"
+        'java.annotation=jsr305-3.0.2.jar'
 ]
 
 application {
-    mainClassName = "greeter.startscripts/startscripts.MainDemo"
-    applicationName = "demo"
-    applicationDefaultJvmArgs = ["-Xmx128m"]
+    mainClassName = 'greeter.startscripts/startscripts.MainDemo'
+    applicationName = 'demo'
+    applicationDefaultJvmArgs = ['-Xmx128m']
 }
 
 new File("$projectDir/src/main/java/startscripts").eachFileMatch(~/Demo.*\.java/) { file ->
     def demoClassName = file.name - '.java'
-    task "run$demoClassName"(type: ModularJavaExec) {
-        group = "Demo"
+
+    def runDemo = task("run$demoClassName", type: ModularJavaExec) {
+        group = 'Demo'
         description = "Run the $demoClassName program"
         main = "greeter.startscripts/startscripts.$demoClassName"
-        jvmArgs = ["-Xmx128m"]
+        jvmArgs = ['-Xmx128m']
     }
 
-    task "createStartScripts$demoClassName"(type: ModularCreateStartScripts) {
-        runTask = tasks."run$demoClassName"
+    def createScripts = task("createStartScripts$demoClassName", type: ModularCreateStartScripts) {
+        runTask = runDemo
         applicationName = demoClassName.uncapitalize()
     }
 
-    installDist.finalizedBy tasks."createStartScripts$demoClassName"
+    installDist.finalizedBy createScripts
 }
