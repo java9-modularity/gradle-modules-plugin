@@ -21,9 +21,12 @@ class CompileJavaTaskMutatorTest {
         Project project = ProjectBuilder.builder().withProjectDir(new File("test-project/")).build();
         project.getPlugins().apply("java");
         JavaCompile compileJava = (JavaCompile) project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME);
+
         CompileModuleOptions moduleOptions = compileJava.getExtensions()
                 .create("moduleOptions", CompileModuleOptions.class, project);
+        project.getExtensions().add("moduleName", getClass().getName());
         project.getExtensions().create("patchModules", PatchModuleExtension.class);
+
         CompileJavaTaskMutator mutator = new CompileJavaTaskMutator(project, compileJava.getClasspath(), moduleOptions);
 
         // when

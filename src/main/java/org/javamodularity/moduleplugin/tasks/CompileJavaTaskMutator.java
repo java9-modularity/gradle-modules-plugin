@@ -4,10 +4,12 @@ import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 class CompileJavaTaskMutator {
 
@@ -36,26 +38,33 @@ class CompileJavaTaskMutator {
      *                    is {@code false}, {@code compileModuleInfoJava} if it is {@code true}
      */
     void modularizeJavaCompileTask(JavaCompile javaCompile) {
-        PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
-
-        var compilerArgs = new ArrayList<>(javaCompile.getOptions().getCompilerArgs());
-
-        compilerArgs.addAll(List.of("--module-path", compileJavaClasspath
-                .filter(patchModuleExtension::isUnpatched)
-                .getAsPath()));
-
-        String moduleName = (String) project.getExtensions().findByName("moduleName");
-        moduleOptions.mutateArgs(moduleName, compilerArgs);
-
-        compilerArgs.addAll(patchModuleExtension.configure(compileJavaClasspath));
+        List<String> compilerArgs = buildCompilerArgs(javaCompile);
         javaCompile.getOptions().setCompilerArgs(compilerArgs);
         javaCompile.setClasspath(project.files());
 
         // https://github.com/java9-modularity/gradle-modules-plugin/issues/45
-        AbstractCompile compileKotlin = (AbstractCompile) project.getTasks().findByName(COMPILE_KOTLIN_TASK_NAME);
-        if (compileKotlin != null) {
-            javaCompile.setDestinationDir(compileKotlin.getDestinationDir());
-        }
+        helper().findTask(COMPILE_KOTLIN_TASK_NAME, AbstractCompile.class)
+                .ifPresent(compileKotlin -> javaCompile.setDestinationDir(compileKotlin.getDestinationDir()));
     }
 
+    private List<String> buildCompilerArgs(JavaCompile javaCompile) {
+        var compilerArgs = new ArrayList<>(javaCompile.getOptions().getCompilerArgs());
+
+        String moduleName = helper().moduleName();
+        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+
+        Stream.of("--module-path", patchModuleExtension.getUnpatchedClasspathAsPath(compileJavaClasspath))
+                .forEach(compilerArgs::add);
+
+        moduleOptions.mutateArgs(moduleName, compilerArgs);
+
+        patchModuleExtension.resolve(compileJavaClasspath).toArgumentStream()
+                .forEach(compilerArgs::add);
+
+        return compilerArgs;
+    }
+
+    private JavaProjectHelper helper() {
+        return new JavaProjectHelper(project);
+    }
 }

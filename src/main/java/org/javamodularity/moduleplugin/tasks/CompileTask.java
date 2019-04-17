@@ -17,7 +17,7 @@ public class CompileTask extends AbstractCompileTask {
      * @see CompileModuleInfoTask#configureCompileModuleInfoJava()
      */
     public void configureCompileJava() {
-        helper().findCompileJavaTask(JavaPlugin.COMPILE_JAVA_TASK_NAME)
+        helper().findTask(JavaPlugin.COMPILE_JAVA_TASK_NAME, JavaCompile.class)
                 .ifPresent(this::configureCompileJava);
     }
 

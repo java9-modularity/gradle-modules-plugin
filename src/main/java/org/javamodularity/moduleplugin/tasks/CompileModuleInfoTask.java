@@ -20,7 +20,7 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
      * @see CompileTask#configureCompileJava()
      */
     public void configureCompileModuleInfoJava() {
-        helper().findCompileJavaTask(JavaPlugin.COMPILE_JAVA_TASK_NAME)
+        helper().findTask(JavaPlugin.COMPILE_JAVA_TASK_NAME, JavaCompile.class)
                 .ifPresent(this::configureCompileModuleInfoJava);
     }
 
