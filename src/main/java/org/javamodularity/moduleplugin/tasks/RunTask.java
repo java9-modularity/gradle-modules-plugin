@@ -15,13 +15,18 @@ public class RunTask extends AbstractModulePluginTask {
     }
 
     private void doConfigureRun() {
-        JavaExec runTask = helper().task(ApplicationPlugin.TASK_RUN_NAME, JavaExec.class);
-        var mutator = new RunTaskMutator(runTask, project);
+        var mutator = new RunTaskMutator(getRunTask(), project);
         mutator.configureRun();
+        project.afterEvaluate(p -> configureStartScripts());
+    }
 
-        project.afterEvaluate(p -> {
-            mutator.updateStartScriptsTask(ApplicationPlugin.TASK_START_SCRIPTS_NAME);
-            mutator.movePatchedLibs();
-        });
+    private void configureStartScripts() {
+        var mutator = new StartScriptsMutator(getRunTask(), project);
+        mutator.updateStartScriptsTask(ApplicationPlugin.TASK_START_SCRIPTS_NAME);
+        mutator.movePatchedLibs();
+    }
+
+    private JavaExec getRunTask() {
+        return helper().task(ApplicationPlugin.TASK_RUN_NAME, JavaExec.class);
     }
 }

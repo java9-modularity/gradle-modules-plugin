@@ -55,7 +55,7 @@ public class ModularCreateStartScripts extends CreateStartScripts {
             startScriptsTask.setDefaultJvmOpts(defaultJvmOpts);
         }
 
-        var mutator = new RunTaskMutator(runTask, project);
+        var mutator = new StartScriptsMutator(runTask, project);
         mutator.updateStartScriptsTask(startScriptsTask);
         mutator.movePatchedLibs();
     }
