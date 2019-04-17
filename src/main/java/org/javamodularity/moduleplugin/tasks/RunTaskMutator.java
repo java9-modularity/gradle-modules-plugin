@@ -6,21 +6,21 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.distribution.Distribution;
 import org.gradle.api.distribution.DistributionContainer;
+import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.JavaExec;
-import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.application.CreateStartScripts;
+import org.javamodularity.moduleplugin.JavaProjectHelper;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class RunTaskMutator {
     private static final String LIBS_PLACEHOLDER = "APP_HOME_LIBS_PLACEHOLDER";
@@ -29,12 +29,10 @@ public class RunTaskMutator {
 
     private final JavaExec execTask;
     private final Project project;
-    private final String moduleName;
 
-    public RunTaskMutator(JavaExec execTask, Project project, String moduleName) {
+    public RunTaskMutator(JavaExec execTask, Project project) {
         this.execTask = execTask;
         this.project = project;
-        this.moduleName = moduleName;
     }
 
     public void configureRun() {
@@ -43,133 +41,158 @@ public class RunTaskMutator {
     }
 
     public void updateStartScriptsTask(String taskStartScriptsName) {
-        CreateStartScripts startScriptsTask = (CreateStartScripts) project.getTasks().findByName(taskStartScriptsName);
-        if (startScriptsTask == null)
-            throw new IllegalArgumentException("Task " + taskStartScriptsName + " not found.");
+        CreateStartScripts startScriptsTask = helper().task(taskStartScriptsName, CreateStartScripts.class);
         updateStartScriptsTask(startScriptsTask);
     }
 
     public void updateStartScriptsTask(CreateStartScripts startScriptsTask) {
-        PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
 
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         startScriptsTask.doFirst(new Action<Task>() {
             @Override
-            public void execute(final Task task) {
-                startScriptsTask.setClasspath(project.files());
-                if (ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME.equals(startScriptsTask.getMainClassName())) {
-                    startScriptsTask.setMainClassName(/* moduleName + "/" + */ execTask.getMain());
-                }
-
-                var moduleJvmArgs = List.of(
-                        "--module-path", LIBS_PLACEHOLDER,
-                        "--module", RunTaskMutator.this.getMainClass()
-                );
-
-                var jvmArgs = new ArrayList<String>();
-
-                ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
-                moduleOptions.mutateArgs(moduleName, jvmArgs);
-
-                patchModuleExtension.getConfig().forEach(patch -> {
-                            String[] split = patch.split("=");
-                            jvmArgs.add("--patch-module");
-                            jvmArgs.add(split[0] + "=" + PATCH_LIBS_PLACEHOLDER + "/" + split[1]);
-                        }
-                );
-
-                startScriptsTask.getDefaultJvmOpts().forEach(jvmArgs::add);
-                jvmArgs.addAll(moduleJvmArgs);
-
-                startScriptsTask.setDefaultJvmOpts(jvmArgs);
+            public void execute(Task task) {
+                configureStartScriptsDoFirst(startScriptsTask);
             }
         });
 
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         startScriptsTask.doLast(new Action<Task>() {
             @Override
-            public void execute(final Task task) {
-                File bashScript = new File(startScriptsTask.getOutputDir(), startScriptsTask.getApplicationName());
-                RunTaskMutator.this.replaceLibsPlaceHolder(bashScript.toPath(), "\\$APP_HOME/lib", "\\$APP_HOME/patchlibs");
-                File batFile = new File(startScriptsTask.getOutputDir(), startScriptsTask.getApplicationName() + ".bat");
-                RunTaskMutator.this.replaceLibsPlaceHolder(batFile.toPath(), "%APP_HOME%\\\\lib", "%APP_HOME%\\\\patchlibs");
+            public void execute(Task task) {
+                configureStartScriptsDoLast(startScriptsTask);
             }
         });
     }
 
-    public void movePatchedLibs() {
-        PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
+    private void configureStartScriptsDoFirst(CreateStartScripts startScriptsTask) {
+        List<String> jvmArgs = buildStartScriptsJvmArgs(startScriptsTask);
+        startScriptsTask.setDefaultJvmOpts(jvmArgs);
+        startScriptsTask.setClasspath(project.files());
 
-        if (!patchModuleExtension.getConfig().isEmpty()) {
-            Distribution distribution = ((DistributionContainer) project.getExtensions().getByName("distributions")).getByName("main");
-            distribution.contents(copySpec -> copySpec.filesMatching(patchModuleExtension.getJars(), action -> {
-                RelativePath relativePath = action.getRelativePath().getParent().getParent()
-                        .append(true, "patchlibs", action.getName());
-                action.setRelativePath(relativePath);
-            }));
+        if (ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME.equals(startScriptsTask.getMainClassName())) {
+            startScriptsTask.setMainClassName(/* helper().moduleName() + "/" + */ execTask.getMain());
         }
+    }
+
+    private List<String> buildStartScriptsJvmArgs(CreateStartScripts startScriptsTask) {
+        var jvmArgs = new ArrayList<String>();
+
+        String moduleName = helper().moduleName();
+        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+
+        var moduleJvmArgs = List.of(
+                "--module-path", LIBS_PLACEHOLDER,
+                "--module", getMainClassName()
+        );
+
+        ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
+        moduleOptions.mutateArgs(moduleName, jvmArgs);
+
+        buildPatchModuleArgStream(patchModuleExtension).forEach(jvmArgs::add);
+
+        startScriptsTask.getDefaultJvmOpts().forEach(jvmArgs::add);
+
+        jvmArgs.addAll(moduleJvmArgs);
+
+        return jvmArgs;
+    }
+
+    private Stream<String> buildPatchModuleArgStream(PatchModuleExtension patchModuleExtension) {
+        return patchModuleExtension.resolve(jarName -> PATCH_LIBS_PLACEHOLDER + "/" + jarName).toArgumentStream();
+    }
+
+    private void configureStartScriptsDoLast(CreateStartScripts startScriptsTask) {
+        Path outputDir = startScriptsTask.getOutputDir().toPath();
+
+        Path bashScript = outputDir.resolve(startScriptsTask.getApplicationName());
+        replaceLibsPlaceHolder(bashScript, "\\$APP_HOME/lib", "\\$APP_HOME/patchlibs");
+
+        Path batFile = outputDir.resolve(startScriptsTask.getApplicationName() + ".bat");
+        replaceLibsPlaceHolder(batFile, "%APP_HOME%\\\\lib", "%APP_HOME%\\\\patchlibs");
+    }
+
+    public void movePatchedLibs() {
+        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+        if (patchModuleExtension.getConfig().isEmpty()) {
+            return;
+        }
+
+        Distribution mainDistribution = helper().extension("distributions", DistributionContainer.class)
+                .getByName("main");
+        mainDistribution.contents(
+                copySpec -> copySpec.filesMatching(patchModuleExtension.getJars(), this::updateRelativePath)
+        );
+    }
+
+    private void updateRelativePath(FileCopyDetails fileCopyDetails) {
+        RelativePath updatedRelativePath = fileCopyDetails.getRelativePath().getParent().getParent()
+                .append(true, "patchlibs", fileCopyDetails.getName());
+        fileCopyDetails.setRelativePath(updatedRelativePath);
     }
 
     private void updateJavaExecTask() {
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         execTask.doFirst(new Action<Task>() {
             @Override
-            public void execute(final Task task) {
-
-                JavaPluginConvention javaConvention = execTask.getProject().getConvention().getPlugin(JavaPluginConvention.class);
-                PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
-
-                SourceSet mainSourceSet = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-
-                var moduleJvmArgs = List.of(
-                        "--module-path", execTask.getClasspath()
-                                .filter(patchModuleExtension::isUnpatched
-                                ).getAsPath(),
-                        "--patch-module", moduleName + "=" + mainSourceSet.getOutput().getResourcesDir().toPath(),
-                        "--module", RunTaskMutator.this.getMainClass()
-                );
-
-                var jvmArgs = new ArrayList<String>();
-
-                ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
-                if (!moduleOptions.getAddModules().isEmpty()) {
-                    String addModules = String.join(",", moduleOptions.getAddModules());
-                    jvmArgs.add("--add-modules");
-                    jvmArgs.add(addModules);
-                }
-
-                jvmArgs.addAll(patchModuleExtension.configure(execTask.getClasspath()));
-
-                jvmArgs.addAll(execTask.getJvmArgs());
-                jvmArgs.addAll(moduleJvmArgs);
-
-                execTask.setClasspath(project.files());
-
+            public void execute(Task task) {
+                List<String> jvmArgs = buildJavaExecJvmArgs();
                 execTask.setJvmArgs(jvmArgs);
+                execTask.setClasspath(project.files());
             }
         });
     }
 
-    private String getMainClass() {
-        String main;
-        if (!execTask.getMain().contains("/")) {
-            LOGGER.warn("No module was provided for main class, assuming the current module. Prefer providing 'mainClassName' in the following format: '$moduleName/a.b.Main'");
-            main = moduleName + "/" + execTask.getMain();
-        } else {
-            main = execTask.getMain();
+    private List<String> buildJavaExecJvmArgs() {
+        String moduleName = helper().moduleName();
+        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+
+        var moduleJvmArgs = List.of(
+                "--module-path",
+                patchModuleExtension.getUnpatchedClasspathAsPath(execTask.getClasspath()),
+                "--patch-module",
+                moduleName + "=" + helper().mainSourceSet().getOutput().getResourcesDir().toPath(),
+                "--module",
+                getMainClassName()
+        );
+
+        var jvmArgs = new ArrayList<String>();
+
+        ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
+        if (!moduleOptions.getAddModules().isEmpty()) {
+            String addModules = String.join(",", moduleOptions.getAddModules());
+            Stream.of("--add-modules", addModules).forEach(jvmArgs::add);
         }
-        return main;
+
+        patchModuleExtension.resolve(execTask.getClasspath()).toArgumentStream().forEach(jvmArgs::add);
+
+        jvmArgs.addAll(execTask.getJvmArgs());
+        jvmArgs.addAll(moduleJvmArgs);
+        return jvmArgs;
     }
 
-    private void replaceLibsPlaceHolder(Path path, String libText, String patchLibText) {
-        try {
-            String bashScript = Files.readString(path, StandardCharsets.UTF_8);
-            String updatedBashScript = bashScript.replaceAll(LIBS_PLACEHOLDER, libText);
-            updatedBashScript = updatedBashScript.replaceAll(PATCH_LIBS_PLACEHOLDER, patchLibText);
+    private String getMainClassName() {
+        String mainClassName = Objects.requireNonNull(execTask.getMain());
+        if (!mainClassName.contains("/")) {
+            LOGGER.warn("No module was provided for main class, assuming the current module. Prefer providing 'mainClassName' in the following format: '$moduleName/a.b.Main'");
+            return helper().moduleName() + "/" + mainClassName;
+        }
+        return mainClassName;
+    }
 
-            Files.write(path, updatedBashScript.getBytes(StandardCharsets.UTF_8));
+    private static void replaceLibsPlaceHolder(Path path, String libText, String patchLibText) {
+        try {
+            String bashScript = Files.readString(path);
+            String updatedBashScript = bashScript
+                    .replaceAll(LIBS_PLACEHOLDER, libText)
+                    .replaceAll(PATCH_LIBS_PLACEHOLDER, patchLibText);
+
+            Files.writeString(path, updatedBashScript);
         } catch (IOException e) {
             throw new GradleException("Couldn't replace placeholder in " + path);
         }
+    }
+
+    private JavaProjectHelper helper() {
+        return new JavaProjectHelper(project);
     }
 }

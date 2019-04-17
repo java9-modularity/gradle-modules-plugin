@@ -24,11 +24,11 @@ public class ModuleSystemPlugin implements Plugin<Project> {
 
         new CompileTask(project).configureCompileJava();
         new CompileModuleInfoTask(project).configureCompileModuleInfoJava();
-        new CompileTestTask().configureCompileTestJava(project, moduleName);
-        new TestTask().configureTestJava(project, moduleName);
-        new RunTask().configureRun(project, moduleName);
-        new JavadocTask().configureJavaDoc(project);
-        ModularJavaExec.configure(project, moduleName);
-        ModularCreateStartScripts.configure(project, moduleName);
+        new CompileTestTask(project).configureCompileTestJava();
+        new TestTask(project).configureTestJava();
+        new RunTask(project).configureRun();
+        new JavadocTask(project).configureJavaDoc();
+        ModularJavaExec.configure(project);
+        ModularCreateStartScripts.configure(project);
     }
 }

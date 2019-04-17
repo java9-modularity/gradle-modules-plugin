@@ -1,9 +1,11 @@
 package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.file.FileCollection;
+import org.javamodularity.moduleplugin.internal.PatchModuleResolver;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 public class PatchModuleExtension {
@@ -19,22 +21,12 @@ public class PatchModuleExtension {
         indexByJar = config.stream().map(s -> s.split("=")).collect(Collectors.toMap(c -> c[1], c -> c[0]));
     }
 
-    public List<String> configure(FileCollection classpath) {
-        List<String> args = new ArrayList<>();
+    public PatchModuleResolver resolve(FileCollection classpath) {
+        return resolve(jarName -> classpath.filter(jar -> jar.getName().endsWith(jarName)).getAsPath());
+    }
 
-        config.forEach(patch -> {
-                    String[] split = patch.split("=");
-
-                    String asPath = classpath.filter(jar -> jar.getName().endsWith(split[1])).getAsPath();
-
-                    if (asPath.length() > 0) {
-                        args.add("--patch-module");
-                        args.add(split[0] + "=" + asPath);
-                    }
-                }
-        );
-
-        return args;
+    public PatchModuleResolver resolve(UnaryOperator<String> jarNameResolver) {
+        return new PatchModuleResolver(this, jarNameResolver);
     }
 
     public Set<String> getJars() {
@@ -43,6 +35,10 @@ public class PatchModuleExtension {
 
     public boolean isUnpatched(File jar) {
         return !indexByJar.containsKey(jar.getName());
+    }
+
+    public String getUnpatchedClasspathAsPath(FileCollection classpath) {
+        return classpath.filter(this::isUnpatched).getAsPath();
     }
 
     @Override

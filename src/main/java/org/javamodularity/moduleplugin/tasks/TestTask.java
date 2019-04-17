@@ -8,7 +8,6 @@ import org.gradle.api.Task;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
@@ -24,91 +23,119 @@ import java.util.stream.Stream;
 
 import static java.io.File.pathSeparator;
 
-public class TestTask {
+public class TestTask extends AbstractModulePluginTask {
+
     private static final Logger LOGGER = Logging.getLogger(TestTask.class);
-    private static Pattern CLASS_FILE_SPLITTER = Pattern.compile("[./\\\\]");
+    private static final Pattern CLASS_FILE_SPLITTER = Pattern.compile("[./\\\\]");
 
-    public void configureTestJava(Project project, String moduleName) {
-        Test testJava = (Test) project.getTasks().findByName(JavaPlugin.TEST_TASK_NAME);
-        JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
-        PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
+    public TestTask(Project project) {
+        super(project);
+    }
 
-        SourceSet testSourceSet = javaConvention.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
-        SourceSet mainSourceSet = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-        testJava.getExtensions().create("moduleOptions", TestModuleOptions.class, project);
+    public void configureTestJava() {
+        helper().findTask(JavaPlugin.TEST_TASK_NAME, Test.class)
+                .ifPresent(this::configureTestJava);
+    }
+
+    private void configureTestJava(Test testJava) {
+        var testModuleOptions = testJava.getExtensions().create("moduleOptions", TestModuleOptions.class, project);
 
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         testJava.doFirst(new Action<Task>() {
             @Override
             public void execute(Task task) {
-                TestModuleOptions testModuleOptions = testJava.getExtensions().getByType(TestModuleOptions.class);
                 if (testModuleOptions.getRunOnClasspath()) {
                     LOGGER.lifecycle("Running tests on classpath");
                     return;
                 }
 
-                var args = new ArrayList<>(testJava.getJvmArgs());
-
-                String testClassesDirs = testSourceSet.getOutput().getClassesDirs().getFiles().stream()
-                        .map(File::getPath)
-                        .collect(Collectors.joining(pathSeparator));
-
-                args.addAll(List.of(
-                        "--module-path", testJava.getClasspath()
-                                .filter(patchModuleExtension::isUnpatched)
-                                .getAsPath(),
-                        "--patch-module", moduleName + "=" + testClassesDirs
-                                + pathSeparator + mainSourceSet.getOutput().getResourcesDir().toPath()
-                                + pathSeparator + testSourceSet.getOutput().getResourcesDir().toPath(),
-                        "--add-modules", "ALL-MODULE-PATH"
-                ));
-
-                testModuleOptions.mutateArgs(moduleName, args);
-
-                args.addAll(patchModuleExtension.configure(testJava.getClasspath()));
-
-                TestEngine.select(project).ifPresent(testEngine -> {
-                    args.addAll(List.of("--add-reads", moduleName + "=" + testEngine.moduleName));
-
-                    Set<File> testDirs = testSourceSet.getOutput().getClassesDirs().getFiles();
-                    getPackages(testDirs).forEach(p -> {
-                        args.add("--add-opens");
-                        args.add(String.format("%s/%s=%s", moduleName, p, testEngine.addOpens));
-                    });
-                });
-
-                ModuleInfoTestHelper.mutateArgs(project, moduleName, args::add);
-
+                List<String> args = buildJvmArgs(testJava, testModuleOptions);
                 testJava.setJvmArgs(args);
                 testJava.setClasspath(project.files());
             }
-
         });
     }
 
+    private List<String> buildJvmArgs(Test testJava, TestModuleOptions testModuleOptions) {
+        var jvmArgs = new ArrayList<>(testJava.getJvmArgs());
+
+        String moduleName = helper().moduleName();
+        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+
+        buildPrimaryArgStream(testJava, patchModuleExtension).forEach(jvmArgs::add);
+
+        testModuleOptions.mutateArgs(moduleName, jvmArgs);
+
+        patchModuleExtension.resolve(testJava.getClasspath()).toArgumentStream().forEach(jvmArgs::add);
+
+        TestEngine.select(project).ifPresent(testEngine -> Stream.concat(
+                buildAddReadsStream(testEngine),
+                buildAddOpensStream(testEngine)
+        ).forEach(jvmArgs::add));
+
+        ModuleInfoTestHelper.mutateArgs(project, jvmArgs::add);
+
+        return jvmArgs;
+    }
+
+    private Stream<String> buildPrimaryArgStream(
+            Test testJava, PatchModuleExtension patchModuleExtension) {
+        String moduleName = helper().moduleName();
+        return Stream.of(
+                "--module-path", patchModuleExtension.getUnpatchedClasspathAsPath(testJava.getClasspath()),
+                "--patch-module", moduleName + "=" + buildPatchModulePathStream()
+                        .map(Path::toString)
+                        .collect(Collectors.joining(pathSeparator)),
+                "--add-modules", "ALL-MODULE-PATH"
+        );
+    }
+
+    private Stream<Path> buildPatchModulePathStream() {
+        SourceSet testSourceSet = helper().testSourceSet();
+        SourceSet mainSourceSet = helper().mainSourceSet();
+
+        Stream<File> classesFileStream = testSourceSet.getOutput().getClassesDirs().getFiles().stream();
+        Stream<File> resourceFileStream = Stream.of(mainSourceSet, testSourceSet)
+                .map(sourceSet -> sourceSet.getOutput().getResourcesDir());
+
+        return Stream.concat(classesFileStream, resourceFileStream).map(File::toPath);
+    }
+
+    private Stream<String> buildAddReadsStream(TestEngine testEngine) {
+        String moduleName = helper().moduleName();
+        return Stream.of("--add-reads", moduleName + "=" + testEngine.moduleName);
+    }
+
+    private Stream<String> buildAddOpensStream(TestEngine testEngine) {
+        String moduleName = helper().moduleName();
+        Set<File> testDirs = helper().testSourceSet().getOutput().getClassesDirs().getFiles();
+
+        return getPackages(testDirs).stream().flatMap(packageName -> Stream.of(
+                "--add-opens", String.format("%s/%s=%s", moduleName, packageName, testEngine.addOpens)
+        ));
+    }
+
     private static Set<String> getPackages(Collection<File> dirs) {
-        Set<String> packages = new TreeSet<>();
-        for (File dir : dirs) {
-            LOGGER.debug("Scanning packages in " + dir);
-            if (dir.isDirectory()) {
-                Path dirPath = dir.toPath();
-                try (Stream<Path> entries = Files.walk(dirPath)) {
-                    entries.forEach(entry -> {
-                        if (entry.toFile().isFile()) {
-                            String path = entry.toString();
-                            if (isValidClassFileReference(path)) {
-                                Path relPath = dirPath.relativize(entry.getParent());
-                                packages.add(relPath.toString().replace(File.separatorChar, '.'));
-                            }
-                        }
-                    });
-                } catch (IOException e) {
-                    throw new GradleException("Failed to scan " + dir, e);
-                }
-            }
-        }
+        Set<String> packages = dirs.stream()
+                .peek(dir -> LOGGER.debug("Scanning packages in " + dir))
+                .map(File::toPath)
+                .filter(Files::isDirectory)
+                .flatMap(TestTask::buildRelativePathStream)
+                .map(relPath -> relPath.toString().replace(File.separatorChar, '.'))
+                .collect(Collectors.toCollection(TreeSet::new));
         LOGGER.debug("Found packages: " + packages);
         return packages;
+    }
+
+    private static Stream<Path> buildRelativePathStream(Path dir) {
+        try {
+            return Files.walk(dir)
+                    .filter(Files::isRegularFile)
+                    .filter(path -> isValidClassFileReference(path.toString()))
+                    .map(path -> dir.relativize(path.getParent()));
+        } catch (IOException e) {
+            throw new GradleException("Failed to scan " + dir, e);
+        }
     }
 
     private static boolean isValidClassFileReference(String path) {

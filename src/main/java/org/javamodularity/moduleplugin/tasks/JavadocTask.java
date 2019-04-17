@@ -7,46 +7,43 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.CoreJavadocOptions;
 
-public class JavadocTask {
-    public void configureJavaDoc(Project project) {
-        Javadoc javadoc = (Javadoc) project.getTasks().findByName(JavaPlugin.JAVADOC_TASK_NAME);
-        if (javadoc != null) {
+public class JavadocTask extends AbstractModulePluginTask {
 
-            javadoc.getExtensions().create("moduleOptions", ModuleOptions.class, project);
-            PatchModuleExtension patchModuleExtension = project.getExtensions().getByType(PatchModuleExtension.class);
+    public JavadocTask(Project project) {
+        super(project);
+    }
 
-            // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
-            javadoc.doFirst(new Action<Task>() {
-                @Override
-                public void execute(Task task) {
-                    ModuleOptions moduleOptions = javadoc.getExtensions().getByType(ModuleOptions.class);
-                    CoreJavadocOptions options = (CoreJavadocOptions) javadoc.getOptions();
-                    options.addStringOption("-module-path", javadoc.getClasspath()
-                            .filter(patchModuleExtension::isUnpatched)
-                            .getAsPath());
+    public void configureJavaDoc() {
+        helper().findTask(JavaPlugin.JAVADOC_TASK_NAME, Javadoc.class)
+                .ifPresent(this::configureJavaDoc);
+    }
 
-                    if (!moduleOptions.getAddModules().isEmpty()) {
-                        String addModules = String.join(",", moduleOptions.getAddModules());
-                        options.addStringOption("-add-modules", addModules);
-                    }
+    private void configureJavaDoc(Javadoc javadoc) {
+        var moduleOptions = javadoc.getExtensions().create("moduleOptions", ModuleOptions.class, project);
 
-                    patchModuleExtension.getConfig().forEach(patch -> {
-                                String[] split = patch.split("=");
+        // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
+        javadoc.doFirst(new Action<Task>() {
+            @Override
+            public void execute(Task task) {
+                addJavadocOptions(javadoc, moduleOptions);
+                javadoc.setClasspath(project.files());
+            }
+        });
+    }
 
-                                String asPath = javadoc.getClasspath().filter(jar -> jar.getName().endsWith(split[1])).getAsPath();
+    private void addJavadocOptions(Javadoc javadoc, ModuleOptions moduleOptions) {
+        var options = (CoreJavadocOptions) javadoc.getOptions();
+        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
 
-                                if (asPath != null && asPath.length() > 0) {
-                                    options.addStringOption("-patch-module", split[0] + "=" + asPath);
-                                }
+        String modulePath = patchModuleExtension.getUnpatchedClasspathAsPath(javadoc.getClasspath());
+        options.addStringOption("-module-path", modulePath);
 
-                            }
-                    );
-
-                    javadoc.setClasspath(project.files());
-                }
-
-            });
+        if (!moduleOptions.getAddModules().isEmpty()) {
+            String addModules = String.join(",", moduleOptions.getAddModules());
+            options.addStringOption("-add-modules", addModules);
         }
 
+        patchModuleExtension.resolve(javadoc.getClasspath()).toValueStream()
+                .forEach(value -> options.addStringOption("-patch-module", value));
     }
 }

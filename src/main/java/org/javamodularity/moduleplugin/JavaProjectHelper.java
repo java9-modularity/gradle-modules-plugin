@@ -10,7 +10,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import java.util.Optional;
 
 /**
- * Generic helper for Gradle {@link Project} API that has {@link JavaPlugin} applied.
+ * Generic helper for Gradle {@link Project} API that is modular and has {@link JavaPlugin} applied.
  */
 public final class JavaProjectHelper {
 
@@ -24,9 +24,21 @@ public final class JavaProjectHelper {
         return project;
     }
 
+    public <T> T extension(Class<T> extensionType) {
+        return project.getExtensions().getByType(extensionType);
+    }
+
+    public <T> T extension(String name, Class<T> extensionType) {
+        return extensionType.cast(project.getExtensions().getByName(name));
+    }
+
+    public String moduleName() {
+        return extension("moduleName", String.class);
+    }
+
     //region SOURCE SETS
     public SourceSetContainer sourceSets() {
-        return project.getExtensions().getByType(SourceSetContainer.class);
+        return extension(SourceSetContainer.class);
     }
 
     public SourceSet sourceSet(String sourceSetName) {
@@ -37,7 +49,7 @@ public final class JavaProjectHelper {
         return sourceSet(SourceSet.MAIN_SOURCE_SET_NAME);
     }
 
-    public SourceSet testSourceSet(String sourceSetName) {
+    public SourceSet testSourceSet() {
         return sourceSet(SourceSet.TEST_SOURCE_SET_NAME);
     }
     //endregion
@@ -47,16 +59,20 @@ public final class JavaProjectHelper {
         return project.getTasks().getByName(taskName);
     }
 
-    public JavaCompile compileJavaTask(String taskName) {
-        return (JavaCompile) task(taskName);
-    }
-
     public Optional<Task> findTask(String taskName) {
         return Optional.ofNullable(project.getTasks().findByName(taskName));
     }
 
-    public Optional<JavaCompile> findCompileJavaTask(String taskName) {
-        return findTask(taskName).map(JavaCompile.class::cast);
+    public <T extends Task> T task(String taskName, Class<T> taskType) {
+        return taskType.cast(task(taskName));
+    }
+
+    public <T extends Task> Optional<T> findTask(String taskName, Class<T> taskType) {
+        return findTask(taskName).map(taskType::cast);
+    }
+
+    public JavaCompile compileJavaTask(String taskName) {
+        return task(taskName, JavaCompile.class);
     }
     //endregion
 
