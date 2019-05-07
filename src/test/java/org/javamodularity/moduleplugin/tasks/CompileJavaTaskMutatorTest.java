@@ -1,6 +1,7 @@
 package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.Project;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.testfixtures.ProjectBuilder;
@@ -22,6 +23,9 @@ class CompileJavaTaskMutatorTest {
         project.getPlugins().apply("java");
         JavaCompile compileJava = (JavaCompile) project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME);
 
+        FileCollection classpath = project.files("greeter.api/src/main/java"); // we need anything on classpath
+        compileJava.setClasspath(classpath);
+
         CompileModuleOptions moduleOptions = compileJava.getExtensions()
                 .create("moduleOptions", CompileModuleOptions.class, project);
         project.getExtensions().add("moduleName", getClass().getName());
@@ -35,7 +39,7 @@ class CompileJavaTaskMutatorTest {
         // then
         List<String> twoLastArguments = twoLastCompilerArgs(compileJava);
         assertEquals(
-                Arrays.asList("--module-path", compileJava.getClasspath().getAsPath()),
+                Arrays.asList("--module-path", classpath.getAsPath()),
                 twoLastArguments,
                 "Two last arguments should be setting module path to the current compileJava task classpath");
     }

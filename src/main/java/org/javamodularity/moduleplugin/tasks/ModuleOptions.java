@@ -3,14 +3,17 @@ package org.javamodularity.moduleplugin.tasks;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.javamodularity.moduleplugin.JavaProjectHelper;
+import org.javamodularity.moduleplugin.internal.TaskOption;
+import org.javamodularity.moduleplugin.internal.StreamHelper;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class ModuleOptions {
     private static final Logger LOGGER = Logging.getLogger(ModuleOptions.class);
+
+    private final Project project;
 
     private List<String> addModules = new ArrayList<>();
     private Map<String, String> addReads = new LinkedHashMap<>();
@@ -18,6 +21,7 @@ public class ModuleOptions {
     private Map<String, String> addOpens = new LinkedHashMap<>();
 
     public ModuleOptions(Project project) {
+        this.project = project;
     }
 
     public List<String> getAddModules() {
@@ -52,30 +56,52 @@ public class ModuleOptions {
         this.addOpens = addOpens;
     }
 
-    protected void mutateArgs(String moduleName, List<String> args) {
-        if (!getAddModules().isEmpty()) {
-            String addModules = String.join(",", getAddModules());
-            args.add("--add-modules");
-            args.add(addModules);
-            LOGGER.debug("Adding modules '{}' to patch module {}...", addModules, moduleName);
-        }
-
-        mutateArgs(moduleName, args, getAddReads(), "--add-reads");
-        mutateArgs(moduleName, args, getAddExports(), "--add-exports");
-        mutateArgs(moduleName, args, getAddOpens(), "--add-opens");
+    //region MODULE TASK OPTION
+    public void mutateArgs(List<String> args) {
+        buildFullOptionStream().forEach(o -> o.mutateArgs(args));
     }
 
-    private void mutateArgs(String moduleName, List<String> args, Map<String, String> src, String flag) {
-        if (!src.isEmpty()) {
-            LOGGER.debug("Updating module '{}' with...", moduleName);
-            src.entrySet().stream()
-                .map(e -> e.getKey() + "=" + e.getValue())
-                .forEach(e -> {
-                    LOGGER.debug("  {}", flag);
-                    LOGGER.debug("  {}", e);
-                    args.add(flag);
-                    args.add(e);
-                });
+    public Stream<TaskOption> buildFullOptionStream() {
+        LOGGER.debug("Updating module '{}' with...", helper().moduleName());
+        return StreamHelper.concat(
+                addModulesOption().stream(),
+                addReadsOptionStream(),
+                addExportsOptionStream(),
+                addOpensOptionStream()
+        ).peek(option -> LOGGER.debug("  {} {}", option.getFlag(), option.getValue()));
+    }
+
+    private Optional<TaskOption> addModulesOption() {
+        if (addModules.isEmpty()) {
+            return Optional.empty();
         }
+        return Optional.of(new TaskOption("--add-modules", String.join(",", addModules)));
+    }
+
+    private Stream<TaskOption> addReadsOptionStream() {
+        return buildOptionStream("--add-reads", addReads);
+    }
+
+    private Stream<TaskOption> addExportsOptionStream() {
+        return buildOptionStream("--add-exports", addExports);
+    }
+
+    private Stream<TaskOption> addOpensOptionStream() {
+        return buildOptionStream("--add-opens", addOpens);
+    }
+
+    private Stream<TaskOption> buildOptionStream(String flag, Map<String, String> map) {
+        if (map.isEmpty()) {
+            return Stream.empty();
+        }
+
+        return map.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .map(value -> new TaskOption(flag, value));
+    }
+    //endregion
+
+    private JavaProjectHelper helper() {
+        return new JavaProjectHelper(project);
     }
 }

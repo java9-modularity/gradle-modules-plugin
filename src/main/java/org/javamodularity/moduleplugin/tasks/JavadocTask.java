@@ -3,9 +3,11 @@ package org.javamodularity.moduleplugin.tasks;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.CoreJavadocOptions;
+import org.javamodularity.moduleplugin.internal.StreamHelper;
 
 public class JavadocTask extends AbstractModulePluginTask {
 
@@ -34,16 +36,13 @@ public class JavadocTask extends AbstractModulePluginTask {
     private void addJavadocOptions(Javadoc javadoc, ModuleOptions moduleOptions) {
         var options = (CoreJavadocOptions) javadoc.getOptions();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+        FileCollection classpath = javadoc.getClasspath();
 
-        String modulePath = patchModuleExtension.getUnpatchedClasspathAsPath(javadoc.getClasspath());
-        options.addStringOption("-module-path", modulePath);
-
-        if (!moduleOptions.getAddModules().isEmpty()) {
-            String addModules = String.join(",", moduleOptions.getAddModules());
-            options.addStringOption("-add-modules", addModules);
-        }
-
-        patchModuleExtension.resolve(javadoc.getClasspath()).toValueStream()
-                .forEach(value -> options.addStringOption("-patch-module", value));
+        StreamHelper.concat(
+                patchModuleExtension.buildModulePathOption(classpath).stream(),
+                patchModuleExtension.resolvePatched(classpath).buildOptionStream(),
+                moduleOptions.buildFullOptionStream()
+        ).forEach(option -> option.mutateOptions(options));
     }
+
 }

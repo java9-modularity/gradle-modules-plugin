@@ -10,13 +10,13 @@ import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.application.CreateStartScripts;
+import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class StartScriptsMutator extends AbstractExecutionMutator {
 
@@ -64,28 +64,19 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
     private List<String> buildStartScriptsJvmArgs(CreateStartScripts startScriptsTask) {
         var jvmArgs = new ArrayList<String>();
 
-        String moduleName = helper().moduleName();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+        var moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
 
-        var moduleJvmArgs = List.of(
-                "--module-path", LIBS_PLACEHOLDER,
-                "--module", getMainClassName()
-        );
+        moduleOptions.mutateArgs(jvmArgs);
 
-        ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
-        moduleOptions.mutateArgs(moduleName, jvmArgs);
-
-        buildPatchModuleArgStream(patchModuleExtension).forEach(jvmArgs::add);
+        patchModuleExtension.resolvePatched(jarName -> PATCH_LIBS_PLACEHOLDER + "/" + jarName).mutateArgs(jvmArgs);
 
         startScriptsTask.getDefaultJvmOpts().forEach(jvmArgs::add);
 
-        jvmArgs.addAll(moduleJvmArgs);
+        new TaskOption("--module-path", LIBS_PLACEHOLDER).mutateArgs(jvmArgs);
+        new TaskOption("--module", getMainClassName()).mutateArgs(jvmArgs);
 
         return jvmArgs;
-    }
-
-    private Stream<String> buildPatchModuleArgStream(PatchModuleExtension patchModuleExtension) {
-        return patchModuleExtension.resolve(jarName -> PATCH_LIBS_PLACEHOLDER + "/" + jarName).toArgumentStream();
     }
 
     private void configureStartScriptsDoLast(CreateStartScripts startScriptsTask) {
