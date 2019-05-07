@@ -3,13 +3,14 @@ package org.javamodularity.moduleplugin.tasks;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.TestEngine;
+import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class CompileTestTask extends AbstractModulePluginTask {
 
@@ -41,23 +42,23 @@ public class CompileTestTask extends AbstractModulePluginTask {
 
         String moduleName = helper().moduleName();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+        FileCollection classpath = compileTestJava.getClasspath();
 
-        Stream.of(
-                "--module-path",
-                patchModuleExtension.getUnpatchedClasspathAsPath(compileTestJava.getClasspath()),
+        patchModuleExtension.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(compilerArgs));
+
+        new TaskOption(
                 "--patch-module",
                 moduleName + "=" + helper().testSourceSet().getJava().getSourceDirectories().getAsPath()
-        ).forEach(compilerArgs::add);
+        ).mutateArgs(compilerArgs);
 
-        TestEngine.select(project).ifPresent(testEngine -> Stream.of(
-                "--add-modules", testEngine.moduleName,
-                "--add-reads", moduleName + "=" + testEngine.moduleName
-        ).forEach(compilerArgs::add));
+        TestEngine.select(project).ifPresent(testEngine -> {
+            new TaskOption("--add-modules", testEngine.moduleName).mutateArgs(compilerArgs);
+            new TaskOption("--add-reads", moduleName + "=" + testEngine.moduleName).mutateArgs(compilerArgs);
+        });
 
-        moduleOptions.mutateArgs(moduleName, compilerArgs);
+        moduleOptions.mutateArgs(compilerArgs);
 
-        patchModuleExtension.resolve(compileTestJava.getClasspath()).toArgumentStream()
-                .forEach(compilerArgs::add);
+        patchModuleExtension.resolvePatched(classpath).mutateArgs(compilerArgs);
 
         ModuleInfoTestHelper.mutateArgs(project, compilerArgs::add);
 

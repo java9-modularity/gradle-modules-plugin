@@ -9,7 +9,6 @@ import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 class CompileJavaTaskMutator {
 
@@ -50,16 +49,13 @@ class CompileJavaTaskMutator {
     private List<String> buildCompilerArgs(JavaCompile javaCompile) {
         var compilerArgs = new ArrayList<>(javaCompile.getOptions().getCompilerArgs());
 
-        String moduleName = helper().moduleName();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
 
-        Stream.of("--module-path", patchModuleExtension.getUnpatchedClasspathAsPath(compileJavaClasspath))
-                .forEach(compilerArgs::add);
+        patchModuleExtension.buildModulePathOption(compileJavaClasspath)
+                .ifPresent(option -> option.mutateArgs(compilerArgs));
+        patchModuleExtension.resolvePatched(compileJavaClasspath).mutateArgs(compilerArgs);
 
-        moduleOptions.mutateArgs(moduleName, compilerArgs);
-
-        patchModuleExtension.resolve(compileJavaClasspath).toArgumentStream()
-                .forEach(compilerArgs::add);
+        moduleOptions.mutateArgs(compilerArgs);
 
         return compilerArgs;
     }

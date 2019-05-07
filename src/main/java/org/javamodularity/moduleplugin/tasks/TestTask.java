@@ -5,12 +5,14 @@ import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
+import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,35 +61,31 @@ public class TestTask extends AbstractModulePluginTask {
     private List<String> buildJvmArgs(Test testJava, TestModuleOptions testModuleOptions) {
         var jvmArgs = new ArrayList<>(testJava.getJvmArgs());
 
-        String moduleName = helper().moduleName();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+        FileCollection classpath = testJava.getClasspath();
 
-        buildPrimaryArgStream(testJava, patchModuleExtension).forEach(jvmArgs::add);
+        patchModuleExtension.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
+        patchModuleExtension.resolvePatched(classpath).mutateArgs(jvmArgs);
 
-        testModuleOptions.mutateArgs(moduleName, jvmArgs);
+        new TaskOption("--patch-module", buildPatchModuleOptionValue()).mutateArgs(jvmArgs);
+        new TaskOption("--add-modules", "ALL-MODULE-PATH").mutateArgs(jvmArgs);
 
-        patchModuleExtension.resolve(testJava.getClasspath()).toArgumentStream().forEach(jvmArgs::add);
+        testModuleOptions.mutateArgs(jvmArgs);
 
-        TestEngine.select(project).ifPresent(testEngine -> Stream.concat(
-                buildAddReadsStream(testEngine),
-                buildAddOpensStream(testEngine)
-        ).forEach(jvmArgs::add));
+        TestEngine.select(project).ifPresent(testEngine -> {
+            buildAddReadsOption(testEngine).mutateArgs(jvmArgs);
+            buildAddOpensOptionStream(testEngine).forEach(option -> option.mutateArgs(jvmArgs));
+        });
 
         ModuleInfoTestHelper.mutateArgs(project, jvmArgs::add);
 
         return jvmArgs;
     }
 
-    private Stream<String> buildPrimaryArgStream(
-            Test testJava, PatchModuleExtension patchModuleExtension) {
-        String moduleName = helper().moduleName();
-        return Stream.of(
-                "--module-path", patchModuleExtension.getUnpatchedClasspathAsPath(testJava.getClasspath()),
-                "--patch-module", moduleName + "=" + buildPatchModulePathStream()
-                        .map(Path::toString)
-                        .collect(Collectors.joining(pathSeparator)),
-                "--add-modules", "ALL-MODULE-PATH"
-        );
+    private String buildPatchModuleOptionValue() {
+        return helper().moduleName() + "=" + buildPatchModulePathStream()
+                .map(Path::toString)
+                .collect(Collectors.joining(pathSeparator));
     }
 
     private Stream<Path> buildPatchModulePathStream() {
@@ -101,18 +99,18 @@ public class TestTask extends AbstractModulePluginTask {
         return Stream.concat(classesFileStream, resourceFileStream).map(File::toPath);
     }
 
-    private Stream<String> buildAddReadsStream(TestEngine testEngine) {
+    private TaskOption buildAddReadsOption(TestEngine testEngine) {
         String moduleName = helper().moduleName();
-        return Stream.of("--add-reads", moduleName + "=" + testEngine.moduleName);
+        return new TaskOption("--add-reads", moduleName + "=" + testEngine.moduleName);
     }
 
-    private Stream<String> buildAddOpensStream(TestEngine testEngine) {
+    private Stream<TaskOption> buildAddOpensOptionStream(TestEngine testEngine) {
         String moduleName = helper().moduleName();
         Set<File> testDirs = helper().testSourceSet().getOutput().getClassesDirs().getFiles();
 
-        return getPackages(testDirs).stream().flatMap(packageName -> Stream.of(
-                "--add-opens", String.format("%s/%s=%s", moduleName, packageName, testEngine.addOpens)
-        ));
+        return getPackages(testDirs).stream()
+                .map(packageName -> String.format("%s/%s=%s", moduleName, packageName, testEngine.addOpens))
+                .map(value -> new TaskOption("--add-opens", value));
     }
 
     private static Set<String> getPackages(Collection<File> dirs) {

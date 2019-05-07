@@ -4,6 +4,7 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.javamodularity.moduleplugin.tasks.PatchModuleExtension;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -23,15 +24,16 @@ public final class PatchModuleResolver {
         this.jarNameResolver = jarNameResolver;
     }
 
-    public Stream<String> toArgumentStream() {
-        return toValueStream().flatMap(value -> Stream.of("--patch-module", value));
+    public void mutateArgs(List<String> args) {
+        buildOptionStream().forEach(option -> option.mutateArgs(args));
     }
 
-    public Stream<String> toValueStream() {
+    public Stream<TaskOption> buildOptionStream() {
         return patchModuleExtension.getConfig().stream()
                 .map(patch -> patch.split("="))
                 .map(this::resolvePatchModuleValue)
-                .filter(Objects::nonNull);
+                .filter(Objects::nonNull)
+                .map(value -> new TaskOption("--patch-module", value));
     }
 
     private String resolvePatchModuleValue(String[] parts) {

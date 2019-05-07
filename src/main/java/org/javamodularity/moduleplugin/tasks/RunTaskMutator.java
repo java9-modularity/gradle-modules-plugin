@@ -3,11 +3,12 @@ package org.javamodularity.moduleplugin.tasks;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.JavaExec;
+import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class RunTaskMutator extends AbstractExecutionMutator {
 
@@ -33,30 +34,27 @@ public class RunTaskMutator extends AbstractExecutionMutator {
     }
 
     private List<String> buildJavaExecJvmArgs() {
-        String moduleName = helper().moduleName();
-        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
-
-        var moduleJvmArgs = List.of(
-                "--module-path",
-                patchModuleExtension.getUnpatchedClasspathAsPath(execTask.getClasspath()),
-                "--patch-module",
-                moduleName + "=" + helper().mainSourceSet().getOutput().getResourcesDir().toPath(),
-                "--module",
-                getMainClassName()
-        );
-
         var jvmArgs = new ArrayList<String>();
 
-        ModuleOptions moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
-        if (!moduleOptions.getAddModules().isEmpty()) {
-            String addModules = String.join(",", moduleOptions.getAddModules());
-            Stream.of("--add-modules", addModules).forEach(jvmArgs::add);
-        }
+        String moduleName = helper().moduleName();
+        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
+        var moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
+        FileCollection classpath = execTask.getClasspath();
 
-        patchModuleExtension.resolve(execTask.getClasspath()).toArgumentStream().forEach(jvmArgs::add);
+        moduleOptions.mutateArgs(jvmArgs);
+
+        patchModuleExtension.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
+        patchModuleExtension.resolvePatched(classpath).mutateArgs(jvmArgs);
 
         jvmArgs.addAll(execTask.getJvmArgs());
-        jvmArgs.addAll(moduleJvmArgs);
+
+        new TaskOption(
+                "--patch-module",
+                moduleName + "=" + helper().mainSourceSet().getOutput().getResourcesDir().toPath()
+        ).mutateArgs(jvmArgs);
+
+        new TaskOption("--module", getMainClassName()).mutateArgs(jvmArgs);
+
         return jvmArgs;
     }
 }
