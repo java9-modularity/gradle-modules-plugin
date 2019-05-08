@@ -28,7 +28,7 @@ public final class TaskOption {
         if (!flag.startsWith("--")) {
             throw new IllegalArgumentException("Invalid flag: " + flag);
         }
-        if (value.isBlank() || value.contains(" ")) {
+        if (value.isBlank()) {
             throw new IllegalArgumentException("Invalid value: " + value);
         }
     }

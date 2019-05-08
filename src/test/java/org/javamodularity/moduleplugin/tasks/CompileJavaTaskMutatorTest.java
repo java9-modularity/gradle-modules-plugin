@@ -23,7 +23,7 @@ class CompileJavaTaskMutatorTest {
         project.getPlugins().apply("java");
         JavaCompile compileJava = (JavaCompile) project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME);
 
-        FileCollection classpath = project.files("greeter.api/src/main/java"); // we need anything on classpath
+        FileCollection classpath = project.files("dummy dir"); // we need anything on classpath
         compileJava.setClasspath(classpath);
 
         CompileModuleOptions moduleOptions = compileJava.getExtensions()
