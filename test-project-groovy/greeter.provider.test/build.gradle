@@ -1,0 +1,8 @@
+plugins {
+    id 'org.javamodularity.moduleplugin'
+
+}
+dependencies {
+    implementation project(':greeter.api')
+    runtimeOnly project(':greeter.provider')
+}

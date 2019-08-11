@@ -34,7 +34,7 @@ class ModulePluginSmokeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"test-project", "test-project-kotlin"})
+    @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     void smokeTest(String projectName) {
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
@@ -120,7 +120,7 @@ class ModulePluginSmokeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"test-project", "test-project-kotlin"})
+    @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     void smokeTestRunDemo(String projectName) {
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
@@ -135,7 +135,7 @@ class ModulePluginSmokeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"test-project", "test-project-kotlin"})
+    @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     void smokeTestRunStartScripts(String projectName) {
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))

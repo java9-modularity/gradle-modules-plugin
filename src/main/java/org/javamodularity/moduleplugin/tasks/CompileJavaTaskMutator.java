@@ -13,6 +13,7 @@ import java.util.List;
 class CompileJavaTaskMutator {
 
     private static final String COMPILE_KOTLIN_TASK_NAME = "compileKotlin";
+    static final String COMPILE_GROOVY_TASK_NAME = "compileGroovy";
 
     private final Project project;
     /**
