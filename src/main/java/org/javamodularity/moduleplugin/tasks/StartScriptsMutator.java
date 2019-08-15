@@ -47,6 +47,7 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
             @Override
             public void execute(Task task) {
                 configureStartScriptsDoLast(startScriptsTask);
+                updateFinalRunCmnd(startScriptsTask);
             }
         });
     }
@@ -108,6 +109,20 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
         fileCopyDetails.setRelativePath(updatedRelativePath);
     }
 
+    private void updateFinalRunCmnd(CreateStartScripts startScriptsTask) {
+        System.out.println("Ok, replacing here....");
+
+        Path outputDir = startScriptsTask.getOutputDir().toPath();
+
+        Path bashScript = outputDir.resolve(startScriptsTask.getApplicationName());
+
+
+        removeClasspathArg(bashScript, "eval set .*", "eval set -- \\$DEFAULT_JVM_OPTS \\$JAVA_OPTS \\$CLI_OPTS \\\"\\$APP_ARGS\\\"");
+
+        Path batFile = outputDir.resolve(startScriptsTask.getApplicationName() + ".bat");
+        removeClasspathArg(batFile, "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %CLI_OPTS%.*", "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %CLI_OPTS% %CMD_LINE_ARGS%");
+    }
+
     private static void replaceLibsPlaceHolder(Path path, String libText, String patchLibText) {
         try {
             String bashScript = Files.readString(path);
@@ -118,6 +133,18 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
             Files.writeString(path, updatedBashScript);
         } catch (IOException e) {
             throw new GradleException("Couldn't replace placeholder in " + path);
+        }
+    }
+
+    private static void removeClasspathArg(Path path, String original, String replacement) {
+        try {
+            String bashScript = Files.readString(path);
+            String updatedBashScript = bashScript
+                    .replaceAll(original, replacement);
+
+            Files.writeString(path, updatedBashScript);
+        } catch (IOException e) {
+            throw new GradleException("Couldn't update run script in " + path);
         }
     }
 }
