@@ -110,12 +110,8 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
     }
 
     private void updateFinalRunCmnd(CreateStartScripts startScriptsTask) {
-        System.out.println("Ok, replacing here....");
-
         Path outputDir = startScriptsTask.getOutputDir().toPath();
-
         Path bashScript = outputDir.resolve(startScriptsTask.getApplicationName());
-
 
         removeClasspathArg(bashScript, "eval set .*", "eval set -- \\$DEFAULT_JVM_OPTS \\$JAVA_OPTS \\$CLI_OPTS \\\"\\$APP_ARGS\\\"");
 
