@@ -1,25 +1,25 @@
 plugins {
-    id 'org.javamodularity.moduleplugin'
+    id 'application'
 }
-apply plugin: 'application'
 
 dependencies {
     implementation project(':greeter.api')
     runtimeOnly project(':greeter.provider')
 }
 
-mainClassName = "$moduleName/examples.Runner"
+application {
+    mainClassName = "$moduleName/examples.Runner"
+    applicationDefaultJvmArgs = ['-XX:+PrintGCDetails']
+}
+
+patchModules.config = [
+        'java.annotation=jsr305-3.0.2.jar'
+]
 
 run {
     moduleOptions {
         addModules = ['java.sql']
     }
 
-    jvmArgs = [
-            "-XX:+PrintGCDetails"
-    ]
-
-    applicationDefaultJvmArgs = [
-            "-XX:+PrintGCDetails"
-    ]
+    jvmArgs = ['-XX:+PrintGCDetails']
 }

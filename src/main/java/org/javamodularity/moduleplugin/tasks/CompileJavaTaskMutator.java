@@ -6,8 +6,10 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 class CompileJavaTaskMutator {
 
@@ -37,6 +39,16 @@ class CompileJavaTaskMutator {
         List<String> compilerArgs = buildCompilerArgs(javaCompile);
         javaCompile.getOptions().setCompilerArgs(compilerArgs);
         javaCompile.setClasspath(project.files());
+        configureSourcepath(javaCompile);
+    }
+
+    // Setting the sourcepath is necessary when using forked compilation for module-info.java
+    private void configureSourcepath(JavaCompile javaCompile) {
+        helper().mainSourceSet().getJava().getSrcDirs().stream()
+                .map(srcDir -> srcDir.toPath().resolve("module-info.java"))
+                .filter(Files::exists)
+                .findFirst()
+                .ifPresent(path -> javaCompile.getOptions().setSourcepath(project.files(path.getParent())));
     }
 
     private List<String> buildCompilerArgs(JavaCompile javaCompile) {

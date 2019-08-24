@@ -42,7 +42,7 @@ public class CompileTestTask extends AbstractModulePluginTask {
 
         String moduleName = helper().moduleName();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
-        FileCollection classpath = compileTestJava.getClasspath();
+        FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(compileTestJava.getClasspath());
 
         patchModuleExtension.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(compilerArgs));
 

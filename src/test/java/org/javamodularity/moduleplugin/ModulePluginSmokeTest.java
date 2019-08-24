@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -79,9 +80,16 @@ class ModulePluginSmokeTest {
 
     private static void assertExpectedClassFileFormats(
             String subprojectName, int mainJavaRelease, int moduleInfoJavaRelease) throws IOException {
-        Path classesDir = Path.of("test-project-mixed").resolve(subprojectName).resolve("build/classes/java/main");
+        Path basePath = Path.of("test-project-mixed").resolve(subprojectName).resolve("build/classes");
+        Path classesDir = basePath.resolve("java/main");
+        Path moduleInfoClassesDir = basePath.resolve("module-info");
 
-        Path moduleInfoClassPath = classesDir.resolve("module-info.class");
+        List<Path> moduleInfoPaths = Stream.of(classesDir, moduleInfoClassesDir)
+                .map(dir -> dir.resolve("module-info.class"))
+                .filter(path -> path.toFile().isFile())
+                .collect(Collectors.toList());
+        assertEquals(1, moduleInfoPaths.size(), "module-info.class found in multiple locations: " + moduleInfoPaths);
+        Path moduleInfoClassPath = moduleInfoPaths.get(0);
         SmokeTestHelper.assertClassFileJavaVersion(moduleInfoJavaRelease, moduleInfoClassPath);
 
         Path nonModuleInfoClassPath = SmokeTestHelper.anyNonModuleInfoClassFilePath(classesDir);

@@ -101,7 +101,11 @@ public class ModuleOptions {
     }
     //endregion
 
-    private JavaProjectHelper helper() {
+    protected JavaProjectHelper helper() {
         return new JavaProjectHelper(project);
+    }
+
+    protected final MergeClassesHelper mergeClassesHelper() {
+        return new MergeClassesHelper(project);
     }
 }

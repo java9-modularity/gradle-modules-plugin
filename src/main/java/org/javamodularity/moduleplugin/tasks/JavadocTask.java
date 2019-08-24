@@ -36,7 +36,7 @@ public class JavadocTask extends AbstractModulePluginTask {
     private void addJavadocOptions(Javadoc javadoc, ModuleOptions moduleOptions) {
         var options = (CoreJavadocOptions) javadoc.getOptions();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
-        FileCollection classpath = javadoc.getClasspath();
+        FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(javadoc.getClasspath());
 
         StreamHelper.concat(
                 patchModuleExtension.buildModulePathOption(classpath).stream(),

@@ -2,21 +2,19 @@ package org.javamodularity.moduleplugin;
 
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.file.SourceDirectorySet;
-import org.gradle.api.internal.plugins.DslObject;
 import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.tasks.GroovySourceSet;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
 
-import java.lang.reflect.InvocationTargetException;
+import java.io.File;
 import java.util.Optional;
 
 /**
  * Generic helper for Gradle {@link Project} API that is modular and has {@link JavaPlugin} applied.
  */
 public final class JavaProjectHelper {
+    public static final String MERGE_CLASSES_TASK_NAME = "mergeClasses";
 
     private final Project project;
 
@@ -56,40 +54,6 @@ public final class JavaProjectHelper {
     public SourceSet testSourceSet() {
         return sourceSet(SourceSet.TEST_SOURCE_SET_NAME);
     }
-
-    public GroovySourceSet groovySourceSet(SourceSet javaSourceSet) {
-        return (GroovySourceSet)new DslObject(javaSourceSet).getConvention().getPlugins().get("groovy");
-    }
-
-    public GroovySourceSet groovyMainSourceSet() {
-        return groovySourceSet(mainSourceSet());
-    }
-
-    public GroovySourceSet groovyTestSourceSet() {
-        return groovySourceSet(testSourceSet());
-    }
-
-    public Object kotlinSourceSet(SourceSet javaSourceSet) {
-        return new DslObject(javaSourceSet).getConvention().getPlugins().get("kotlin");
-    }
-
-    public SourceDirectorySet kotlinSourceDirectorySet(SourceSet javaSourceSet) {
-        var kotlinSourceSet = new DslObject(javaSourceSet).getConvention().getPlugins().get("kotlin");
-        try {
-            return (SourceDirectorySet)kotlinSourceSet.getClass().getMethod("getKotlin").invoke(kotlinSourceSet);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public SourceDirectorySet kotlinMainSourceDirectorySet() {
-        return kotlinSourceDirectorySet(mainSourceSet());
-    }
-
-    public SourceDirectorySet kotlinTestSourceDirectorySet() {
-        return kotlinSourceDirectorySet(testSourceSet());
-    }
-
     //endregion
 
     //region TASKS
@@ -114,4 +78,13 @@ public final class JavaProjectHelper {
     }
     //endregion
 
+    //region DIRECTORIES
+    public File getMergedDir() {
+        return new File(project.getBuildDir().getPath() +"/classes/merged");
+    }
+
+    public File getModuleInfoDir() {
+        return new File(project.getBuildDir().getPath() +"/classes/module-info");
+    }
+    //endregion
 }
