@@ -62,9 +62,10 @@ public class TestTask extends AbstractModulePluginTask {
         var jvmArgs = new ArrayList<>(testJava.getJvmArgs());
 
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
-        FileCollection classpath = testJava.getClasspath();
 
+        FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(testJava.getClasspath());
         patchModuleExtension.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
+
         patchModuleExtension.resolvePatched(classpath).mutateArgs(jvmArgs);
 
         new TaskOption("--patch-module", buildPatchModuleOptionValue()).mutateArgs(jvmArgs);

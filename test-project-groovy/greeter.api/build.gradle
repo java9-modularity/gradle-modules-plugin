@@ -1,0 +1,18 @@
+//region NO-OP (DSL testing)
+compileJava {
+    moduleOptions {
+        addModules = []
+        compileModuleInfoSeparately = false
+    }
+}
+
+test {
+    moduleOptions {
+        addModules = []
+        runOnClasspath = false
+    }
+}
+
+modularity {
+}
+//endregion

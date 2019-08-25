@@ -24,6 +24,7 @@ public class ModuleSystemPlugin implements Plugin<Project> {
 
         new CompileTask(project).configureCompileJava();
         new CompileModuleInfoTask(project).configureCompileModuleInfoJava();
+        new MergeClassesTask(project).configureMergeClasses();
         new CompileTestTask(project).configureCompileTestJava();
         new TestTask(project).configureTestJava();
         new RunTask(project).configureRun();

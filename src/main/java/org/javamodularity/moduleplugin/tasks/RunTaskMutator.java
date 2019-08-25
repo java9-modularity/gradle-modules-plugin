@@ -39,10 +39,10 @@ public class RunTaskMutator extends AbstractExecutionMutator {
         String moduleName = helper().moduleName();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
         var moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
-        FileCollection classpath = execTask.getClasspath();
 
         moduleOptions.mutateArgs(jvmArgs);
 
+        FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(execTask.getClasspath());
         patchModuleExtension.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
         patchModuleExtension.resolvePatched(classpath).mutateArgs(jvmArgs);
 

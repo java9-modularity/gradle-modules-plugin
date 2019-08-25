@@ -4,6 +4,7 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 
@@ -48,6 +49,13 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
                 mutator.modularizeJavaCompileTask(compileModuleInfoJava);
             }
         });
+
+        project.getTasks().withType(Jar.class).configureEach(new Action<Jar>() {
+            @Override
+            public void execute(Jar jar) {
+                jar.from(helper().getModuleInfoDir());
+            }
+        });
     }
 
     /**
@@ -59,7 +67,9 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
 
         compileModuleInfoJava.setClasspath(project.files()); // empty
         compileModuleInfoJava.setSource(pathToModuleInfoJava());
-        compileModuleInfoJava.setDestinationDir(compileJava.getDestinationDir());
+        compileModuleInfoJava.getOptions().setSourcepath(project.files(pathToModuleInfoJava().getParent()));
+
+        compileModuleInfoJava.setDestinationDir(helper().getModuleInfoDir());
 
         // we need all the compiled classes before compiling module-info.java
         compileModuleInfoJava.dependsOn(compileJava);

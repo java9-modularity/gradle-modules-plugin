@@ -32,4 +32,8 @@ abstract class AbstractExecutionMutator {
     protected final JavaProjectHelper helper() {
         return new JavaProjectHelper(project);
     }
+
+    protected final MergeClassesHelper mergeClassesHelper() {
+        return new MergeClassesHelper(project);
+    }
 }
