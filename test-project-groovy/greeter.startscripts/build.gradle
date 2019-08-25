@@ -1,0 +1,39 @@
+import org.javamodularity.moduleplugin.tasks.ModularJavaExec
+import org.javamodularity.moduleplugin.tasks.ModularCreateStartScripts
+
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation project(':greeter.api')
+    runtimeOnly project(':greeter.provider')
+}
+
+patchModules.config = [
+        'java.annotation=jsr305-3.0.2.jar'
+]
+
+application {
+    mainClassName = 'greeter.startscripts/startscripts.MainDemo'
+    applicationName = 'demo'
+    applicationDefaultJvmArgs = ['-Xmx128m']
+}
+
+new File("$projectDir/src/main/groovy/startscripts").eachFileMatch(~/Demo.*\.groovy/) { file ->
+    def demoClassName = file.name - '.groovy'
+
+    def runDemo = task("run$demoClassName", type: ModularJavaExec) {
+        group = 'Demo'
+        description = "Run the $demoClassName program"
+        main = "greeter.startscripts/startscripts.$demoClassName"
+        jvmArgs = ['-Xmx128m']
+    }
+
+    def createScripts = task("createStartScripts$demoClassName", type: ModularCreateStartScripts) {
+        runTask = runDemo
+        applicationName = demoClassName.uncapitalize()
+    }
+
+    installDist.finalizedBy createScripts
+}

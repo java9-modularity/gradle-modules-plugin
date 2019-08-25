@@ -1,0 +1,20 @@
+import org.javamodularity.moduleplugin.tasks.ModularJavaExec
+
+dependencies {
+    implementation project(':greeter.api')
+    runtimeOnly project(':greeter.provider')
+}
+
+patchModules.config = [
+        'java.annotation=jsr305-3.0.2.jar'
+]
+
+new File("$projectDir/src/main/groovy/demo").eachFileMatch(~/Demo.*\.groovy/) { file ->
+    def demoClassName = file.name - '.groovy'
+    task "run$demoClassName"(type: ModularJavaExec) {
+        group = 'Demo'
+        description = "Run the $demoClassName program"
+        main = "greeter.javaexec/demo.$demoClassName"
+        jvmArgs = ['-XX:+PrintGCDetails']
+    }
+}

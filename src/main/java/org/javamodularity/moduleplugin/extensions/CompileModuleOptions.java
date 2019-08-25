@@ -1,8 +1,14 @@
 package org.javamodularity.moduleplugin.extensions;
 
 import org.gradle.api.Project;
+import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.javamodularity.moduleplugin.internal.TaskOption;
 import org.javamodularity.moduleplugin.tasks.ModuleOptions;
+
+import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CompileModuleOptions extends ModuleOptions {
 
@@ -32,4 +38,21 @@ public class CompileModuleOptions extends ModuleOptions {
         this.compileModuleInfoSeparately = compileModuleInfoSeparately;
     }
 
+    @Override
+    public void mutateArgs(List<String> args) {
+        super.mutateArgs(args);
+
+        List<File> otherDirs = mergeClassesHelper().otherCompileTaskStream()
+                .map(AbstractCompile::getDestinationDir)
+                .collect(Collectors.toList());
+        if(!otherDirs.isEmpty()) {
+            new TaskOption(
+                    "--patch-module",
+                    helper().moduleName() + "=" +
+                            otherDirs.stream()
+                                    .map(File::getAbsolutePath)
+                                    .collect(Collectors.joining(File.pathSeparator))
+            ).mutateArgs(args);
+        }
+    }
 }

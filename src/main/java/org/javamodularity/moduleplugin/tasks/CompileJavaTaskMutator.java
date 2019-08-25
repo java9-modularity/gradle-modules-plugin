@@ -2,17 +2,16 @@ package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 class CompileJavaTaskMutator {
-
-    private static final String COMPILE_KOTLIN_TASK_NAME = "compileKotlin";
 
     private final Project project;
     /**
@@ -40,10 +39,16 @@ class CompileJavaTaskMutator {
         List<String> compilerArgs = buildCompilerArgs(javaCompile);
         javaCompile.getOptions().setCompilerArgs(compilerArgs);
         javaCompile.setClasspath(project.files());
+        configureSourcepath(javaCompile);
+    }
 
-        // https://github.com/java9-modularity/gradle-modules-plugin/issues/45
-        helper().findTask(COMPILE_KOTLIN_TASK_NAME, AbstractCompile.class)
-                .ifPresent(compileKotlin -> javaCompile.setDestinationDir(compileKotlin.getDestinationDir()));
+    // Setting the sourcepath is necessary when using forked compilation for module-info.java
+    private void configureSourcepath(JavaCompile javaCompile) {
+        helper().mainSourceSet().getJava().getSrcDirs().stream()
+                .map(srcDir -> srcDir.toPath().resolve("module-info.java"))
+                .filter(Files::exists)
+                .findFirst()
+                .ifPresent(path -> javaCompile.getOptions().setSourcepath(project.files(path.getParent())));
     }
 
     private List<String> buildCompilerArgs(JavaCompile javaCompile) {

@@ -4,11 +4,13 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 
-public class CompileTask extends AbstractCompileTask {
+import java.util.Optional;
 
+public class CompileTask extends AbstractCompileTask {
     public CompileTask(Project project) {
         super(project);
     }
@@ -24,6 +26,13 @@ public class CompileTask extends AbstractCompileTask {
     private void configureCompileJava(JavaCompile compileJava) {
         var moduleOptions = compileJava.getExtensions().create("moduleOptions", CompileModuleOptions.class, project);
         project.afterEvaluate(p -> {
+            MergeClassesHelper.POST_JAVA_COMPILE_TASK_NAMES.stream()
+                    .map(name -> helper().findTask(name, AbstractCompile.class))
+                    .flatMap(Optional::stream)
+                    .filter(task -> !task.getSource().isEmpty())
+                    .findAny()
+                    .ifPresent(task -> moduleOptions.setCompileModuleInfoSeparately(true));
+
             if (moduleOptions.getCompileModuleInfoSeparately()) {
                 compileJava.exclude("module-info.java");
             } else {
