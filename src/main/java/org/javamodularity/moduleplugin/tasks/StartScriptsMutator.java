@@ -117,10 +117,11 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
         Path outputDir = startScriptsTask.getOutputDir().toPath();
         Path bashScript = outputDir.resolve(startScriptsTask.getApplicationName());
 
-        replaceScriptContent(bashScript, "eval set .*", "eval set -- \\$DEFAULT_JVM_OPTS \\$JAVA_OPTS \\$CLI_OPTS \\\"\\$APP_ARGS\\\"");
+        replaceScriptContent(bashScript, "eval set -- \\$DEFAULT_JVM_OPTS \\$JAVA_OPTS \\$(\\S+).*", "eval set -- \\$JAVA_OPTS \\$$1 \\$DEFAULT_JVM_OPTS \\\"\\$APP_ARGS\\\"");
+
 
         Path batFile = outputDir.resolve(startScriptsTask.getApplicationName() + ".bat");
-        replaceScriptContent(batFile, "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %CLI_OPTS%.*", "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %CLI_OPTS% %CMD_LINE_ARGS%");
+        replaceScriptContent(batFile, "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %(\\S+)%.*", "\"%JAVA_EXE%\" %JAVA_OPTS% %$1% %DEFAULT_JVM_OPTS% %CMD_LINE_ARGS%");
     }
 
     private static void replaceLibsPlaceHolder(Path path, String libText, String patchLibText) {
