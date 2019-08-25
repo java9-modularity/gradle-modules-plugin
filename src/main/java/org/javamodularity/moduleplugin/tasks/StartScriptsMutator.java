@@ -46,9 +46,14 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
         startScriptsTask.doLast(new Action<Task>() {
             @Override
             public void execute(Task task) {
-                configureStartScriptsDoLast(startScriptsTask);
+               configureStartScriptsDoLast((CreateStartScripts) task);
             }
         });
+    }
+
+    private void configureStartScriptsDoLast(CreateStartScripts startScriptsTask) {
+        replaceLibsPlaceHolders(startScriptsTask);
+        removeClasspathArgs(startScriptsTask);
     }
 
     private void configureStartScriptsDoFirst(CreateStartScripts startScriptsTask) {
@@ -79,7 +84,7 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
         return jvmArgs;
     }
 
-    private void configureStartScriptsDoLast(CreateStartScripts startScriptsTask) {
+    private void replaceLibsPlaceHolders(CreateStartScripts startScriptsTask) {
         Path outputDir = startScriptsTask.getOutputDir().toPath();
 
         Path bashScript = outputDir.resolve(startScriptsTask.getApplicationName());
@@ -108,16 +113,36 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
         fileCopyDetails.setRelativePath(updatedRelativePath);
     }
 
+    private void removeClasspathArgs(CreateStartScripts startScriptsTask) {
+        Path outputDir = startScriptsTask.getOutputDir().toPath();
+        Path bashScript = outputDir.resolve(startScriptsTask.getApplicationName());
+
+        replaceScriptContent(bashScript, "eval set -- \\$DEFAULT_JVM_OPTS \\$JAVA_OPTS \\$(\\S+).*", "eval set -- \\$JAVA_OPTS \\$$1 \\$DEFAULT_JVM_OPTS \\\"\\$APP_ARGS\\\"");
+
+
+        Path batFile = outputDir.resolve(startScriptsTask.getApplicationName() + ".bat");
+        replaceScriptContent(batFile, "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %(\\S+)%.*", "\"%JAVA_EXE%\" %JAVA_OPTS% %$1% %DEFAULT_JVM_OPTS% %CMD_LINE_ARGS%");
+    }
+
     private static void replaceLibsPlaceHolder(Path path, String libText, String patchLibText) {
         try {
-            String bashScript = Files.readString(path);
-            String updatedBashScript = bashScript
+            String updatedScriptContent = Files.readString(path)
                     .replaceAll(LIBS_PLACEHOLDER, libText)
                     .replaceAll(PATCH_LIBS_PLACEHOLDER, patchLibText);
 
-            Files.writeString(path, updatedBashScript);
+            Files.writeString(path, updatedScriptContent);
         } catch (IOException e) {
             throw new GradleException("Couldn't replace placeholder in " + path);
+        }
+    }
+
+    private static void replaceScriptContent(Path path, String regex, String replacement) {
+        try {
+            String updatedScriptContent = Files.readString(path).replaceAll(regex, replacement);
+
+            Files.writeString(path, updatedScriptContent);
+        } catch (IOException e) {
+            throw new GradleException("Couldn't update run script in " + path);
         }
     }
 }
