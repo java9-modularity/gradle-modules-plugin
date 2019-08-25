@@ -7,6 +7,9 @@ import org.gradle.testkit.runner.TaskOutcome;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -57,17 +60,21 @@ final class SmokeTestHelper {
     //endregion
 
     //region APP OUTPUT
-    static String getAppOutput(String binDirPath, String appName) {
+    static String getAppOutput(String binDirPath, String appName, Map<String, String> env, String... args) {
         boolean windows = System.getProperty("os.name").toLowerCase().contains("windows");
         String scriptName = windows ? (appName + ".bat") : appName;
 
         File binDir = new File(binDirPath).getAbsoluteFile();
+        List<String> cmd = new ArrayList<>();
+        cmd.add(new File(binDir, scriptName).getPath());
+        for(String arg : args) cmd.add(arg);
         Process process;
         try {
-            process = new ProcessBuilder()
+            ProcessBuilder processBuilder = new ProcessBuilder()
                     .directory(binDir)
-                    .command(new File(binDir, scriptName).getPath())
-                    .start();
+                    .command(cmd);
+            processBuilder.environment().putAll(env);
+            process = processBuilder.start();
             process.waitFor(30, TimeUnit.SECONDS);
         } catch (Exception e) {
             e.printStackTrace();

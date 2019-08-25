@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -124,7 +125,7 @@ class ModulePluginSmokeTest {
         assertEquals(4, libDir.toFile().listFiles().length, "Unexpected number of jars in lib dir");
 
         Path binDir = installDir.resolve("bin");
-        assertTrue(getAppOutput(binDir.toString(), "greeter.runner").contains("welcome"));
+        assertTrue(getAppOutput(binDir.toString(), "greeter.runner", Map.of()).contains("welcome"));
     }
 
     @ParameterizedTest
@@ -155,14 +156,15 @@ class ModulePluginSmokeTest {
 
         assertTasksSuccessful(result, "greeter.startscripts", "installDist");
 
+        Map<String, String> env = Map.of("JAVA_OPTS", "-Dgreeting.addition=home");
         String binDir = projectName + "/greeter.startscripts/build/install/demo/bin";
-        assertEquals("MainDemo: welcome", getAppOutput(binDir, "demo"));
-        assertEquals("Demo1: welcome", getAppOutput(binDir, "demo1"));
-        assertEquals("Demo2: welcome", getAppOutput(binDir, "demo2"));
+        assertEquals("MainDemo: welcome home, Alice and Bob!", getAppOutput(binDir, "demo", env,"Alice", "Bob"));
+        assertEquals("Demo1: welcome home, Alice and Bob!", getAppOutput(binDir, "demo1", env, "Alice", "Bob"));
+        assertEquals("Demo2: welcome home, Alice and Bob!", getAppOutput(binDir, "demo2", env, "Alice", "Bob"));
     }
 
-    private static String getAppOutput(String binDirPath, String appName) {
-        return SmokeTestHelper.getAppOutput(binDirPath, appName);
+    private static String getAppOutput(String binDirPath, String appName, Map<String,String> env, String... args) {
+        return SmokeTestHelper.getAppOutput(binDirPath, appName, env, args);
     }
 
     private static void assertTasksSuccessful(BuildResult result, String subprojectName, String... taskNames) {
