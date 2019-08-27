@@ -123,8 +123,8 @@ class ModulePluginSmokeTest {
         assertEquals(0, libDir.toFile().listFiles(f -> f.getName().equals("jsr305-3.0.2.jar")).length, "Patched libs should not be in lib dir");
         assertEquals(4, libDir.toFile().listFiles().length, "Unexpected number of jars in lib dir");
 
-        Path binDir = installDir.resolve("bin");
-        assertTrue(getAppOutput(binDir.toString(), "greeter.runner").contains("welcome"));
+        SmokeTestAppContext ctx = SmokeTestAppContext.ofDefault(installDir.resolve("bin"));
+        assertTrue(ctx.getAppOutput("greeter.runner").contains("welcome"));
     }
 
     @ParameterizedTest
@@ -156,13 +156,11 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.startscripts", "installDist");
 
         String binDir = projectName + "/greeter.startscripts/build/install/demo/bin";
-        assertEquals("MainDemo: welcome", getAppOutput(binDir, "demo"));
-        assertEquals("Demo1: welcome", getAppOutput(binDir, "demo1"));
-        assertEquals("Demo2: welcome", getAppOutput(binDir, "demo2"));
-    }
+        SmokeTestAppContext ctx = SmokeTestAppContext.ofAliceAndBobAtHome(Path.of(binDir));
 
-    private static String getAppOutput(String binDirPath, String appName) {
-        return SmokeTestHelper.getAppOutput(binDirPath, appName);
+        assertEquals("MainDemo: welcome home, Alice and Bob!", ctx.getAppOutput("demo"));
+        assertEquals("Demo1: welcome home, Alice and Bob!", ctx.getAppOutput("demo1"));
+        assertEquals("Demo2: welcome home, Alice and Bob!", ctx.getAppOutput("demo2"));
     }
 
     private static void assertTasksSuccessful(BuildResult result, String subprojectName, String... taskNames) {
