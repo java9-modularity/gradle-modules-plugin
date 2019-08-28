@@ -14,7 +14,6 @@ import java.util.Optional;
  * Generic helper for Gradle {@link Project} API that is modular and has {@link JavaPlugin} applied.
  */
 public final class JavaProjectHelper {
-    public static final String MERGE_CLASSES_TASK_NAME = "mergeClasses";
 
     private final Project project;
 
@@ -80,11 +79,11 @@ public final class JavaProjectHelper {
 
     //region DIRECTORIES
     public File getMergedDir() {
-        return new File(project.getBuildDir().getPath() +"/classes/merged");
+        return new File(project.getBuildDir(), "classes/merged");
     }
 
     public File getModuleInfoDir() {
-        return new File(project.getBuildDir().getPath() +"/classes/module-info");
+        return new File(project.getBuildDir(), "classes/module-info");
     }
     //endregion
 }
