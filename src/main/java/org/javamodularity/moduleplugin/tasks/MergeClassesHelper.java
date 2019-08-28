@@ -18,8 +18,8 @@ import java.util.stream.Stream;
 
 public class MergeClassesHelper {
     public static final String MERGE_CLASSES_TASK_NAME = "mergeClasses";
-    public static List<String> PRE_JAVA_COMPILE_TASK_NAMES = List.of("compileKotlin");
-    public static List<String> POST_JAVA_COMPILE_TASK_NAMES = List.of("compileGroovy");
+    public static final List<String> PRE_JAVA_COMPILE_TASK_NAMES = List.of("compileKotlin");
+    public static final List<String> POST_JAVA_COMPILE_TASK_NAMES = List.of("compileGroovy");
 
     private final Project project;
 
@@ -53,7 +53,7 @@ public class MergeClassesHelper {
     }
 
     public boolean isMergeRequired() {
-        return otherCompileTaskStream().filter(task -> !task.getSource().isEmpty()).findAny().isPresent();
+        return otherCompileTaskStream().anyMatch(task -> !task.getSource().isEmpty());
     }
 
     public Sync createMergeClassesTask() {
