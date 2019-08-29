@@ -6,6 +6,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
+import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;

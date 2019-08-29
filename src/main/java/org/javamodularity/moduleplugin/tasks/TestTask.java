@@ -12,6 +12,8 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
+import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
+import org.javamodularity.moduleplugin.extensions.TestModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.File;

@@ -1,5 +1,5 @@
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions
-import org.javamodularity.moduleplugin.tasks.TestModuleOptions
+import org.javamodularity.moduleplugin.extensions.TestModuleOptions
 
 //region NO-OP (DSL testing)
 tasks.compileJava {

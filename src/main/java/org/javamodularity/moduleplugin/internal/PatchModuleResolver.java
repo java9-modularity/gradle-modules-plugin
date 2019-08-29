@@ -2,7 +2,7 @@ package org.javamodularity.moduleplugin.internal;
 
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-import org.javamodularity.moduleplugin.tasks.PatchModuleExtension;
+import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 
 import java.util.List;
 import java.util.Objects;

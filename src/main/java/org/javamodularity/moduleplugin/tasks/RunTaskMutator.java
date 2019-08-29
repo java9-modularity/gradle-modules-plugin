@@ -5,6 +5,8 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.JavaExec;
+import org.javamodularity.moduleplugin.extensions.ModuleOptions;
+import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
