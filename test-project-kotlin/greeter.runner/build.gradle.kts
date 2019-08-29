@@ -1,4 +1,4 @@
-import org.javamodularity.moduleplugin.extensions.ModuleOptions
+import org.javamodularity.moduleplugin.extensions.RunModuleOptions
 
 plugins {
     application
@@ -24,7 +24,7 @@ patchModules.config = listOf(
 )
 
 (run) {
-    extensions.configure<ModuleOptions> {
+    extensions.configure<RunModuleOptions> {
         addModules = listOf("java.sql")
     }
 

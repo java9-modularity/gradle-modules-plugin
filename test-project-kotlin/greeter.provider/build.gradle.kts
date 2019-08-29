@@ -1,4 +1,4 @@
-import org.javamodularity.moduleplugin.extensions.ModuleOptions
+import org.javamodularity.moduleplugin.extensions.JavadocModuleOptions
 
 dependencies {
     implementation(project(":greeter.api"))
@@ -13,7 +13,7 @@ patchModules.config = listOf(
 )
 
 tasks.javadoc {
-    extensions.configure<ModuleOptions> {
+    extensions.configure<JavadocModuleOptions> {
         addModules = listOf("java.sql")
     }
 }
