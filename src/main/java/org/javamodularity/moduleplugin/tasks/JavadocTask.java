@@ -43,7 +43,7 @@ public class JavadocTask extends AbstractModulePluginTask {
         StreamHelper.concat(
                 patchModuleExtension.buildModulePathOption(classpath).stream(),
                 patchModuleExtension.resolvePatched(classpath).buildOptionStream(),
-                moduleOptions.buildFullOptionStream()
+                moduleOptions.buildFullOptionStreamLogged()
         ).forEach(option -> option.mutateOptions(options));
     }
 

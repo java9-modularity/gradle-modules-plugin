@@ -19,7 +19,6 @@ public abstract class ModuleOptions {
     private List<String> addModules = new ArrayList<>();
     private Map<String, String> addReads = new LinkedHashMap<>();
     private Map<String, String> addExports = new LinkedHashMap<>();
-    private Map<String, String> addOpens = new LinkedHashMap<>();
 
     protected ModuleOptions(Project project) {
         this.project = project;
@@ -49,27 +48,22 @@ public abstract class ModuleOptions {
         this.addExports = addExports;
     }
 
-    public Map<String, String> getAddOpens() {
-        return addOpens;
-    }
-
-    public void setAddOpens(Map<String, String> addOpens) {
-        this.addOpens = addOpens;
-    }
-
     //region MODULE TASK OPTION
     public void mutateArgs(List<String> args) {
-        buildFullOptionStream().forEach(o -> o.mutateArgs(args));
+        buildFullOptionStreamLogged().forEach(o -> o.mutateArgs(args));
     }
 
-    public Stream<TaskOption> buildFullOptionStream() {
+    public Stream<TaskOption> buildFullOptionStreamLogged() {
         LOGGER.debug("Updating module '{}' with...", helper().moduleName());
+        return buildFullOptionStream().peek(option -> LOGGER.debug("  {} {}", option.getFlag(), option.getValue()));
+    }
+
+    protected Stream<TaskOption> buildFullOptionStream() {
         return StreamHelper.concat(
                 addModulesOption().stream(),
                 addReadsOptionStream(),
-                addExportsOptionStream(),
-                addOpensOptionStream()
-        ).peek(option -> LOGGER.debug("  {} {}", option.getFlag(), option.getValue()));
+                addExportsOptionStream()
+        );
     }
 
     private Optional<TaskOption> addModulesOption() {
@@ -87,11 +81,7 @@ public abstract class ModuleOptions {
         return buildOptionStream("--add-exports", addExports);
     }
 
-    private Stream<TaskOption> addOpensOptionStream() {
-        return buildOptionStream("--add-opens", addOpens);
-    }
-
-    private Stream<TaskOption> buildOptionStream(String flag, Map<String, String> map) {
+    protected final Stream<TaskOption> buildOptionStream(String flag, Map<String, String> map) {
         if (map.isEmpty()) {
             return Stream.empty();
         }

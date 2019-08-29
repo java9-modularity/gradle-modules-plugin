@@ -163,10 +163,11 @@ compileJava {
 
 The following options are supported by the `moduleOptions` extension:
 
-* addModules: Maps to `--add-modules`. Value is of type `List<String>`, e.g, `['com.acme.foo']`.
-* addReads: Maps to `--add-reads`. Value is of type `Map<String, String>`, e.g, `['module1': 'module2']`.
-* addOpens: Maps to `--add-opens`. Value is of type `Map<String, String>`, e.g, `['module1/package': 'module2']`.
-* addExports: Maps to `--add-exports`. Value is of type `Map<String, String>`, e.g, `['module1/package': 'module2']`.
+* `addModules`: Maps to `--add-modules`. Value is of type `List<String>`, e.g, `['com.acme.foo']`.
+* `addReads`: Maps to `--add-reads`. Value is of type `Map<String, String>`, e.g, `['module1': 'module2']`.
+* `addExports`: Maps to `--add-exports`. Value is of type `Map<String, String>`, e.g, `['module1/package': 'module2']`.
+* `addOpens`: Maps to `--add-opens`. Value is of type `Map<String, String>`, e.g, `['module1/package': 'module2']`
+  (available only for `test` and `run` tasks).
 
 Note that multiple entries matching the same left hand side may be added to `addReads`, `addOpens`, and `addExports` but
 no value accumulation is performed, the last entry overrides the previous one. If you need to combine multiple values then
@@ -183,7 +184,7 @@ compileJava {
 }
 ```
 
-Where as the following block resolves to `--add-reads module1=module2,module3`
+Whereas the following block resolves to `--add-reads module1=module2,module3`
 
 ```
 compileJava {
