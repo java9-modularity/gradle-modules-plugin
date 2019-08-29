@@ -8,6 +8,7 @@ import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
+import org.javamodularity.moduleplugin.internal.StreamHelper;
 
 import java.io.File;
 import java.util.HashSet;
@@ -38,8 +39,9 @@ public class MergeClassesHelper {
     }
 
     private Stream<String> otherCompileTaskNameStream() {
-        return Stream.concat(
-                Stream.concat(PRE_JAVA_COMPILE_TASK_NAMES.stream(), POST_JAVA_COMPILE_TASK_NAMES.stream()),
+        return StreamHelper.concat(
+                PRE_JAVA_COMPILE_TASK_NAMES.stream(),
+                POST_JAVA_COMPILE_TASK_NAMES.stream(),
                 Stream.of(CompileModuleOptions.COMPILE_MODULE_INFO_TASK_NAME)
         );
     }
