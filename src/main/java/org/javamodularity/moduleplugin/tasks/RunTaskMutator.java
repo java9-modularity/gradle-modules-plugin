@@ -5,8 +5,8 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.JavaExec;
-import org.javamodularity.moduleplugin.extensions.ModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
+import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class RunTaskMutator extends AbstractExecutionMutator {
     }
 
     public void configureRun() {
-        execTask.getExtensions().create("moduleOptions", ModuleOptions.class, project);
+        execTask.getExtensions().create("moduleOptions", RunModuleOptions.class, project);
         updateJavaExecTask();
     }
 
@@ -40,7 +40,7 @@ public class RunTaskMutator extends AbstractExecutionMutator {
 
         String moduleName = helper().moduleName();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
-        var moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
+        var moduleOptions = execTask.getExtensions().getByType(RunModuleOptions.class);
 
         moduleOptions.mutateArgs(jvmArgs);
 

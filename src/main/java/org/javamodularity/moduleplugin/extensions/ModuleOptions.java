@@ -11,7 +11,7 @@ import org.javamodularity.moduleplugin.tasks.MergeClassesHelper;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class ModuleOptions {
+public abstract class ModuleOptions {
     private static final Logger LOGGER = Logging.getLogger(ModuleOptions.class);
 
     private final Project project;
@@ -21,7 +21,7 @@ public class ModuleOptions {
     private Map<String, String> addExports = new LinkedHashMap<>();
     private Map<String, String> addOpens = new LinkedHashMap<>();
 
-    public ModuleOptions(Project project) {
+    protected ModuleOptions(Project project) {
         this.project = project;
     }
 
@@ -102,7 +102,7 @@ public class ModuleOptions {
     }
     //endregion
 
-    protected JavaProjectHelper helper() {
+    protected final JavaProjectHelper helper() {
         return new JavaProjectHelper(project);
     }
 

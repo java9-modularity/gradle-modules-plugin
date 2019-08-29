@@ -7,7 +7,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.TestEngine;
-import org.javamodularity.moduleplugin.extensions.ModuleOptions;
+import org.javamodularity.moduleplugin.extensions.CompileTestModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
@@ -26,7 +26,8 @@ public class CompileTestTask extends AbstractModulePluginTask {
     }
 
     private void configureCompileTestJava(JavaCompile compileTestJava) {
-        var moduleOptions = compileTestJava.getExtensions().create("moduleOptions", ModuleOptions.class, project);
+        var moduleOptions = compileTestJava.getExtensions()
+                .create("moduleOptions", CompileTestModuleOptions.class, project);
 
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         compileTestJava.doFirst(new Action<Task>() {
@@ -39,7 +40,8 @@ public class CompileTestTask extends AbstractModulePluginTask {
         });
     }
 
-    private List<String> buildCompilerArgs(JavaCompile compileTestJava, ModuleOptions moduleOptions) {
+    private List<String> buildCompilerArgs(
+            JavaCompile compileTestJava, CompileTestModuleOptions moduleOptions) {
         var compilerArgs = new ArrayList<>(compileTestJava.getOptions().getCompilerArgs());
 
         String moduleName = helper().moduleName();

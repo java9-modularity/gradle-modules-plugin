@@ -7,7 +7,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.CoreJavadocOptions;
-import org.javamodularity.moduleplugin.extensions.ModuleOptions;
+import org.javamodularity.moduleplugin.extensions.JavadocModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.javamodularity.moduleplugin.internal.StreamHelper;
 
@@ -23,7 +23,7 @@ public class JavadocTask extends AbstractModulePluginTask {
     }
 
     private void configureJavaDoc(Javadoc javadoc) {
-        var moduleOptions = javadoc.getExtensions().create("moduleOptions", ModuleOptions.class, project);
+        var moduleOptions = javadoc.getExtensions().create("moduleOptions", JavadocModuleOptions.class, project);
 
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         javadoc.doFirst(new Action<Task>() {
@@ -35,7 +35,7 @@ public class JavadocTask extends AbstractModulePluginTask {
         });
     }
 
-    private void addJavadocOptions(Javadoc javadoc, ModuleOptions moduleOptions) {
+    private void addJavadocOptions(Javadoc javadoc, JavadocModuleOptions moduleOptions) {
         var options = (CoreJavadocOptions) javadoc.getOptions();
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(javadoc.getClasspath());

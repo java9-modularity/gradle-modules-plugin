@@ -10,8 +10,8 @@ import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.application.CreateStartScripts;
-import org.javamodularity.moduleplugin.extensions.ModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
+import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.IOException;
@@ -72,7 +72,7 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
         var jvmArgs = new ArrayList<String>();
 
         var patchModuleExtension = helper().extension(PatchModuleExtension.class);
-        var moduleOptions = execTask.getExtensions().getByType(ModuleOptions.class);
+        var moduleOptions = execTask.getExtensions().getByType(RunModuleOptions.class);
 
         moduleOptions.mutateArgs(jvmArgs);
 
