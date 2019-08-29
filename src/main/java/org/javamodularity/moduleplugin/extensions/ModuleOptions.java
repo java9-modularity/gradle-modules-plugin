@@ -1,4 +1,4 @@
-package org.javamodularity.moduleplugin.tasks;
+package org.javamodularity.moduleplugin.extensions;
 
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
@@ -6,6 +6,7 @@ import org.gradle.api.logging.Logging;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 import org.javamodularity.moduleplugin.internal.StreamHelper;
+import org.javamodularity.moduleplugin.tasks.MergeClassesHelper;
 
 import java.util.*;
 import java.util.stream.Stream;

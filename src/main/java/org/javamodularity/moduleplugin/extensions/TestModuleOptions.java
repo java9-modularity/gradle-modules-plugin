@@ -1,4 +1,4 @@
-package org.javamodularity.moduleplugin.tasks;
+package org.javamodularity.moduleplugin.extensions;
 
 import org.gradle.api.Project;
 

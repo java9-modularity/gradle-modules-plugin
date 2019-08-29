@@ -7,6 +7,8 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.TestEngine;
+import org.javamodularity.moduleplugin.extensions.ModuleOptions;
+import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;

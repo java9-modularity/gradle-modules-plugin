@@ -10,6 +10,8 @@ import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.application.CreateStartScripts;
+import org.javamodularity.moduleplugin.extensions.ModuleOptions;
+import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.IOException;

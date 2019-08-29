@@ -5,11 +5,11 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
+import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 class CompileJavaTaskMutator {
 

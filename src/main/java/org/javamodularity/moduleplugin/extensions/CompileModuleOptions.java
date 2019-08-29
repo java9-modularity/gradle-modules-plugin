@@ -4,7 +4,6 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.internal.TaskOption;
-import org.javamodularity.moduleplugin.tasks.ModuleOptions;
 
 import java.io.File;
 import java.util.List;

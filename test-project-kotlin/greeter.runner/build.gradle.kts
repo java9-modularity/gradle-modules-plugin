@@ -1,4 +1,4 @@
-import org.javamodularity.moduleplugin.tasks.ModuleOptions
+import org.javamodularity.moduleplugin.extensions.ModuleOptions
 
 plugins {
     application
