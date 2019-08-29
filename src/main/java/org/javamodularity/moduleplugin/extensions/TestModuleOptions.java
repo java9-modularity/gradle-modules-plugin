@@ -2,7 +2,7 @@ package org.javamodularity.moduleplugin.extensions;
 
 import org.gradle.api.Project;
 
-public class TestModuleOptions extends ModuleOptions {
+public class TestModuleOptions extends RuntimeModuleOptions {
 
     private boolean runOnClasspath;
 
