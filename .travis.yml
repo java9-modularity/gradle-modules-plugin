@@ -5,7 +5,7 @@ script: "./gradlew build --scan"
 deploy:
   provider: script
   on:
-    condition: tag =~ /^v.*$/
+    tags: true
   script: "./gradlew publishPlugin"
 
 before_install:
