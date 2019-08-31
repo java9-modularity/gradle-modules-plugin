@@ -4,7 +4,8 @@ jdk: openjdk11
 script: "./gradlew build --scan"
 deploy:
   provider: script
-  if: branch = master AND tag =~ /^v.*$/
+  on:
+    condition: tag =~ /^v.*$/
   script: "./gradlew publishPlugin"
 
 before_install:
