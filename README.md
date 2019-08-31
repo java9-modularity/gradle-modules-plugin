@@ -59,7 +59,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "org.javamodularity:moduleplugin:1.5.0"
+    classpath "org.javamodularity:moduleplugin:1.6.0"
   }
 }
 

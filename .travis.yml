@@ -4,7 +4,7 @@ jdk: openjdk11
 stages:
   - name: build
   - name: release
-    if: (branch = master) AND (tag =~ /^v*.$/)
+    if: (branch = master) AND (tag =~ /^v.*$/)
 
 jobs:
   include:

@@ -14,7 +14,7 @@ buildScan {
 }
 
 group 'org.javamodularity'
-version '1.5.1-SNAPSHOT'
+version '1.6.0'
 
 sourceCompatibility = 11
 targetCompatibility = 11
