@@ -7,6 +7,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
+import org.javamodularity.moduleplugin.internal.CompileModuleInfoHelper;
 
 import java.util.Optional;
 
@@ -45,6 +46,8 @@ public class CompileTask extends AbstractCompileTask {
      * @see CompileModuleInfoTask#configureModularityForCompileModuleInfoJava
      */
     void configureModularityForCompileJava(JavaCompile compileJava, CompileModuleOptions moduleOptions) {
+        CompileModuleInfoHelper.dependOnOtherCompileModuleInfoJavaTasks(compileJava);
+
         CompileJavaTaskMutator mutator = createCompileJavaTaskMutator(compileJava, moduleOptions);
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         compileJava.doFirst(new Action<Task>() {

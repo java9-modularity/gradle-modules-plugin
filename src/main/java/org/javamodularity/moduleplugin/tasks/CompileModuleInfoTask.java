@@ -7,6 +7,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
+import org.javamodularity.moduleplugin.internal.CompileModuleInfoHelper;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,6 +41,8 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
     void configureModularityForCompileModuleInfoJava(
             JavaCompile compileJava, CompileModuleOptions moduleOptions) {
         JavaCompile compileModuleInfoJava = preconfigureCompileModuleInfoJava(compileJava);
+        CompileModuleInfoHelper.dependOnOtherCompileModuleInfoJavaTasks(compileModuleInfoJava);
+
         CompileJavaTaskMutator mutator = createCompileJavaTaskMutator(compileJava, moduleOptions);
 
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
@@ -50,12 +53,7 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
             }
         });
 
-        project.getTasks().withType(Jar.class).configureEach(new Action<Jar>() {
-            @Override
-            public void execute(Jar jar) {
-                jar.from(helper().getModuleInfoDir());
-            }
-        });
+        project.getTasks().withType(Jar.class).configureEach(jar -> jar.from(helper().getModuleInfoDir()));
     }
 
     /**
