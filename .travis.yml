@@ -1,17 +1,11 @@
 language: java
 jdk: openjdk11
 
-stages:
-  - name: build
-  - name: release
-    if: (branch = master) AND (tag =~ /^v.*$/)
-
-jobs:
-  include:
-    - stage: build
-      script: "./gradlew build --scan"
-    - stage: release
-      script: "./gradlew publishPlugin"
+script: "./gradlew build --scan"
+deploy:
+  provider: script
+  if: branch = master AND tag =~ /^v.*$/
+  script: "./gradlew publishPlugin"
 
 before_install:
   - echo -e "gradle.publish.key=$GRADLE_PUBLISH_KEY\ngradle.publish.secret=$GRADLE_PUBLISH_SECRET" > gradle.properties
