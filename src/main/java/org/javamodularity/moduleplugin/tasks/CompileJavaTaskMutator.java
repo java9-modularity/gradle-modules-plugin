@@ -7,7 +7,6 @@ import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,11 +43,8 @@ class CompileJavaTaskMutator {
 
     // Setting the sourcepath is necessary when using forked compilation for module-info.java
     private void configureSourcepath(JavaCompile javaCompile) {
-        helper().mainSourceSet().getJava().getSrcDirs().stream()
-                .map(srcDir -> srcDir.toPath().resolve("module-info.java"))
-                .filter(Files::exists)
-                .findFirst()
-                .ifPresent(path -> javaCompile.getOptions().setSourcepath(project.files(path.getParent())));
+        var sourcePaths = project.files(helper().mainSourceSet().getJava().getSrcDirs());
+        javaCompile.getOptions().setSourcepath(sourcePaths);
     }
 
     private List<String> buildCompilerArgs(JavaCompile javaCompile) {
