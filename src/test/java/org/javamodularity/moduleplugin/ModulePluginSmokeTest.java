@@ -51,6 +51,24 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.runner", "build", "run");
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"5.4.2", "5.5.2"})
+    void smokeTestJunit5(String junitVersion) {
+        var versionProperty = String.format("-PjUnitVersion=%s", junitVersion);
+        var result = GradleRunner.create()
+                .withProjectDir(new File("test-project/"))
+                .withPluginClasspath(pluginClasspath)
+                .withGradleVersion(GRADLE_VERSION)
+                .withArguments("-c", "smoke_test_settings.gradle", versionProperty, "clean", "build", "run", "--stacktrace")
+                .forwardOutput()
+                .build();
+
+        assertTasksSuccessful(result, "greeter.api", "build");
+        assertTasksSuccessful(result, "greeter.provider", "build");
+        assertTasksSuccessful(result, "greeter.provider.test", "build");
+        assertTasksSuccessful(result, "greeter.runner", "build", "run");
+    }
+
     @Test
     void smokeTestMixed() throws IOException {
         var result = GradleRunner.create()

@@ -1,5 +1,6 @@
 package org.javamodularity.moduleplugin.tasks;
 
+import com.google.common.base.Strings;
 import org.codehaus.groovy.tools.Utilities;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
@@ -75,9 +76,10 @@ public class TestTask extends AbstractModulePluginTask {
 
         testModuleOptions.mutateArgs(jvmArgs);
 
-        TestEngine.select(project).ifPresent(testEngine -> {
+        TestEngine.selectMultiple(project).forEach(testEngine -> {
             buildAddReadsOption(testEngine).mutateArgs(jvmArgs);
             buildAddOpensOptionStream(testEngine).forEach(option -> option.mutateArgs(jvmArgs));
+            buildAddExportsOptionStream(testEngine).forEach(option -> option.mutateArgs(jvmArgs));
         });
 
         ModuleInfoTestHelper.mutateArgs(project, jvmArgs::add);
@@ -114,6 +116,13 @@ public class TestTask extends AbstractModulePluginTask {
         return getPackages(testDirs).stream()
                 .map(packageName -> String.format("%s/%s=%s", moduleName, packageName, testEngine.addOpens))
                 .map(value -> new TaskOption("--add-opens", value));
+    }
+
+    private Stream<TaskOption> buildAddExportsOptionStream(TestEngine testEngine) {
+        return Arrays.stream(testEngine.addExports.split(","))
+                .filter(export -> !Strings.isNullOrEmpty(export))
+                .map(export -> String.format("%s=ALL-UNNAMED", export))
+                .map(value -> new TaskOption("--add-exports", value));
     }
 
     private static Set<String> getPackages(Collection<File> dirs) {
