@@ -52,14 +52,16 @@ class ModulePluginSmokeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"5.4.2", "5.5.2"})
-    void smokeTestJunit5(String junitVersion) {
-        var versionProperty = String.format("-PjUnitVersion=%s", junitVersion);
+    @ValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2"})
+    void smokeTestJunit5(String junitVersionPair) {
+        var junitVersionParts = junitVersionPair.split("/");
+        var junitVersionProperty = String.format("-PjUnitVersion=%s", junitVersionParts[0]);
+        var junitPlatformVersionProperty = String.format("-PjUnitPlatformVersion=%s", junitVersionParts[1]);
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion(GRADLE_VERSION)
-                .withArguments("-c", "smoke_test_settings.gradle", versionProperty, "clean", "build", "run", "--stacktrace")
+                .withArguments("-c", "smoke_test_settings.gradle", junitVersionProperty, junitPlatformVersionProperty, "clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();
 

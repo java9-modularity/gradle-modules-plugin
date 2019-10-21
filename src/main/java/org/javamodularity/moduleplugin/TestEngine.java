@@ -10,28 +10,24 @@ import java.util.stream.Stream;
 
 public enum TestEngine {
 
-    JUNIT_4("junit", "junit", "junit", "junit", ""),
-    JUNIT_5("org.junit.jupiter", "junit-jupiter-api", "org.junit.jupiter.api", "org.junit.platform.commons",
-            "org.junit.platform.commons/org.junit.platform.commons.util" +
-                    ",org.junit.platform.commons/org.junit.platform.commons.logging"),
-    TESTNG("org.testng", "testng", "testng", "testng", ""),
-    ASSERTJ("org.assertj", "assertj-core", "org.assertj.core", "org.assertj.core", ""),
-    MOCKITO("org.mockito", "mockito-core", "org.mockito", "org.mockito", ""),
-    EASYMOCK("org.easymock", "easymock", "org.easymock", "org.easymock", "");
+    JUNIT_4("junit", "junit", "junit", "junit"),
+    JUNIT_5("org.junit.jupiter", "junit-jupiter-api", "org.junit.jupiter.api", "org.junit.platform.commons"),
+    TESTNG("org.testng", "testng", "testng", "testng"),
+    ASSERTJ("org.assertj", "assertj-core", "org.assertj.core", "org.assertj.core"),
+    MOCKITO("org.mockito", "mockito-core", "org.mockito", "org.mockito"),
+    EASYMOCK("org.easymock", "easymock", "org.easymock", "org.easymock");
 
     private final String groupId;
     private final String artifactId;
 
     public final String moduleName;
     public final String addOpens;
-    public final String addExports;
 
-    TestEngine(String groupId, String artifactId, String moduleName, String addOpens, String addExports) {
+    TestEngine(String groupId, String artifactId, String moduleName, String addOpens) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.moduleName = moduleName;
         this.addOpens = addOpens;
-        this.addExports = addExports;
     }
 
     public static List<TestEngine> selectMultiple(Project project) {
