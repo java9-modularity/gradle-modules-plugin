@@ -5,6 +5,7 @@ import groovy.util.Node;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.gradle.api.Action;
@@ -71,6 +72,11 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   /* package */ static final String NAME_ATTRIBUTE = "gradle_used_by_scope"; // */
   
   /**
+   * Part of path indicating that JRE is configured.
+   */
+  /* package */ static final String NAME_JRE = "JRE_CONTAINER"; // */
+  
+  /**
    * Adds functionality to improve the {@code .classpath} file created by the eclipse-plugin.
    * 
    * @param project
@@ -85,9 +91,9 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
       LOGGER.debug(
           "improveEclipseClasspathFile: list of tasks:{}",
           tasks.stream()
-          .map(i -> i.toString())
-          .collect(Collectors.joining(
-              System.lineSeparator() + "  ", System.lineSeparator() + "  ", ""
+              .map(i -> i.toString())
+              .collect(Collectors.joining(
+                  System.lineSeparator() + "  ", System.lineSeparator() + "  ", ""
               ))
       );
       
@@ -96,7 +102,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
       // ... task with name "eclipseClasspath" available => configure it
       
       // --- add functionality for enhancing the .classpath content
-      // Note: For more information see the manual for the eclipse-plugin
+      // Note: For more information see the manual for the eclipse-plugin.
       final EclipseClasspath eclipseClasspath = ((GenerateEclipseClasspath) task).getClasspath();
       eclipseClasspath.file(new Action<XmlFileContentMerger>() {
         @Override
@@ -105,17 +111,16 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
             @Override
             public void execute(final XmlProvider xmlProvider) {
               final Node rootNode = xmlProvider.asNode();
-              LOGGER.debug("addAction: rootNode.before:{}", rootNode);
+              LOGGER.debug("addAction: rootNode.before improving:{}", rootNode);
               ClasspathFile.improveEclipseClasspathFile(rootNode);
-              LOGGER.debug("addAction: rootNode.after :{}", rootNode);
-              // ClasspathFile.improveEclipseClasspathFile(xmlProvider.asNode());
+              LOGGER.debug("addAction: rootNode.after  improving:{}", rootNode);
             } // end inner method
           }); // end inner class Action<XmlProvider)
         } // end inner method
       }); // end inner class Action<XmlFileContentManager)
     } catch (UnknownDomainObjectException e) {
-      // ... no task with name "eclipseClasspath" => do nothing
-      // intentionally empty
+      // ... no task with name "eclipseClasspath" inform user via LOGGER
+      LOGGER.debug("addAction: no task \"eclipseClasspath\" => nothing to improve");
     } // end catch (UnknownDomainObjectException)
   } // end method */
   
@@ -182,10 +187,6 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
     flagTest.put("name",  "test");
     flagTest.put("value", "true");
     
-    final Map<String, String> flagModule = new LinkedHashMap<>();
-    flagModule.put("name",  "module");
-    flagModule.put("value", "true");
-    
     // --- loop over all items in rootNode and collect those of type Node with name "classpathentry"
     final List<Node> classpathEntries = (List<Node>) rootNode.children().stream()
         .filter(i -> i instanceof Node) // better safe than sorry
@@ -196,8 +197,6 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
     
     
     
-    
-    LOGGER.debug("improveEclipseClasspathFile, classpathEntries.type = {}", classpathEntries.getClass().toString());
     
     /*
         .filter(i -> isKindOfLib(i)) // filter nodes which are kind of "lib"
@@ -234,7 +233,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   private static boolean isJre(final Node node) {
     final Object path = node.attribute("path"); // might return null
     
-    return isKindOf(node, "con") && (null != path) && path.toString().contains("JRE_CONTAINER");
+    return isKindOf(node, "con") && (null != path) && path.toString().contains(NAME_JRE);
   } // end method */
   
   /**
@@ -256,7 +255,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
     return kind.equals(attr);
   } // end method */
   
-  /**
+  /*
    * Estimates whether given object is kind of "lib".
    * 
    * @param object
@@ -264,7 +263,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    *        
    * @return true if the {@link Node} has attribute "kind" an the value of that attribute is "lib",
    *         false otherwise
-   */
+   *
   private static boolean isKindOfLib(final Object object) {
     // ... assertion object is of type Node
     final Node item = (Node) object;
@@ -273,12 +272,45 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
     return "lib".equals(kind);
   } // end method */
   
+  /**
+   * Adds an attribute such given {@code node} appears on the module path.
+   * 
+   * <p>If the given {@code node} already contains an attribute indicating whether or not its
+   * a module, then the {@code node} isn't changed.
+   *  
+   * @param node
+   *        which should appear on the module path
+   */
   private static void moveToModulePath(final Node node) {
+    final Map<String, String> flagModule = new LinkedHashMap<>();
+    flagModule.put("name",  "module");
+    flagModule.put("value", "true");
+    
+   // --- assure that node has at least one child
     if (node.children().isEmpty()) {
       node.appendNode(NAME_CHILD);
     } // end if
+    // ... node has children
     
-    final List<Node> childs = node.children(); // never empty
+    // --- retrieve first node with name "attributes".
+    final Optional<Node> child = node.children() // never empty
+        .stream() // loop over all children
+        .filter(j -> j instanceof Node) // better safe than sorry
+        .filter(j -> NAME_CHILD.equals(((Node)j).name())) // nodes with name "attributes"
+        .findFirst();
+        
+    
+    if (child.isPresent()) {
+      // ... node contains a child of type Node with name "attributes" =>
+      //     check whether that child contains an attribute named "module"
+      // TODO
+    } else {
+      // ... node has no child of type Node with name "attributes" =>
+      //     create one and set it such that node appears on module path
+      node
+          .appendNode(NAME_CHILD) // add child with name "attributes"
+          .appendNode(NAME_GRAND, flagModule); // and grand-child with appropriate attributes
+    } // end if
   } // end method */
   
   /**
@@ -368,7 +400,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   } // end method */
   
   /**
-   * Puts every entry which is kind of "con" and with a path containing "JRE_CONTAINER"
+   * Puts every entry which is kind of "con" and with a path containing {@link #NAME_JRE}
    * on module-path.
    * 
    * @param entries
@@ -376,6 +408,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    */
   private static void putJreOnModulePath(final List<Node> entries) {
     entries.stream()
-        .filter(i -> isJre(i));
+        .filter(ClasspathFile::isJre)
+        .forEach(ClasspathFile::moveToModulePath);
   } // end method */
 } // end class

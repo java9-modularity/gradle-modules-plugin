@@ -8,7 +8,7 @@
  * d. configuration for publication
  */
 
-version = "1.21.531" // Note: u is the 21st letter in the alphabet.
+version = "1.21.600" // Note: u is the 21st letter in the alphabet.
 group = "foo.litu" // litu = li t u = LIbrary used for Testing U
 
 plugins { // ......................................................................................
@@ -18,12 +18,11 @@ plugins { // ...................................................................
   // Thus eclipse-plugin is applied.
   id("eclipse")
   id("maven-publish") // used for publication
-  id("org.javamodularity.moduleplugin") version "1.6.0" // plugin under test
-  //id("org.javamodularity.moduleplugin") version "1.6.1-SNAPSHOT" // plugin under test
+  id("org.javamodularity.moduleplugin") // plugin under test
 } // end plugins-section _______________________________________________________________________ */
 
 repositories { // .................................................................................
-  jcenter() // for resolving dependencies
+  jcenter()
 } // end repositories __________________________________________________________________________ */
 
 java { // Java version, here latest LTS with modularity support ...................................
@@ -31,13 +30,13 @@ java { // Java version, here latest LTS with modularity support ................
   targetCompatibility = JavaVersion.VERSION_11
 } // end Java version __________________________________________________________________________ */
 
-// configure JUnit 5 ..............................................................................
 dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
   testRuntimeOnly   ("org.junit.jupiter:junit-jupiter-engine:5.5.2")
   testRuntimeOnly   ("org.junit.platform:junit-platform-launcher:1.5.2")
 }
 
+// configure JUnit 5 ..............................................................................
 val test by tasks.getting(Test::class) {
   useJUnitPlatform()
   
