@@ -5,7 +5,6 @@ import groovy.util.Node;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.gradle.api.Action;
@@ -82,9 +81,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    * @param project
    *        the project
    */
-  /* package */ static void addAction(
-      final Project project
-  ) {
+  /* package */ static void addAction(final Project project) {
     try {
       // --- get task eclipseClasspath
       final TaskContainer tasks = project.getTasks();
@@ -221,6 +218,62 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   } // end method */
   
   /**
+   * Estimates whether given {@code node} contains a value for a key named "module".
+   * 
+   * @param node
+   *        {@code Node} for which the estimation is performed
+   *        
+   * @return false if {@code node} has at least one child with name "attributes" and that child has
+   *         at least one child with name "attribute" containing an attribute named "module",
+   *         true otherwise
+   */
+  /* package */ static boolean hasNoAttributeModule(final Node node) {
+    return node.children().stream() // loop over all children of node
+        .filter(n -> n instanceof Node) // better safe than sorry
+        .filter(n -> NAME_CHILD.equals(((Node)n).name())) // nodes with name "attributes"
+        .filter(n -> hasAttributeNamed((Node)n, "module"))
+        .findFirst()
+        .isEmpty();
+  } // end method */
+  
+  /**
+   * Estimates whether given {@code node} has a child named "attribute" and that child has an
+   * attribute named {@code name}.
+   *  
+   * @param child
+   *        {@code Node} for which the estimation is performed
+   * 
+   * @param name
+   *        of attribute searched for
+   * 
+   * @return true if {@code node} has at least one child named "attribute" containing an attribute
+   *         named {@code name},
+   *         false otherwise 
+   */
+  /* package */ static boolean hasAttributeNamed(final Node child, final String name) {
+    return child.children().stream() // loop over all children
+        .filter(g -> g instanceof Node) // better safe than sorry
+        .filter(g -> NAME_GRAND.equals(((Node)g).name())) // nodes with name "attribute"
+        .filter(g -> name.equals(((Node)g).attribute("name")))
+        .findFirst()
+        .isPresent();
+  } // end method */
+  
+  /**
+   * Puts every entry which is kind of "con" and with a path containing {@link #NAME_JRE}
+   * on module-path.
+   * 
+   * @param entries
+   *        list of {@link Node} with with name "classpathentry" 
+   */
+  /* package */ static void putJreOnModulePath(final List<Node> entries) {
+    entries.stream()
+        .filter(ClasspathFile::isJre)
+        .filter(ClasspathFile::hasNoAttributeModule)
+        .forEach(ClasspathFile::moveToModulePath);
+  } // end method */
+
+  /**
    * Estimates whether given {@link Node} belongs to a JRE description.
    * 
    * @param node
@@ -230,10 +283,49 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    *         "JRE_CONTAINER",
    *         false otherwise
    */
-  private static boolean isJre(final Node node) {
+  /* package */ static boolean isJre(final Node node) {
     final Object path = node.attribute("path"); // might return null
     
     return isKindOf(node, "con") && (null != path) && path.toString().contains(NAME_JRE);
+  } // end method */
+  
+  /**
+   * Adds an attribute such that given {@code node} appears on the module path.
+   * 
+   * <p>The implementation searches for the first child with name "attributes" and adds to that
+   * child a {@link Node} with name "attribute" and attributes
+   * {@code name="module"} and
+   * {@code value="true"}.
+   *  
+   * @param node
+   *        which should appear on the module path
+   */
+  /* package */ static void moveToModulePath(final Node node) {
+    final Map<String, String> flagModule = new LinkedHashMap<>();
+    flagModule.put("name",  "module");
+    flagModule.put("value", "true");
+
+    // --- find first child named "attributes"
+    node.children().stream() // loop over all children
+        .filter(c -> c instanceof Node) // better safe than sorry
+        .filter(n -> NAME_CHILD.equals(((Node)n).name())) // nodes with name "attributes"
+        .findFirst()
+        .ifPresentOrElse(
+            // ... node has a child named "attributes"
+            //     => add appropriate child to that
+            n -> ((Node) n).appendNode(NAME_GRAND, flagModule),
+            
+            // ... node has no child named "attributes"
+            //     => add appropriate child to node
+            new Runnable() {
+              @Override
+              public void run() {
+                node
+                    .appendNode(NAME_CHILD) // add child with name "attributes" and
+                    .appendNode(NAME_GRAND, flagModule); // grand-child with appropriate attributes
+              } // end inner method
+            } // end inner class Runnable
+        ); // end ifPresentOrElse(...)
   } // end method */
   
   /**
@@ -249,68 +341,10 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    *         equal to the given one in parameter {@code kind},
    *         false otherwise
    */
-  private static boolean isKindOf(final Node node, final String kind) {
+  /* package */ static boolean isKindOf(final Node node, final String kind) {
     final Object attr = node.attribute("kind"); // might return null
     
     return kind.equals(attr);
-  } // end method */
-  
-  /*
-   * Estimates whether given object is kind of "lib".
-   * 
-   * @param object
-   *        a {@link Node} investigated whether it is kind of "lib"
-   *        
-   * @return true if the {@link Node} has attribute "kind" an the value of that attribute is "lib",
-   *         false otherwise
-   *
-  private static boolean isKindOfLib(final Object object) {
-    // ... assertion object is of type Node
-    final Node item = (Node) object;
-    final Object kind = item.attribute("kind"); // might return null
-    
-    return "lib".equals(kind);
-  } // end method */
-  
-  /**
-   * Adds an attribute such given {@code node} appears on the module path.
-   * 
-   * <p>If the given {@code node} already contains an attribute indicating whether or not its
-   * a module, then the {@code node} isn't changed.
-   *  
-   * @param node
-   *        which should appear on the module path
-   */
-  private static void moveToModulePath(final Node node) {
-    final Map<String, String> flagModule = new LinkedHashMap<>();
-    flagModule.put("name",  "module");
-    flagModule.put("value", "true");
-    
-   // --- assure that node has at least one child
-    if (node.children().isEmpty()) {
-      node.appendNode(NAME_CHILD);
-    } // end if
-    // ... node has children
-    
-    // --- retrieve first node with name "attributes".
-    final Optional<Node> child = node.children() // never empty
-        .stream() // loop over all children
-        .filter(j -> j instanceof Node) // better safe than sorry
-        .filter(j -> NAME_CHILD.equals(((Node)j).name())) // nodes with name "attributes"
-        .findFirst();
-        
-    
-    if (child.isPresent()) {
-      // ... node contains a child of type Node with name "attributes" =>
-      //     check whether that child contains an attribute named "module"
-      // TODO
-    } else {
-      // ... node has no child of type Node with name "attributes" =>
-      //     create one and set it such that node appears on module path
-      node
-          .appendNode(NAME_CHILD) // add child with name "attributes"
-          .appendNode(NAME_GRAND, flagModule); // and grand-child with appropriate attributes
-    } // end if
   } // end method */
   
   /**
@@ -397,18 +431,5 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
     return NAME_ATTRIBUTE.equals(name)
         && (null != scope) // avoid NullPointerException
         && scope.toString().contains("main"); // scope isn't null here
-  } // end method */
-  
-  /**
-   * Puts every entry which is kind of "con" and with a path containing {@link #NAME_JRE}
-   * on module-path.
-   * 
-   * @param entries
-   *        list of {@link Node} with with name "classpathentry" 
-   */
-  private static void putJreOnModulePath(final List<Node> entries) {
-    entries.stream()
-        .filter(ClasspathFile::isJre)
-        .forEach(ClasspathFile::moveToModulePath);
   } // end method */
 } // end class
