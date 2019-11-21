@@ -48,7 +48,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   /**
    * Logger.
    */
-  private static final Logger LOGGER = Logging.getLogger(ModularJavaExec.class); // */
+  private static final Logger LOGGER = Logging.getLogger(ClasspathFile.class); // */
   
   /**
    * Name of interesting items when it comes to investigation.
@@ -237,8 +237,8 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   } // end method */
   
   /**
-   * Estimates whether given {@code node} has a child named "attribute" and that child has an
-   * attribute named {@code name}.
+   * Estimates whether given {@code node} has a child named {@code "attribute"} and
+   * that child has an attribute named {@code name}.
    *  
    * @param child
    *        {@code Node} for which the estimation is performed
@@ -246,8 +246,8 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    * @param name
    *        of attribute searched for
    * 
-   * @return true if {@code node} has at least one child named "attribute" containing an attribute
-   *         named {@code name},
+   * @return true if {@code node} has at least one child named {@code "attribute"}
+   *         containing an attribute named {@code name},
    *         false otherwise 
    */
   /* package */ static boolean hasAttributeNamed(final Node child, final String name) {
@@ -260,26 +260,12 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   } // end method */
   
   /**
-   * Puts every entry which is kind of "con" and with a path containing {@link #NAME_JRE}
-   * on module-path.
-   * 
-   * @param entries
-   *        list of {@link Node} with with name "classpathentry" 
-   */
-  /* package */ static void putJreOnModulePath(final List<Node> entries) {
-    entries.stream()
-        .filter(ClasspathFile::isJre)
-        .filter(ClasspathFile::hasNoAttributeModule)
-        .forEach(ClasspathFile::moveToModulePath);
-  } // end method */
-
-  /**
    * Estimates whether given {@link Node} belongs to a JRE description.
    * 
    * @param node
    *        a {@link Node} investigated whether it is of a certain kind
    * 
-   * @return true if the {@link Node} is kind of "con" and has an attribute "path" containing
+   * @return true if given {@link Node} is kind of "con" and has an attribute "path" containing
    *         "JRE_CONTAINER",
    *         false otherwise
    */
@@ -288,7 +274,26 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
     
     return isKindOf(node, "con") && (null != path) && path.toString().contains(NAME_JRE);
   } // end method */
-  
+
+  /**
+   * Estimates whether given {@link Node} is of certain kind.
+   * 
+   * @param node
+   *        a {@link Node} investigated whether it is of a certain kind
+   * 
+   * @param kind
+   *        type for which the given {@link Node} is checked
+   *        
+   * @return true if the {@link Node} has attribute "kind" and the value of that attribute is
+   *         equal to the given one in parameter {@code kind},
+   *         false otherwise
+   */
+  /* package */ static boolean isKindOf(final Node node, final String kind) {
+    final Object attr = node.attribute("kind"); // might return null
+    
+    return kind.equals(attr);
+  } // end method */
+
   /**
    * Adds an attribute such that given {@code node} appears on the module path.
    * 
@@ -304,7 +309,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
     final Map<String, String> flagModule = new LinkedHashMap<>();
     flagModule.put("name",  "module");
     flagModule.put("value", "true");
-
+  
     // --- find first child named "attributes"
     node.children().stream() // loop over all children
         .filter(c -> c instanceof Node) // better safe than sorry
@@ -327,26 +332,21 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
             } // end inner class Runnable
         ); // end ifPresentOrElse(...)
   } // end method */
-  
+
   /**
-   * Estimates whether given {@link Node} is of certain kind.
+   * Puts every entry which is kind of "con" and with a path containing {@link #NAME_JRE}
+   * on module-path.
    * 
-   * @param node
-   *        a {@link Node} investigated whether it is of a certain kind
-   * 
-   * @param kind
-   *        type for which the given {@link Node} is checked
-   *        
-   * @return true if the {@link Node} has attribute "kind" an the value of that attribute is
-   *         equal to the given one in parameter {@code kind},
-   *         false otherwise
+   * @param entries
+   *        list of {@link Node} with with name "classpathentry" 
    */
-  /* package */ static boolean isKindOf(final Node node, final String kind) {
-    final Object attr = node.attribute("kind"); // might return null
-    
-    return kind.equals(attr);
+  /* package */ static void putJreOnModulePath(final List<Node> entries) {
+    entries.stream()
+        .filter(ClasspathFile::isJre)
+        .filter(ClasspathFile::hasNoAttributeModule)
+        .forEach(ClasspathFile::moveToModulePath);
   } // end method */
-  
+
   /**
    * Estimates whether the given {@link Node} indicates that is should be on the module-path.
    *  

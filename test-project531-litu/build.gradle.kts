@@ -26,6 +26,10 @@ repositories { // ..............................................................
   jcenter() // for resolving dependencies
 } // end repositories __________________________________________________________________________ */
 
+eclipse.project { // customize Eclipse's project name .............................................
+  name = "foo.litu531"
+} // end customize Eclipse's project name ______________________________________________________ */
+
 java { // Java version, here latest LTS with modularity support ...................................
   sourceCompatibility = JavaVersion.VERSION_11
   targetCompatibility = JavaVersion.VERSION_11
