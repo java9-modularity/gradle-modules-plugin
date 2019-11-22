@@ -18,9 +18,13 @@ plugins { // ...................................................................
   // Thus eclipse-plugin is applied.
   id("eclipse")
   id("maven-publish") // used for publication
-  id("org.javamodularity.moduleplugin") version "1.6.0" // plugin under test
-  //id("org.javamodularity.moduleplugin") version "1.6.1-SNAPSHOT" // plugin under test
+  id("org.javamodularity.moduleplugin") version "1.6.1-SNAPSHOT" // plugin under test
 } // end plugins-section _______________________________________________________________________ */
+
+// configure ClasspathFileExtension ...............................................................
+configure<org.javamodularity.moduleplugin.extensions.ClasspathFileExtension> {
+  improveClasspathFile.set(true)
+} // end configure ClasspathFileExtension ______________________________________________________ */
 
 repositories { // .................................................................................
   jcenter() // for resolving dependencies
@@ -32,7 +36,7 @@ eclipse.project { // customize Eclipse's project name ..........................
 
 java { // Java version, here latest LTS with modularity support ...................................
   sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
+      targetCompatibility = JavaVersion.VERSION_11
 } // end Java version __________________________________________________________________________ */
 
 // configure JUnit 5 ..............................................................................

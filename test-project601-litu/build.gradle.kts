@@ -8,7 +8,7 @@
  * d. configuration for publication
  */
 
-version = "1.21.600" // Note: u is the 21st letter in the alphabet.
+version = "1.21.601" // Note: u is the 21st letter in the alphabet.
 group = "foo.litu" // litu = li t u = LIbrary used for Testing U
 
 plugins { // ......................................................................................

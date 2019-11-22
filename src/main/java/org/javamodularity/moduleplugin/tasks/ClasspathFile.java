@@ -1,50 +1,30 @@
 package org.javamodularity.moduleplugin.tasks;
 
-import groovy.util.Node;
-
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.UnknownDomainObjectException;
 import org.gradle.api.XmlProvider;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-import org.gradle.api.tasks.TaskContainer;
 import org.gradle.plugins.ide.api.XmlFileContentMerger;
 import org.gradle.plugins.ide.eclipse.GenerateEclipseClasspath;
 import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
+import org.javamodularity.moduleplugin.JavaProjectHelper;
+import org.javamodularity.moduleplugin.extensions.ClasspathFileExtension;
+
+import groovy.util.Node;
 
 /**
  * This class provides functionality to improve the content of {@code .classpath} file created
  * by the {@code eclipse} plugin.
  * 
- * <p>The version number of this file follow the rules from
- * <a href="https://semver.org/">Semantic Versioning 2.0.0</a>
- * 
- * <p><i><b>Summary:</b> Given a version number MAJOR.MINOR.PATCH, increment the:
- * <ol>
- *   <li>MAJOR version when you make incompatible API changes,
- *   <li>MINOR version when you add functionality in a backwards-compatible manner, and
- *   <li>PATCH version when you make backwards-compatible bug fixes.
- * </ol>
- * Additional labels for pre-release and build metadata are available as extensions to the
- * MAJOR.MINOR.PATCH format.</i>
- * 
- * <p><b>History:</b>
- * <ol>
- *   <li>2019-11-11, 1.0.0: first edition
- * </ol>
- * 
- * @version 1.0.0
  * @author <a href="mailto:alfred.65.fiedler@gmail.com">Alfred Fiedler</a>
  */
-@SuppressWarnings("unchecked") // keep Eclipse code-checker happy
-/* package */ final class ClasspathFile {
+//@SuppressWarnings("unchecked") // keep Eclipse code-checker happy
+public final class ClasspathFile {
   /**
    * Logger.
    */
@@ -76,49 +56,73 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   /* package */ static final String NAME_JRE = "JRE_CONTAINER"; // */
   
   /**
-   * Adds functionality to improve the {@code .classpath} file created by the eclipse-plugin.
-   * 
-   * @param project
-   *        the project
+   * The project.
    */
-  /* package */ static void addAction(final Project project) {
-    try {
-      // --- get task eclipseClasspath
-      final TaskContainer tasks = project.getTasks();
-      LOGGER.debug(
-          "improveEclipseClasspathFile: list of tasks:{}",
-          tasks.stream()
-              .map(i -> i.toString())
-              .collect(Collectors.joining(
-                  System.lineSeparator() + "  ", System.lineSeparator() + "  ", ""
-              ))
-      );
+  private final Project insProject; // */
+  
+  /**
+   * Extension controlling whether {@code .classpath} file is improved or not.
+   */
+  private final ClasspathFileExtension insExtension; // */
+  
+  /**
+   * @param project
+   *        this instance is related to
+   */
+  public ClasspathFile(final Project project) {
+    insProject = project;
+    insExtension = insProject.getExtensions().create(
+        "classpathFileExtension", ClasspathFileExtension.class, insProject
+    );
+  } // end constructor */
+  
+  /**
+   * Configures appropriate action if project has task "eclipseClasspath".
+   */
+  public void configure() {
+    insProject.afterEvaluate(p -> {
+      final boolean flag = insExtension.getImproveClasspathFile().get();
+      LOGGER.debug("configure, extension.value   : {}", flag);
       
-      // might throw UnknownDomainObjectException, thus we better catch that
-      final Task task = tasks.getByName("eclipseClasspath");
-      // ... task with name "eclipseClasspath" available => configure it
-      
-      // --- add functionality for enhancing the .classpath content
-      // Note: For more information see the manual for the eclipse-plugin.
-      final EclipseClasspath eclipseClasspath = ((GenerateEclipseClasspath) task).getClasspath();
-      eclipseClasspath.file(new Action<XmlFileContentMerger>() {
-        @Override
-        public void execute(final XmlFileContentMerger xmlMerger) {
-          xmlMerger.withXml(new Action<XmlProvider>() {
-            @Override
-            public void execute(final XmlProvider xmlProvider) {
-              final Node rootNode = xmlProvider.asNode();
-              LOGGER.debug("addAction: rootNode.before improving:{}", rootNode);
-              ClasspathFile.improveEclipseClasspathFile(rootNode);
-              LOGGER.debug("addAction: rootNode.after  improving:{}", rootNode);
-            } // end inner method
-          }); // end inner class Action<XmlProvider)
-        } // end inner method
-      }); // end inner class Action<XmlFileContentManager)
-    } catch (UnknownDomainObjectException e) {
-      // ... no task with name "eclipseClasspath" inform user via LOGGER
-      LOGGER.debug("addAction: no task \"eclipseClasspath\" => nothing to improve");
-    } // end catch (UnknownDomainObjectException)
+      if (flag) {
+        // ... flag indicates that .classpath file should be improved
+        LOGGER.debug("gradle-modules-plugin configures improvement of .classpath-file");
+        new JavaProjectHelper(insProject)
+          .findTask("eclipseClasspath", Task.class)
+          .ifPresent(this::configure);
+      } else {
+        // ... flag indicates that .classpath file shouldn't be improved
+        LOGGER.debug(".classpath-file isn't changed by gradle-modules-plugin");
+      } // end if
+    });
+  } // end method */
+  
+  /**
+   * Configurations.
+   * 
+   * @param task
+   *        responsible for generating {@code .classpath} file
+   */
+  private void configure(final Task task) {
+    // LOGGER.quiet("configure, task: {}", task.getClass());
+    
+    // --- add functionality for enhancing the .classpath content
+    // Note: For more information see the manual for the eclipse-plugin.
+    final EclipseClasspath eclipseClasspath = ((GenerateEclipseClasspath) task).getClasspath();
+    eclipseClasspath.file(new Action<XmlFileContentMerger>() {
+      @Override
+      public void execute(final XmlFileContentMerger xmlMerger) {
+        xmlMerger.withXml(new Action<XmlProvider>() {
+          @Override
+          public void execute(final XmlProvider xmlProvider) {
+            final Node rootNode = xmlProvider.asNode();
+            LOGGER.debug("addAction: rootNode.before improving:{}", rootNode);
+            improveEclipseClasspathFile(rootNode);
+            LOGGER.debug("addAction: rootNode.after  improving:{}", rootNode);
+          } // end inner method
+        }); // end inner class Action<XmlProvider)
+      } // end inner method
+    }); // end inner class Action<XmlFileContentManager)
   } // end method */
   
   /**
@@ -137,7 +141,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    * @param rootNode
    *        XML-content to be improved
    */
-  /* package */ static void improveEclipseClasspathFile(final Node rootNode) {
+  /* package */ void improveEclipseClasspathFile(final Node rootNode) {
     putJreOnModulePath(rootNode);
     
     // #############################################################################################
@@ -228,7 +232,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    *         at least one child with name "attribute" containing an attribute named "module",
    *         true otherwise
    */
-  /* package */ static boolean hasNoAttributeModule(final Node node) {
+  /* package */ boolean hasNoAttributeModule(final Node node) {
     return node.children().stream() // loop over all children of node
         .filter(n -> n instanceof Node) // better safe than sorry
         .filter(n -> NAME_CHILD.equals(((Node)n).name())) // nodes with name "attributes"
@@ -251,7 +255,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    *         containing an attribute named {@code name},
    *         false otherwise 
    */
-  /* package */ static boolean hasAttributeNamed(final Node child, final String name) {
+  /* package */ boolean hasAttributeNamed(final Node child, final String name) {
     return child.children().stream() // loop over all children
         .filter(g -> g instanceof Node) // better safe than sorry
         .filter(g -> NAME_GRAND.equals(((Node)g).name())) // nodes with name "attribute"
@@ -270,7 +274,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    *         "JRE_CONTAINER",
    *         false otherwise
    */
-  /* package */ static boolean isJre(final Node node) {
+  /* package */ boolean isJre(final Node node) {
     final Object path = node.attribute("path"); // might return null
     
     return isKindOf(node, "con") && (null != path) && path.toString().contains(NAME_JRE);
@@ -289,7 +293,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    *         equal to the given one in parameter {@code kind},
    *         false otherwise
    */
-  /* package */ static boolean isKindOf(final Node node, final String kind) {
+  /* package */ boolean isKindOf(final Node node, final String kind) {
     final Object attr = node.attribute("kind"); // might return null
     
     return kind.equals(attr);
@@ -306,7 +310,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    * @param node
    *        which should appear on the module path
    */
-  /* package */ static void moveToModulePath(final Node node) {
+  /* package */ void moveToModulePath(final Node node) {
     final Map<String, String> flagModule = new LinkedHashMap<>();
     flagModule.put("name",  "module");
     flagModule.put("value", "true");
@@ -343,13 +347,13 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    * @param rootNode
    *        XML-content to be improved
    */
-  /* package */ static void putJreOnModulePath(final Node rootNode) {
-    rootNode.children().stream()                                   // loop over all children
-        .filter(i -> i instanceof Node)                            // better safe than sorry
-        .filter(i -> NAME_ITEM.equals(((Node)i).name()))           // with name "classpathentry"
-        .filter(i ->  ClasspathFile.isJre((Node)i))                // indicating JRE
-        .filter(i ->  ClasspathFile.hasNoAttributeModule((Node)i)) // without "module" information
-        .forEach(i -> ClasspathFile.moveToModulePath((Node)i));    // put on module-path
+  /* package */ void putJreOnModulePath(final Node rootNode) {
+    rootNode.children().stream()                         // loop over all children
+        .filter(i -> i instanceof Node)                  // better safe than sorry
+        .filter(i -> NAME_ITEM.equals(((Node)i).name())) // with name "classpathentry"
+        .filter(i ->  isJre((Node)i))                    // indicating JRE
+        .filter(i ->  hasNoAttributeModule((Node)i))     // without "module" information
+        .forEach(i -> moveToModulePath((Node)i));        // put on module-path
   } // end method */
 
   /**

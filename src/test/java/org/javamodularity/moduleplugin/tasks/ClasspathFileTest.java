@@ -3,21 +3,19 @@ package org.javamodularity.moduleplugin.tasks;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import groovy.util.Node;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.gradle.api.Project;
+import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import groovy.util.Node;
 
 /**
  * Class testing {@link ClasspathFile}.
@@ -31,6 +29,11 @@ final class ClasspathFileTest {
    * Logger.
    *
   private static final Logger LOGGER = Logging.getLogger(ClasspathFileTest.class); // */
+  
+  /**
+   * Device under test.
+   */
+  private ClasspathFile insDut; // */
   
   /** Method executed before other tests. */
   @BeforeAll
@@ -47,22 +50,13 @@ final class ClasspathFileTest {
   /** Method executed before each test. */
   @BeforeEach
   void setUp() {
-    // intentionally empty
+    insDut = new ClasspathFile(ProjectBuilder.builder().build());
   } // end method */
   
   /** Method executed after each test. */
   @AfterEach
   void tearDown() {
     // intentionally empty
-  } // end method */
-  
-  /**
-   * Test method for {@link ClasspathFile#addAction(Project)}.
-   */
-  @Test
-  @Disabled("don't know how to test")
-  final void test_addAction__Project() {
-    fail("Not yet implemented"); // TODO
   } // end method */
   
   /**
@@ -85,7 +79,7 @@ final class ClasspathFileTest {
     rootNode.appendNode("classpathEntry", mapA1); // not classpathentry
     
     // --- improve
-    ClasspathFile.improveEclipseClasspathFile(rootNode);
+    insDut.improveEclipseClasspathFile(rootNode);
     
     // --- check
     assertEquals(
@@ -123,17 +117,17 @@ final class ClasspathFileTest {
     
     // --- a. Node without children SHALL return false
     assertEquals(0, dut.children().size());
-    assertFalse(ClasspathFile.hasAttributeNamed(dut, "foo"));
+    assertFalse(insDut.hasAttributeNamed(dut, "foo"));
 
     // --- b. Node with children not named "attribute" SHALL return false
     dut.appendNode("Attribute", mapItem); // wrong capitalization
     dut.appendNode("attributes", mapItem); // extra characters
-    assertFalse(ClasspathFile.hasAttributeNamed(dut, "foo"));
+    assertFalse(insDut.hasAttributeNamed(dut, "foo"));
     
     // --- c. Node with children named "attribute" but without proper attribute SHALL return false
     // c.1 child "attribute" without attributes
     dut.appendNode(ClasspathFile.NAME_GRAND);
-    assertFalse(ClasspathFile.hasAttributeNamed(dut, "foo"));
+    assertFalse(insDut.hasAttributeNamed(dut, "foo"));
     
     // c.2 child "attribute" with attributes
     dut.appendNode(ClasspathFile.NAME_GRAND, mapItem);
@@ -141,17 +135,17 @@ final class ClasspathFileTest {
     
     // --- d. Node with children named "attribute" and proper attribute SHALL return true
     // d.1 Just one proper child
-    assertFalse(ClasspathFile.hasAttributeNamed(dut, "alfred"));  // wrong capitalization
-    assertFalse(ClasspathFile.hasAttributeNamed(dut, " Alfred")); // extra prefix
-    assertFalse(ClasspathFile.hasAttributeNamed(dut, "Alfreds")); // extra suffix
-    assertTrue(ClasspathFile.hasAttributeNamed(dut, "Alfred"));
+    assertFalse(insDut.hasAttributeNamed(dut, "alfred"));  // wrong capitalization
+    assertFalse(insDut.hasAttributeNamed(dut, " Alfred")); // extra prefix
+    assertFalse(insDut.hasAttributeNamed(dut, "Alfreds")); // extra suffix
+    assertTrue(insDut.hasAttributeNamed(dut, "Alfred"));
     
     // d.2 More than one proper child
     dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "Fiedler"));
     dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "bar"));
-    assertTrue(ClasspathFile.hasAttributeNamed(dut, "Alfred"));  // match in first  proper child
-    assertTrue(ClasspathFile.hasAttributeNamed(dut, "Fiedler")); // match in second proper child
-    assertTrue(ClasspathFile.hasAttributeNamed(dut, "bar"));     // match in third  proper child
+    assertTrue(insDut.hasAttributeNamed(dut, "Alfred"));  // match in first  proper child
+    assertTrue(insDut.hasAttributeNamed(dut, "Fiedler")); // match in second proper child
+    assertTrue(insDut.hasAttributeNamed(dut, "bar"));     // match in third  proper child
   } // end method */
 
   /**
@@ -169,15 +163,15 @@ final class ClasspathFileTest {
     // --- a. "short" node, i.e. node with not enough information (returns always true)
     // a.1 empty node
     final Node nodeA = new Node(null, "a");
-    assertTrue(ClasspathFile.hasNoAttributeModule(nodeA));
+    assertTrue(insDut.hasNoAttributeModule(nodeA));
     
     // a.2 node with empty child
     final Node childA = nodeA.appendNode(ClasspathFile.NAME_CHILD);
-    assertTrue(ClasspathFile.hasNoAttributeModule(nodeA));
+    assertTrue(insDut.hasNoAttributeModule(nodeA));
     
     // a.3 node with empty grand-child
     Node grandA = childA.appendNode(ClasspathFile.NAME_GRAND);
-    assertTrue(ClasspathFile.hasNoAttributeModule(nodeA));
+    assertTrue(insDut.hasNoAttributeModule(nodeA));
     
     // a.4 node with non-empty grand-child, but inappropriate attributes
     childA.remove(grandA);
@@ -185,33 +179,33 @@ final class ClasspathFileTest {
     // LOGGER.quiet("a.3: {}", nodeA);
     assertEquals(1, nodeA. children().size());
     assertEquals(1, childA.children().size());
-    assertTrue(ClasspathFile.hasNoAttributeModule(nodeA));
+    assertTrue(insDut.hasNoAttributeModule(nodeA));
     
     childA.remove(grandA);
     grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "mOdule")); // not module
-    assertTrue(ClasspathFile.hasNoAttributeModule(nodeA));
+    assertTrue(insDut.hasNoAttributeModule(nodeA));
     
     childA.remove(grandA);
     grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("naMe", "module")); // not name
-    assertTrue(ClasspathFile.hasNoAttributeModule(nodeA));
+    assertTrue(insDut.hasNoAttributeModule(nodeA));
     
     // --- b. node with just sufficient information
     childA.remove(grandA);
     grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "module"));
-    assertFalse(ClasspathFile.hasNoAttributeModule(nodeA));
+    assertFalse(insDut.hasNoAttributeModule(nodeA));
     
     // --- c. node triggering false by first  child
     // two (slightly) different nodes, one returns true, the other false
-    assertTrue(ClasspathFile.hasNoAttributeModule(hnam(1, Map.of("name", "modUle"))));
-    assertFalse(ClasspathFile.hasNoAttributeModule(hnam(1, Map.of("name", "module"))));
+    assertTrue(insDut.hasNoAttributeModule(hnam(1, Map.of("name", "modUle"))));
+    assertFalse(insDut.hasNoAttributeModule(hnam(1, Map.of("name", "module"))));
     
     // --- d. node triggering false by second child
-    assertTrue(ClasspathFile.hasNoAttributeModule(hnam(2, Map.of("name", "modUle"))));
-    assertFalse(ClasspathFile.hasNoAttributeModule(hnam(2, Map.of("name", "module"))));
+    assertTrue(insDut.hasNoAttributeModule(hnam(2, Map.of("name", "modUle"))));
+    assertFalse(insDut.hasNoAttributeModule(hnam(2, Map.of("name", "module"))));
     
     // --- e. node triggering false by third  child
-    assertTrue(ClasspathFile.hasNoAttributeModule(hnam(3, Map.of("name", "modUle"))));
-    assertFalse(ClasspathFile.hasNoAttributeModule(hnam(3, Map.of("name", "module"))));
+    assertTrue(insDut.hasNoAttributeModule(hnam(3, Map.of("name", "modUle"))));
+    assertFalse(insDut.hasNoAttributeModule(hnam(3, Map.of("name", "module"))));
   } // end method */
   
   /**
@@ -288,21 +282,21 @@ final class ClasspathFileTest {
     // --- c.  kind of "con"   but  !path contains "JRE_CONTAINER"
     
     // --- a.  kind of "con"   and   path contains "JRE_CONTAINER"
-    assertTrue(ClasspathFile.isJre(new Node(null, "root", Map.of(
+    assertTrue(insDut.isJre(new Node(null, "root", Map.of(
         "kind", "con",
         "path", ClasspathFile.NAME_JRE // minimalistic
     ))));
-    assertTrue(ClasspathFile.isJre(new Node(null, "root", Map.of(
+    assertTrue(insDut.isJre(new Node(null, "root", Map.of(
         "kind", "con",
         "path", "prefix" + ClasspathFile.NAME_JRE
     ))));
-    assertTrue(ClasspathFile.isJre(new Node(null, "root", Map.of(
+    assertTrue(insDut.isJre(new Node(null, "root", Map.of(
         "kind", "con",
         "path", ClasspathFile.NAME_JRE + "suffix"
     ))));
     
     // --- b. !kind of "con"   but   path contains "JRE_CONTAINER"
-    assertFalse(ClasspathFile.isJre(new Node(null, "root", Map.of(
+    assertFalse(insDut.isJre(new Node(null, "root", Map.of(
         // no attribute kind
         "path", ClasspathFile.NAME_JRE // minimalistic
     ))));
@@ -315,7 +309,7 @@ final class ClasspathFileTest {
         .forEach(kind -> {
           assertEquals(
               "kind".equals(kind),
-              ClasspathFile.isJre(new Node(null, "root", Map.of(
+              insDut.isJre(new Node(null, "root", Map.of(
                   kind, "con",
                   "path", ClasspathFile.NAME_JRE
               )))
@@ -330,7 +324,7 @@ final class ClasspathFileTest {
         .forEach(con -> {
           assertEquals(
               "con".equals(con),
-              ClasspathFile.isJre(new Node(null, "root", Map.of(
+              insDut.isJre(new Node(null, "root", Map.of(
                   "kind", con,
                   "path", ClasspathFile.NAME_JRE
               )))
@@ -338,7 +332,7 @@ final class ClasspathFileTest {
         }); // end forEach(con -> ...)
     
     // --- c.  kind of "con"   but  !path contains "JRE_CONTAINER"
-    assertFalse(ClasspathFile.isJre(new Node(null, "root", Map.of(
+    assertFalse(insDut.isJre(new Node(null, "root", Map.of(
         "kind", "con"
         // no path attribute
     ))));
@@ -351,7 +345,7 @@ final class ClasspathFileTest {
         .forEach(path -> {
           assertEquals(
               "path".equals(path),
-              ClasspathFile.isJre(new Node(null, "root", Map.of(
+              insDut.isJre(new Node(null, "root", Map.of(
                   "kind", "con",
                   path, ClasspathFile.NAME_JRE
               )))
@@ -366,7 +360,7 @@ final class ClasspathFileTest {
         .forEach(jre -> {
           assertEquals(
               jre.contains(ClasspathFile.NAME_JRE),
-              ClasspathFile.isJre(new Node(null, "root", Map.of(
+              insDut.isJre(new Node(null, "root", Map.of(
                   "kind", "con",
                   "path", jre
               )))
@@ -385,18 +379,18 @@ final class ClasspathFileTest {
     // --- c. node with attribute "kind" and different values for that attribute
     
     // --- a. node without attributes
-    assertFalse(ClasspathFile.isKindOf(new Node(null, "a"), "con"));
+    assertFalse(insDut.isKindOf(new Node(null, "a"), "con"));
     
     // --- b. node without attribute "kind"
-    assertFalse(ClasspathFile.isKindOf(
+    assertFalse(insDut.isKindOf(
         new Node(null, "a", Map.of("Kind", "con")), // wrong capitalization
         "con"
     ));
-    assertFalse(ClasspathFile.isKindOf(
+    assertFalse(insDut.isKindOf(
         new Node(null, "a", Map.of("kinda", "con")), // suffix
         "con"
     ));
-    assertFalse(ClasspathFile.isKindOf(
+    assertFalse(insDut.isKindOf(
         new Node(null, "a", Map.of("akind", "con")), // prefix
         "con"
     ));
@@ -415,12 +409,12 @@ final class ClasspathFileTest {
     variants.stream() // loop over all variants
         .forEach(kind -> {
           // node with just one attribute
-          assertTrue(ClasspathFile.isKindOf(new Node(null, "root", Map.of("kind", kind)), kind));
+          assertTrue(insDut.isKindOf(new Node(null, "root", Map.of("kind", kind)), kind));
           
           // node with lots of attributes, but none fitting
           final Node dut = new Node(null, "root" + kind, attributes);
           variants.stream()
-              .forEach(i -> assertFalse(ClasspathFile.isKindOf(dut, i)));
+              .forEach(i -> assertFalse(insDut.isKindOf(dut, i)));
         }); // end forEach(kind -> ...)
   } // end method */
 
@@ -439,7 +433,7 @@ final class ClasspathFileTest {
     
     // --- a. empty node
     dut = new Node(null, "rootA");
-    ClasspathFile.moveToModulePath(dut);
+    insDut.moveToModulePath(dut);
     assertEquals(
         "rootA[attributes={}; value=["
         +   "attributes[attributes={}; value=["
@@ -453,7 +447,7 @@ final class ClasspathFileTest {
     dut = new Node(null, "rootB");
     dut.appendNode("foo");
     dut.appendNode("bar");
-    ClasspathFile.moveToModulePath(dut);
+    insDut.moveToModulePath(dut);
     assertEquals(
         "rootB[attributes={}; value=["
         +   "foo[attributes={}; value=[]], "
@@ -469,7 +463,7 @@ final class ClasspathFileTest {
     // c.1 one child named "attributes"
     dut = new Node(null, "rootC1");
     dut.appendNode(ClasspathFile.NAME_CHILD);
-    ClasspathFile.moveToModulePath(dut);
+    insDut.moveToModulePath(dut);
     assertEquals(
         "rootC1[attributes={}; value=["
         +   "attributes[attributes={}; value=["
@@ -485,7 +479,7 @@ final class ClasspathFileTest {
     Node child = dut.appendNode(ClasspathFile.NAME_CHILD);
     child.appendNode("bar");
     dut.appendNode(ClasspathFile.NAME_CHILD);
-    ClasspathFile.moveToModulePath(dut);
+    insDut.moveToModulePath(dut);
     assertEquals(
         "rootC2[attributes={}; value=["
         +   "foo[attributes={}; value=[]], "
@@ -506,7 +500,7 @@ final class ClasspathFileTest {
     child = dut.appendNode(ClasspathFile.NAME_CHILD);
     child.appendNode("bar2");
     dut.appendNode("foo2");
-    ClasspathFile.moveToModulePath(dut);
+    insDut.moveToModulePath(dut);
     assertEquals(
         "rootC3[attributes={}; value=["
         +   "foo[attributes={}; value=[]], "
@@ -524,7 +518,7 @@ final class ClasspathFileTest {
     
     // --- d. node already moved
     // d.1 move information in first child with name "attributes"
-    ClasspathFile.moveToModulePath(dut);
+    insDut.moveToModulePath(dut);
     assertEquals(
         "rootC3[attributes={}; value=["
         +   "foo[attributes={}; value=[]], "
@@ -554,7 +548,7 @@ final class ClasspathFileTest {
     child.appendNode("bar2");
     child.appendNode(ClasspathFile.NAME_GRAND, mapD2);
     dut.appendNode("foo2");
-    ClasspathFile.moveToModulePath(dut);
+    insDut.moveToModulePath(dut);
     assertEquals(
         "rootD2[attributes={}; value=["
         +   "foo[attributes={}; value=[]], "
@@ -594,7 +588,7 @@ final class ClasspathFileTest {
     rootNode.appendNode("classpathEntry", mapA1); // not classpathentry
     
     // --- improve
-    ClasspathFile.putJreOnModulePath(rootNode);
+    insDut.putJreOnModulePath(rootNode);
     
     // --- check
     assertEquals(

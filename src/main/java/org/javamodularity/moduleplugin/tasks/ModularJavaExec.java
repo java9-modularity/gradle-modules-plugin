@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ModularJavaExec extends JavaExec {
-
     @Internal
     private final List<String> ownJvmArgs = new ArrayList<>();
 
@@ -52,9 +51,6 @@ public class ModularJavaExec extends JavaExec {
 
     private static void configureAfterEvaluate(Project project) {
         project.getTasks().withType(ModularJavaExec.class).forEach(execTask -> configure(execTask, project));
-        
-        // add an action such that ".classpath"-file from eclipse-plugin is improved
-        ClasspathFile.addAction(project);
     }
 
     private static void configure(ModularJavaExec execTask, Project project) {
