@@ -66,6 +66,43 @@ final class ClasspathFileTest {
   } // end method */
   
   /**
+   * Test method for {@link ClasspathFile#improveEclipseClasspathFile(Node)}.
+   */
+  @Test
+  final void test_improveEclipseClasspathFile__Node() {
+    // Test strategy:
+    // ... assertion 1: method putJreOnModulePath(Node) works as intended
+    // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
+    
+    // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
+    final Node rootNode = new Node(null, "root");
+    
+    // a.1: difference in name of item
+    final Map<String, String> mapA1 = new LinkedHashMap<>();
+    mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
+    mapA1.put("kind", "con");
+    rootNode.appendNode("classpathentry", mapA1); // ok
+    rootNode.appendNode("classpathEntry", mapA1); // not classpathentry
+    
+    // --- improve
+    ClasspathFile.improveEclipseClasspathFile(rootNode);
+    
+    // --- check
+    assertEquals(
+        "root[attributes={}; value=["
+        // a.1, begin
+        +   "classpathentry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=module, value=true}; value=[]]"
+        +     "]]]"
+        +   "], "
+        +   "classpathEntry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=[]]"
+        + "]]",
+        rootNode.toString()
+    );
+  } // end method */
+
+  /**
    * Test method for {@link ClasspathFile#hasAttributeNamed(Node, String)}.
    */
   @Test
@@ -536,18 +573,41 @@ final class ClasspathFileTest {
   } // end method */
 
   /**
-   * Test method for {@link org.javamodularity.moduleplugin.tasks.ClasspathFile#improveEclipseClasspathFile(groovy.util.Node)}.
+   * Test method for {@link ClasspathFile#putJreOnModulePath(Node)}.
    */
   @Test
-  final void testImproveEclipseClasspathFile() {
-    fail("Not yet implemented"); // TODO
-  }
-
-  /**
-   * Test method for {@link org.javamodularity.moduleplugin.tasks.ClasspathFile#putJreOnModulePath(java.util.List)}.
-   */
-  @Test
-  final void testPutJreOnModulePath() {
-    fail("Not yet implemented"); // TODO
-  }
+  final void test_putJreOnModulePath__Node() {
+    // Test strategy:
+    // ... assertion 1: method isJre(Node)                works as intended
+    // ... assertion 2: method hasNoAttributeModule(Node) works as intended
+    // ... assertion 3: method moveToModulePath(Node)     works as intended
+    // --- a. rootNode with a bunch of entries and entries differing slightly
+    
+    // --- a. rootNode with a bunch of entries and entries differing slightly
+    final Node rootNode = new Node(null, "root");
+    
+    // a.1: difference in name of item
+    final Map<String, String> mapA1 = new LinkedHashMap<>();
+    mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
+    mapA1.put("kind", "con");
+    rootNode.appendNode("classpathentry", mapA1); // ok
+    rootNode.appendNode("classpathEntry", mapA1); // not classpathentry
+    
+    // --- improve
+    ClasspathFile.putJreOnModulePath(rootNode);
+    
+    // --- check
+    assertEquals(
+        "root[attributes={}; value=["
+        // a.1, begin
+        +   "classpathentry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=module, value=true}; value=[]]"
+        +     "]]]"
+        +   "], "
+        +   "classpathEntry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=[]]"
+        + "]]",
+        rootNode.toString()
+    );
+  } // end method */
 } // end class

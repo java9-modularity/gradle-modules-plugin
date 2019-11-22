@@ -138,6 +138,8 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
    *        XML-content to be improved
    */
   /* package */ static void improveEclipseClasspathFile(final Node rootNode) {
+    putJreOnModulePath(rootNode);
+    
     // #############################################################################################
     // Note 10: Earlier versions of the Gradle-Eclipse plugin didn't tag folders in "./src/test"
     //          with "only for test". Furthermore other libraries relevant only for tests also
@@ -180,6 +182,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
     
     // System.out.printf("improve before:%n%s%n", object);
     
+    /*
     final Map<String, String> flagTest = new LinkedHashMap<>();
     flagTest.put("name",  "test");
     flagTest.put("value", "true");
@@ -190,12 +193,10 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
         .filter(i -> NAME_ITEM.equals(((Node)i).name())) // filter nodes with name "classpathentry"
         .collect(Collectors.toList());
     
-    putJreOnModulePath(classpathEntries);
     
     
     
     
-    /*
         .filter(i -> isKindOfLib(i)) // filter nodes which are kind of "lib"
         .forEach(item -> {
           // ... item has type Node and name "classpathentry"
@@ -334,17 +335,21 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
   } // end method */
 
   /**
-   * Puts every entry which is kind of "con" and with a path containing {@link #NAME_JRE}
-   * on module-path.
+   * Puts JRE entries in {@code rootNode} on module-path.
    * 
-   * @param entries
-   *        list of {@link Node} with with name "classpathentry" 
+   * <p>All children of {@code rootNode} with name {@link #NAME_CHILD} which are kind of "con"
+   * and with a path containing {@link #NAME_JRE} are put on module-path.
+   * 
+   * @param rootNode
+   *        XML-content to be improved
    */
-  /* package */ static void putJreOnModulePath(final List<Node> entries) {
-    entries.stream()
-        .filter(ClasspathFile::isJre)
-        .filter(ClasspathFile::hasNoAttributeModule)
-        .forEach(ClasspathFile::moveToModulePath);
+  /* package */ static void putJreOnModulePath(final Node rootNode) {
+    rootNode.children().stream()                                   // loop over all children
+        .filter(i -> i instanceof Node)                            // better safe than sorry
+        .filter(i -> NAME_ITEM.equals(((Node)i).name()))           // with name "classpathentry"
+        .filter(i ->  ClasspathFile.isJre((Node)i))                // indicating JRE
+        .filter(i ->  ClasspathFile.hasNoAttributeModule((Node)i)) // without "module" information
+        .forEach(i -> ClasspathFile.moveToModulePath((Node)i));    // put on module-path
   } // end method */
 
   /**
