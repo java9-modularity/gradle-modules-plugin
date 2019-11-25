@@ -63,7 +63,7 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#improveEclipseClasspathFile(Node)}.
    */
   @Test
-  final void test_improveEclipseClasspathFile__Node() {
+  void test_improveEclipseClasspathFile__Node() {
     // Test strategy:
     // ... assertion 1: method putJreOnModulePath(Node) works as intended
     // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
@@ -100,7 +100,7 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#hasAttributeNamed(Node, String)}.
    */
   @Test
-  final void test_hasAttributeNamed__Node_String() {
+  void test_hasAttributeNamed__Node_String() {
     // Test strategy:
     // a. Node without children SHALL return false
     // b. Node with children not named "attribute" SHALL return false
@@ -152,7 +152,7 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#hasNoAttributeModule(Node)}.
    */
   @Test
-  final void test_hasNoAttributeModule__Node() {
+  void test_hasNoAttributeModule__Node() {
     // Test strategy:
     // --- a. "short" node, i.e. node with not enough information (returns always true)
     // --- b. node with just sufficient information
@@ -275,7 +275,7 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#isJre(Node)}.
    */
   @Test
-  final void test_isJre__Node() {
+  void test_isJre__Node() {
     // Test strategy:
     // --- a.  kind of "con"   and   path contains "JRE_CONTAINER"
     // --- b. !kind of "con"   but   path contains "JRE_CONTAINER"
@@ -372,7 +372,7 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#isKindOf(Node, String)}.
    */
   @Test
-  final void test_isKindOf__Node_String() {
+  void test_isKindOf__Node_String() {
     // Test strategy:
     // --- a. node without attributes
     // --- b. node without attribute "kind"
@@ -422,7 +422,7 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#moveToModulePath(Node)}.
    */
   @Test
-  final void test_moveToModulePath__Node() {
+  void test_moveToModulePath__Node() {
     // Test strategy:
     // --- a. empty node
     // --- b. node with children none named "attributes"
@@ -570,7 +570,7 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#putJreOnModulePath(Node)}.
    */
   @Test
-  final void test_putJreOnModulePath__Node() {
+  void test_putJreOnModulePath__Node() {
     // Test strategy:
     // ... assertion 1: method isJre(Node)                works as intended
     // ... assertion 2: method hasNoAttributeModule(Node) works as intended
