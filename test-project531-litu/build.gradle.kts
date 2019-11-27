@@ -27,7 +27,7 @@ configure<org.javamodularity.moduleplugin.extensions.ClasspathFileExtension> {
 } // end configure ClasspathFileExtension ______________________________________________________ */
 
 repositories { // .................................................................................
-  jcenter() // for resolving dependencies
+  jcenter()
 } // end repositories __________________________________________________________________________ */
 
 eclipse.project { // customize Eclipse's project name .............................................
@@ -36,7 +36,7 @@ eclipse.project { // customize Eclipse's project name ..........................
 
 java { // Java version, here latest LTS with modularity support ...................................
   sourceCompatibility = JavaVersion.VERSION_11
-      targetCompatibility = JavaVersion.VERSION_11
+  targetCompatibility = JavaVersion.VERSION_11
 } // end Java version __________________________________________________________________________ */
 
 // configure JUnit 5 ..............................................................................

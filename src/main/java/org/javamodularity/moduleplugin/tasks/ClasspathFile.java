@@ -2,6 +2,7 @@ package org.javamodularity.moduleplugin.tasks;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.gradle.api.Action;
 import org.gradle.api.Project;
@@ -143,24 +144,7 @@ public final class ClasspathFile {
    */
   /* package */ void improveEclipseClasspathFile(final Node rootNode) {
     putJreOnModulePath(rootNode);
-    
-    // #############################################################################################
-    // Note 10: Earlier versions of the Gradle-Eclipse plugin didn't tag folders in "./src/test"
-    //          with "only for test". Furthermore other libraries relevant only for tests also
-    //          hadn't been tagged with "only for test. As of 2019-10-21 Gradle 5.6.2 tag these
-    //          folders and libraries correctly. Thus there is no need for changing the XML-content
-    //          in this regard. Obviously the eclipse-plugin in Gradle is now more sophisticated.
-    //          Thus the following code is no longer necessary:
-    // if ("src".equals(kind) && "bin/test".equals(it.attribute("output"))) {
-    //   // ... node is "src" and output is "test" => add test=true
-    //   // retrieve first child, which is "attributes"
-    //   val attributes = it.children().get(0)
-    //   if (attributes is Node) {
-    //     val map = attributes.appendNode("attribute").attributes()
-    //     map.put("name",  "test")
-    //     map.put("value", "true")
-    //   } // end if
-    // } // end if ( test-source )
+    markTest(rootNode);
     
     // #############################################################################################
     // Note 20: The eclipse-plugin in Gradle puts everything on the classpath and nothing on the
@@ -223,26 +207,141 @@ public final class ClasspathFile {
   } // end method */
   
   /**
+   * Marks everything with a {@code gradle_used_by_scope} of {@code test} accordingly.
+   * 
+   * <p>All children of {@code rootNode} with name {@link #NAME_CHILD} which have a child with
+   * name {@link #NAME_GRAND} and an attribute with name {@link #NAME_ATTRIBUTE} which has a value
+   * equal to {@code "test"} become an attribute "test" and value "true" if they don't already have
+   * such an attribute.
+   * 
+   * <p><i><b>Note 1:</b>
+   * The eclipse plugin in Gradle version 5.3.1 do not mark test-artifacts properly.
+   * So we do this here.
+   * </i>
+   * 
+   * <p><i><b>Note 2:</b>
+   * The eclipse plugin in Gradle versions 5.6.4 mark test-artifacts properly.
+   * </i>
+   * 
+   * @param rootNode
+   *        XML-content to be improved
+   */
+  /* package */ void markTest(final Node rootNode) {
+    // Example of node to be improved
+    // <classpathentry output="bin/test" kind="src" path="src/test/java">
+    //   <attributes>
+    //     <attribute name="gradle_scope" value="test"/>
+    //     <attribute name="gradle_used_by_scope" value="test"/>
+    //   </attributes>
+    // </classpathentry>
+    
+    rootNode.children().stream()                          // loop over all children
+        .filter(i  -> i instanceof Node)                  // better safe than sorry
+        .filter(i  -> NAME_ITEM.equals(((Node)i).name())) // with name "classpathentry"
+        .forEach(i -> checkGradleScopeTest((Node)i));     // add test="true" attribute
+  } // end method */
+  
+  /**
+   * Puts JRE entries in {@code rootNode} on module-path.
+   * 
+   * <p>All children of {@code rootNode} with name {@link #NAME_CHILD} which are kind of "con"
+   * and with a path containing {@link #NAME_JRE} are put on module-path.
+   * 
+   * @param rootNode
+   *        XML-content to be improved
+   */
+  /* package */ void putJreOnModulePath(final Node rootNode) {
+    rootNode.children().stream()                          // loop over all children
+        .filter(i  -> i instanceof Node)                  // better safe than sorry
+        .filter(i  -> NAME_ITEM.equals(((Node)i).name())) // with name "classpathentry"
+        .filter(i  -> isJre((Node)i))                     // indicating JRE
+        .filter(i  -> hasNoAttributeModule((Node)i))      // without "module" information
+        .forEach(i -> moveToModulePath((Node)i));         // put on module-path
+  } // end method */
+
+  /**
    * Estimates whether given {@code node} contains a value for a key named "module".
    * 
-   * @param node
+   * @param item
    *        {@code Node} for which the estimation is performed
    *        
    * @return false if {@code node} has at least one child with name "attributes" and that child has
    *         at least one child with name "attribute" containing an attribute named "module",
    *         true otherwise
    */
-  /* package */ boolean hasNoAttributeModule(final Node node) {
-    return node.children().stream() // loop over all children of node
-        .filter(n -> n instanceof Node) // better safe than sorry
-        .filter(n -> NAME_CHILD.equals(((Node)n).name())) // nodes with name "attributes"
-        .filter(n -> hasAttributeNamed((Node)n, "module"))
+  /* package */ boolean hasNoAttributeModule(final Node item) {
+    // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
+    
+    return item.children().stream()                       // loop over all children of node
+        .filter(c -> c instanceof Node)                   // better safe than sorry
+        .filter(c -> NAME_CHILD.equals(((Node)c).name())) // nodes with name "attributes"
+        .filter(c -> hasAttributeNamed((Node)c, "module"))
         .findFirst()
         .isEmpty();
   } // end method */
   
   /**
-   * Estimates whether given {@code node} has a child named {@code "attribute"} and
+   * Retrieves first child of given {@code child} named "attribute" which has an attribute
+   * named {@code name}.
+   *  
+   * @param child
+   *        {@code Node} for which the estimation is performed
+   * 
+   * @param name
+   *        of attribute searched for
+   * 
+   * @return {@link Optional} for first child in {@code child} named "attribute" which has an
+   *         attribute named {@code name}
+   *         If no such {@link Node} exists an empty {@link Optional} is returned.
+   */
+  /* package */ Optional<Node> getAttributeNamed(final Node child, final String name) {
+    // ... Note 1: In real usage (i.e. no test scenario) node has name "attributes".
+    
+    return child.children().stream()                           // loop over all children
+        .filter(g -> g instanceof Node)                        // better safe than sorry
+        .filter(g -> NAME_GRAND.equals(((Node)g).name()))      // nodes with name "attribute"
+        .filter(g -> name.equals(((Node)g).attribute("name"))) // nodes with appropriate attribute
+        .findFirst();
+  } // end method */
+  
+  /**
+   * Retrieves gradle scope from given {@code node}.
+   * 
+   * <p>The following actions are performed:
+   * <ol>
+   *   <li>Searches in the children of {@code node} for first one with name "attribute" and an
+   *       attribute with name {@link #NAME_ATTRIBUTE}.
+   *   <li>If such an attribute is present then its value is returned.
+   *   <li>If such an attribute is absent  then an empty {@link String} is returned.
+   * </ol>
+   * 
+   * @param node
+   *        investigated for a child with name "attribute" and an attribute named
+   *        {@link #NAME_ATTRIBUTE}
+   * 
+   * @return value of attribute {@link #NAME_ATTRIBUTE} or
+   *         an empty {@link String} if such an attribute is not present
+   */
+  /* package */ String getGradleScope(final Node node) {
+    // ... Note 1: In real usage (i.e. no test scenario) node has name "attributes".
+    
+    final Optional<Node> oChild = getAttributeNamed(node, NAME_ATTRIBUTE);
+    
+    if (oChild.isPresent()) {
+      // ... child with type Node and name "attribute" with attribute named "gradle_used_by_scope"
+      //     => get its value
+      final Node   child = oChild.get();
+      final Object value = child.attribute("value"); // might return null if value is absent
+      
+      return (null == value) ? "" : value.toString(); // avoid NullPointerException
+    } // end if
+    // ... no appropriate child present => return empty string
+    
+    return "";
+  } // end method */
+
+  /**
+   * Estimates whether given {@code child} has a child named {@code "attribute"} and
    * that child has an attribute named {@code name}.
    *  
    * @param child
@@ -251,17 +350,55 @@ public final class ClasspathFile {
    * @param name
    *        of attribute searched for
    * 
-   * @return true if {@code node} has at least one child named {@code "attribute"}
+   * @return true if {@code node} has at least one child named {@code attribute}
    *         containing an attribute named {@code name},
    *         false otherwise 
    */
   /* package */ boolean hasAttributeNamed(final Node child, final String name) {
-    return child.children().stream() // loop over all children
-        .filter(g -> g instanceof Node) // better safe than sorry
-        .filter(g -> NAME_GRAND.equals(((Node)g).name())) // nodes with name "attribute"
-        .filter(g -> name.equals(((Node)g).attribute("name")))
-        .findFirst()
-        .isPresent();
+    // ... Note 1: In real usage (i.e. no test scenario) node has name "attributes".
+    
+    return getAttributeNamed(child, name).isPresent();
+  } // end method */
+  
+  /**
+   * Improves nodes with a gradle scope of "test".
+   * 
+   * <p>The following actions are performed:
+   * <ol>
+   *   <li>Searches in given {@code node} for first child of
+   *       type {@link Node} named {@link #NAME_CHILD}.
+   *   <li>If that child has a gradle cope of "test" but no child named {@link #NAME_GRAND} with
+   *       an attribute named {@code test} then such child is added with {@code test="true"}.
+   * </ol>
+   * 
+   * @param node
+   *        a {@link Node} investigated whether it has a certain scope
+   * 
+   */
+  /* package */ void checkGradleScopeTest(final Node node) {
+    // ... Note 1: In real usage (i.e. no test scenario) node has name "classpathentry".
+    
+    node.children().stream() // loop over all children
+        .filter(i -> i instanceof Node)                   // better safe than sorry
+        .filter(i -> NAME_CHILD.equals(((Node)i).name())) // with name "attributes"
+        .findFirst()                                      // first child named "attributes"
+        .ifPresent(c -> {
+          final Node child = (Node)c;
+          if (
+              "test".equals(getGradleScope(child)) // appropriate gradle scope
+              && !hasAttributeNamed(child, "test") // actually no "test"-attribute
+          ) {
+            // ... child with name "attributes" is present
+            // ... child has a  child named "attribute" with a gradle scope equal to "test"
+            // ... child has no child named "attribute" with a "test"-attribute
+            
+            // --- add a child named "attribute" with test="true"
+            final Map<String, String> map = new LinkedHashMap<>();
+            map.put("name",  "test");
+            map.put("value", "true");
+            child.appendNode(NAME_GRAND, map);
+          } // end if
+        });
   } // end method */
   
   /**
@@ -275,6 +412,8 @@ public final class ClasspathFile {
    *         false otherwise
    */
   /* package */ boolean isJre(final Node node) {
+    // ... Note 1: In real usage (i.e. no test scenario) node has name "classpathentry".
+    
     final Object path = node.attribute("path"); // might return null
     
     return isKindOf(node, "con") && (null != path) && path.toString().contains(NAME_JRE);
@@ -316,8 +455,8 @@ public final class ClasspathFile {
     flagModule.put("value", "true");
   
     // --- find first child named "attributes"
-    node.children().stream() // loop over all children
-        .filter(c -> c instanceof Node) // better safe than sorry
+    node.children().stream()                              // loop over all children
+        .filter(c -> c instanceof Node)                   // better safe than sorry
         .filter(n -> NAME_CHILD.equals(((Node)n).name())) // nodes with name "attributes"
         .findFirst()
         .ifPresentOrElse(
@@ -331,29 +470,11 @@ public final class ClasspathFile {
               @Override
               public void run() {
                 node
-                    .appendNode(NAME_CHILD) // add child with name "attributes" and
-                    .appendNode(NAME_GRAND, flagModule); // grand-child with appropriate attributes
+                    .appendNode(NAME_CHILD)               // add child with name "attributes" and
+                    .appendNode(NAME_GRAND, flagModule);  // grand-child with appropriate attributes
               } // end inner method
             } // end inner class Runnable
         ); // end ifPresentOrElse(...)
-  } // end method */
-
-  /**
-   * Puts JRE entries in {@code rootNode} on module-path.
-   * 
-   * <p>All children of {@code rootNode} with name {@link #NAME_CHILD} which are kind of "con"
-   * and with a path containing {@link #NAME_JRE} are put on module-path.
-   * 
-   * @param rootNode
-   *        XML-content to be improved
-   */
-  /* package */ void putJreOnModulePath(final Node rootNode) {
-    rootNode.children().stream()                         // loop over all children
-        .filter(i -> i instanceof Node)                  // better safe than sorry
-        .filter(i -> NAME_ITEM.equals(((Node)i).name())) // with name "classpathentry"
-        .filter(i ->  isJre((Node)i))                    // indicating JRE
-        .filter(i ->  hasNoAttributeModule((Node)i))     // without "module" information
-        .forEach(i -> moveToModulePath((Node)i));        // put on module-path
   } // end method */
 
   /**

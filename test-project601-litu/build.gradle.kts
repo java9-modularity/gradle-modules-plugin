@@ -21,22 +21,31 @@ plugins { // ...................................................................
   id("org.javamodularity.moduleplugin") // plugin under test
 } // end plugins-section _______________________________________________________________________ */
 
+// configure ClasspathFileExtension ...............................................................
+configure<org.javamodularity.moduleplugin.extensions.ClasspathFileExtension> {
+  improveClasspathFile.set(false)
+} // end configure ClasspathFileExtension ______________________________________________________ */
+
 repositories { // .................................................................................
   jcenter()
 } // end repositories __________________________________________________________________________ */
+
+eclipse.project { // customize Eclipse's project name .............................................
+  name = "foo.litu601"
+} // end customize Eclipse's project name ______________________________________________________ */
 
 java { // Java version, here latest LTS with modularity support ...................................
   sourceCompatibility = JavaVersion.VERSION_11
   targetCompatibility = JavaVersion.VERSION_11
 } // end Java version __________________________________________________________________________ */
 
+// configure JUnit 5 ..............................................................................
 dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
   testRuntimeOnly   ("org.junit.jupiter:junit-jupiter-engine:5.5.2")
   testRuntimeOnly   ("org.junit.platform:junit-platform-launcher:1.5.2")
 }
 
-// configure JUnit 5 ..............................................................................
 val test by tasks.getting(Test::class) {
   useJUnitPlatform()
   

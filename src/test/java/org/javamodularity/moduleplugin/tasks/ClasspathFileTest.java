@@ -2,7 +2,10 @@ package org.javamodularity.moduleplugin.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import groovy.util.Node;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,8 +17,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import groovy.util.Node;
 
 /**
  * Class testing {@link ClasspathFile}.
@@ -60,40 +61,272 @@ final class ClasspathFileTest {
   } // end method */
   
   /**
-   * Test method for {@link ClasspathFile#improveEclipseClasspathFile(Node)}.
+   * Test method for {@link ClasspathFile#checkGradleScopeTest(Node)}.
    */
   @Test
-  void test_improveEclipseClasspathFile__Node() {
+  void test_checkGradleScopeTest__Node() {
     // Test strategy:
-    // ... assertion 1: method putJreOnModulePath(Node) works as intended
-    // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
+    // --- a. item without children
+    // --- b. item without proper children
+    // --- c. item with "attributes" but no grand-children
+    // --- d. item -> "attributes" -> "attribute" but no attributes
+    // --- e. item -> "attributes" -> "attribute" but non gradle scope attributes
+    // --- f. item -> "attributes" -> "attribute" but gradle scope != test
+    // --- g. item -> "attributes" -> "attribute" and gradle scope == test, no  test-attribute
+    // --- h. item -> "attributes" -> "attribute" and gradle scope == test plus test-attribute
+    // --- i. only first child named "attributes" count
     
-    // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
-    final Node rootNode = new Node(null, "root");
+    Node dut;
     
-    // a.1: difference in name of item
-    final Map<String, String> mapA1 = new LinkedHashMap<>();
-    mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
-    mapA1.put("kind", "con");
-    rootNode.appendNode("classpathentry", mapA1); // ok
-    rootNode.appendNode("classpathEntry", mapA1); // not classpathentry
-    
-    // --- improve
-    insDut.improveEclipseClasspathFile(rootNode);
-    
-    // --- check
+    // --- a. item without children
+    dut = new Node(null, "item");
+    insDut.checkGradleScopeTest(dut);
     assertEquals(
-        "root[attributes={}; value=["
-        // a.1, begin
-        +   "classpathentry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=["
-        +     "attributes[attributes={}; value=["
-        +       "attribute[attributes={name=module, value=true}; value=[]]"
-        +     "]]]"
-        +   "], "
-        +   "classpathEntry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=[]]"
-        + "]]",
-        rootNode.toString()
+        "item[attributes={}; value=[]]",
+        dut.toString()
     );
+    
+    // --- b. item without proper children
+    dut.appendNode("foo.bar");
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "foo.bar[attributes={}; value=[]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // --- c. item with "attributes" but no grand-children
+    Node child = dut.appendNode(ClasspathFile.NAME_CHILD);
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "foo.bar[attributes={}; value=[]], "
+        + "attributes[attributes={}; value=[]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // --- d. item -> "attributes" -> "attribute" but no attributes
+    Node grand = child.appendNode(ClasspathFile.NAME_GRAND);
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "foo.bar[attributes={}; value=[]], "
+        + "attributes[attributes={}; value=["
+        +   "attribute[attributes={}; value=[]]"
+        + "]]"
+        + "]]",
+        dut.toString()
+    );
+    child.remove(grand);
+    
+    // --- e. item -> "attributes" -> "attribute" but non gradle scope attributes
+    final Map<String, String> mapE = new LinkedHashMap<>();
+    mapE.put("name", "gradle_used_by_Scope");
+    mapE.put("value", "test");
+    grand = child.appendNode(ClasspathFile.NAME_GRAND, mapE);
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "foo.bar[attributes={}; value=[]], "
+        + "attributes[attributes={}; value=["
+        +   "attribute[attributes={name=gradle_used_by_Scope, value=test}; value=[]]"
+        + "]]"
+        + "]]",
+        dut.toString()
+    );
+    child.remove(grand);
+    
+    // --- f. item -> "attributes" -> "attribute" but gradle scope != test
+    // f.1 gradle scope without value
+    final Map<String, String> mapF = new LinkedHashMap<>();
+    mapF.put("name", "gradle_used_by_scope");
+    grand = child.appendNode(ClasspathFile.NAME_GRAND, mapF);
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "foo.bar[attributes={}; value=[]], "
+        + "attributes[attributes={}; value=["
+        +   "attribute[attributes={name=gradle_used_by_scope}; value=[]]"
+        + "]]"
+        + "]]",
+        dut.toString()
+    );
+    // f.2 gradle scope != test
+    mapF.put("value", "main,test");
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "foo.bar[attributes={}; value=[]], "
+        + "attributes[attributes={}; value=["
+        +   "attribute[attributes={name=gradle_used_by_scope, value=main,test}; value=[]]"
+        + "]]"
+        + "]]",
+        dut.toString()
+    );
+    child.remove(grand);
+    
+    // --- g. item -> "attributes" -> "attribute", gradle scope == test, no  test-attribute
+    final String expectedG = "item[attributes={}; value=["
+        + "foo.bar[attributes={}; value=[]], "
+        + "attributes[attributes={}; value=["
+        +   "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]], "
+        +   "attribute[attributes={name=test, value=true}; value=[]]"
+        + "]]"
+        + "]]";
+    final Map<String, String> mapG = new LinkedHashMap<>();
+    mapG.put("name", "gradle_used_by_scope");
+    mapG.put("value", "test");
+    grand = child.appendNode(ClasspathFile.NAME_GRAND, mapG);
+    insDut.checkGradleScopeTest(dut);        // call method under test once
+    assertEquals(expectedG, dut.toString()); // check result
+    insDut.checkGradleScopeTest(dut);        // call method under test again
+    assertEquals(expectedG, dut.toString()); // node under test shouldn't change
+    child.remove(grand);
+    
+    // --- h. item -> "attributes" -> "attribute" but gradle scope == test plus test-attribute
+    // it is expected that method under test doesn't change node
+    dut = new Node(null, "item");
+    child = dut.appendNode(ClasspathFile.NAME_CHILD);
+    child.append(grand);
+    child.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "test"));
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "attributes[attributes={}; value=["
+        +   "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]], "
+        +   "attribute[attributes={name=test}; value=[]]"
+        + "]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // --- i. only first child named "attributes" count
+    // i.1 proper scope in 1st child
+    dut = new Node(null, "item");
+    final Node properScope = dut.appendNode(ClasspathFile.NAME_CHILD);
+    properScope.appendNode(ClasspathFile.NAME_GRAND, mapG);
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "attributes[attributes={}; value=["
+        +   "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]], "
+        +   "attribute[attributes={name=test, value=true}; value=[]]"
+        + "]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // i.2 another improper child named "attributes" before proper child
+    dut.remove(properScope);
+    dut.appendNode(ClasspathFile.NAME_CHILD);
+    dut.appendNode(ClasspathFile.NAME_CHILD).appendNode(ClasspathFile.NAME_GRAND, mapG);
+    insDut.checkGradleScopeTest(dut);
+    assertEquals(
+        "item[attributes={}; value=["
+        + "attributes[attributes={}; value=[]], "
+        + "attributes[attributes={}; value=["
+        +   "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]]"
+        + "]]"
+        + "]]",
+        dut.toString()
+    );
+  } // end method */
+
+  /**
+   * Test method for {@link ClasspathFile#getAttributeNamed(Node, String)}.
+   */
+  @Test
+  void test_getAttributeNamed__Node_String() {
+    // Test strategy:
+    // a. Node without children SHALL return empty
+    // b. Node with children not named "attribute" SHALL return empty
+    // c. Node with children named "attribute" but without proper attribute SHALL return empty
+    // d. Node with one or more children named "attribute" and proper attribute SHALL return node
+    
+    // --- setup a node used for testing
+    final Node dut = new Node(null, "dut"); // device under test
+    
+    // --- setup a map with attributes for child-nodes
+    final Map<String, String> mapItem = new LinkedHashMap<>();
+    mapItem.put("name", "Alfred");
+    mapItem.put("Name", "foo");
+    
+    // --- a. Node without children SHALL return empty
+    assertEquals(0, dut.children().size());
+    assertEquals(false, insDut.getAttributeNamed(dut, "foo").isPresent());
+
+    // --- b. Node with children not named "attribute" SHALL return empty
+    dut.appendNode("Attribute", mapItem); // wrong capitalization
+    dut.appendNode("attributes", mapItem); // extra characters
+    assertEquals(false, insDut.getAttributeNamed(dut, "foo").isPresent());
+    
+    // --- c. Node with children named "attribute" but without proper attribute SHALL return empty
+    // c.1 child "attribute" without attributes
+    dut.appendNode(ClasspathFile.NAME_GRAND);
+    assertEquals(false, insDut.getAttributeNamed(dut, "foo").isPresent());
+    
+    // c.2 child "attribute" with attributes
+    final Node node1 = dut.appendNode(ClasspathFile.NAME_GRAND, mapItem);
+    // Note: assertions for c.2 are combined with assertions in d, see below
+    
+    // --- d. Node with children named "attribute" and proper attribute SHALL return node
+    // d.1 Just one proper child
+    assertFalse(insDut.getAttributeNamed(dut, "alfred").isPresent());  // wrong capitalization
+    assertFalse(insDut.getAttributeNamed(dut, " Alfred").isPresent()); // extra prefix
+    assertFalse(insDut.getAttributeNamed(dut, "Alfreds").isPresent()); // extra suffix
+    assertSame(node1, insDut.getAttributeNamed(dut, "Alfred").get());
+    
+    // d.2 More than one proper child
+    final Node node2 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "Fiedler"));
+    final Node node3 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "bar"));
+    assertSame(node1, insDut.getAttributeNamed(dut, "Alfred").get());  // match in 1st proper child
+    assertSame(node2, insDut.getAttributeNamed(dut, "Fiedler").get()); // match in 2nd proper child
+    assertSame(node3, insDut.getAttributeNamed(dut, "bar").get());     // match in 3rd proper child
+  } // end method */
+
+  /**
+   * Test method for {@link ClasspathFile#getGradleScope(Node)}.
+   */
+  @Test
+  void test_getGradleScope__Node() {
+    // Test strategy:
+    // --- a. minimal node with gradle scope plus value
+    // --- b. minimal node with gradle scope without value
+    // --- c. minimal node without gradle scope
+    // --- d. node without appropriate children
+    // --- e. node without children
+    
+    Node dut;
+    
+    // --- a. minimal node with gradle scope plus value
+    final String valueA = "foo.bar.A";
+    final Map<String, String> mapA = new LinkedHashMap<>();
+    mapA.put("name",  "gradle_used_by_scope");
+    mapA.put("value", valueA);
+    dut = new Node(null, "item.a");
+    dut.appendNode(ClasspathFile.NAME_GRAND, mapA);
+    assertEquals(valueA, insDut.getGradleScope(dut));
+    
+    // --- b. minimal node with gradle scope without value
+    final String empty = "";
+    dut = new Node(null, "item.b");
+    dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name",  "gradle_used_by_scope"));
+    assertEquals(empty, insDut.getGradleScope(dut));
+    
+    // --- c. minimal node without gradle scope
+    dut = new Node(null, "item.c");
+    dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name",  "gradle_used_by_Scope"));
+    assertEquals(empty, insDut.getGradleScope(dut));
+    
+    // --- d. node without appropriate children
+    dut = new Node(null, "item.d");
+    dut.appendNode("foo.bar");
+    assertEquals(empty, insDut.getGradleScope(dut));
+    
+    // --- e. node without children
+    assertEquals(empty, insDut.getGradleScope(new Node(null, "item.e")));
   } // end method */
 
   /**
@@ -272,6 +505,43 @@ final class ClasspathFileTest {
   } // end method */
   
   /**
+   * Test method for {@link ClasspathFile#improveEclipseClasspathFile(Node)}.
+   */
+  @Test
+  void test_improveEclipseClasspathFile__Node() {
+    // Test strategy:
+    // ... assertion 1: method putJreOnModulePath(Node) works as intended
+    // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
+    
+    // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
+    final Node rootNode = new Node(null, "root");
+    
+    // a.1: difference in name of item
+    final Map<String, String> mapA1 = new LinkedHashMap<>();
+    mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
+    mapA1.put("kind", "con");
+    rootNode.appendNode("classpathentry", mapA1); // ok
+    rootNode.appendNode("classpathEntry", mapA1); // not classpathentry
+    
+    // --- improve
+    insDut.improveEclipseClasspathFile(rootNode);
+    
+    // --- check
+    assertEquals(
+        "root[attributes={}; value=["
+        // a.1, begin
+        +   "classpathentry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=module, value=true}; value=[]]"
+        +     "]]]"
+        +   "], "
+        +   "classpathEntry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=[]]"
+        + "]]",
+        rootNode.toString()
+    );
+  } // end method */
+
+  /**
    * Test method for {@link ClasspathFile#isJre(Node)}.
    */
   @Test
@@ -416,6 +686,52 @@ final class ClasspathFileTest {
           variants.stream()
               .forEach(i -> assertFalse(insDut.isKindOf(dut, i)));
         }); // end forEach(kind -> ...)
+  } // end method */
+  
+  /**
+   * Test method for {@link ClasspathFile#markTest(Node)}.
+   */
+  @Test
+  void test_markTest__Node() {
+    // ... assertion: method checkGradleScopeTest(Node) works as expected
+    //     => not much to check hereafter
+    
+    // Test strategy:
+    // --- a. items with improper name are not changed
+    // --- b. items with proper name are changed
+    
+    final Node root = new Node(null, "root");
+    final Map<String, String> mapProperScope = new LinkedHashMap<>();
+    mapProperScope.put("name", "gradle_used_by_scope");
+    mapProperScope.put("value", "test");
+    
+    // --- a. items with improper name are not changed
+    root.appendNode("classPathentry") // wrong capitalization
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, mapProperScope);
+    
+    // --- b. items with proper name are changed
+    root.appendNode("classpathentry")
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, mapProperScope);
+    
+    insDut.markTest(root);
+    assertEquals(
+        "root[attributes={}; value=["
+        +   "classPathentry[attributes={}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]]"
+        +     "]]"
+        +   "]], "
+        +   "classpathentry[attributes={}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]], "
+        +       "attribute[attributes={name=test, value=true}; value=[]]"
+        +     "]]"
+        +   "]]"
+        + "]]",
+        root.toString()
+    );
   } // end method */
 
   /**
