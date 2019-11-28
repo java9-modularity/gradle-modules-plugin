@@ -9,7 +9,7 @@
  */
 
 version = "1.21.601" // Note: u is the 21st letter in the alphabet.
-group = "foo.libu" // litu = li m u = LIBrary U
+group = "foo.libu" // libu = lib u = LIBrary U
 
 plugins { // ......................................................................................
   id("java-library")
@@ -23,7 +23,7 @@ plugins { // ...................................................................
 
 // configure ClasspathFileExtension ...............................................................
 configure<org.javamodularity.moduleplugin.extensions.ClasspathFileExtension> {
-  improveClasspathFile.set(false)
+  improveClasspathFile.set(true) // fix problem with Gradle's eclipse plugin in gradle version 6.0.1
 } // end configure ClasspathFileExtension ______________________________________________________ */
 
 repositories { // .................................................................................

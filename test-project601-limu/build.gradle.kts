@@ -9,7 +9,7 @@
  */
 
 version = "1.21.601" // Note: u is the 21st letter in the alphabet.
-group = "foo.limu" // litu = li m u = LIbrary used for Main U
+group = "foo.limu" // limu = li m u = LIbrary used for Main U
 
 plugins { // ......................................................................................
   id("java-library")
@@ -23,7 +23,7 @@ plugins { // ...................................................................
 
 // configure ClasspathFileExtension ...............................................................
 configure<org.javamodularity.moduleplugin.extensions.ClasspathFileExtension> {
-  improveClasspathFile.set(false)
+  improveClasspathFile.set(false) // no need to enable enhancement from branch afi33
 } // end configure ClasspathFileExtension ______________________________________________________ */
 
 repositories { // .................................................................................

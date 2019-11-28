@@ -1,5 +1,7 @@
 package org.javamodularity.moduleplugin.tasks;
 
+import groovy.util.Node;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -15,8 +17,6 @@ import org.gradle.plugins.ide.eclipse.GenerateEclipseClasspath;
 import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.ClasspathFileExtension;
-
-import groovy.util.Node;
 
 /**
  * This class provides functionality to improve the content of {@code .classpath} file created
@@ -145,6 +145,7 @@ public final class ClasspathFile {
   /* package */ void improveEclipseClasspathFile(final Node rootNode) {
     putJreOnModulePath(rootNode);
     markTest(rootNode);
+    //markMain(rootNode);
     
     // #############################################################################################
     // Note 20: The eclipse-plugin in Gradle puts everything on the classpath and nothing on the
