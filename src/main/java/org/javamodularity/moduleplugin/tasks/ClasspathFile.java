@@ -20,7 +20,7 @@ import org.javamodularity.moduleplugin.extensions.ClasspathFileExtension;
 
 /**
  * This class provides functionality to improve the content of {@code .classpath} file created
- * by the {@code eclipse} plugin.
+ * by the Gradle's eclipse-plugin.
  * 
  * @author <a href="mailto:alfred.65.fiedler@gmail.com">Alfred Fiedler</a>
  */
@@ -67,18 +67,24 @@ public final class ClasspathFile {
   private final ClasspathFileExtension insExtension; // */
   
   /**
+   * Comfort constructor.
+   * 
    * @param project
    *        this instance is related to
    */
   public ClasspathFile(final Project project) {
-    insProject = project;
+    insProject   = project;
     insExtension = insProject.getExtensions().create(
-        "classpathFileExtension", ClasspathFileExtension.class, insProject
+        "classpathFileExtension",
+        ClasspathFileExtension.class,
+        insProject
     );
   } // end constructor */
   
   /**
-   * Configures appropriate action if project has task "eclipseClasspath".
+   * Configures appropriate action if project has task "eclipseClasspath" and
+   * {@link ClasspathFileExtension} indicates that ".classpath" file is to be
+   * improved.
    */
   public void configure() {
     insProject.afterEvaluate(p -> {
@@ -107,7 +113,7 @@ public final class ClasspathFile {
   private void configure(final Task task) {
     // LOGGER.quiet("configure, task: {}", task.getClass());
     
-    // --- add functionality for enhancing the .classpath content
+    // --- add functionality for enhancing the content of ".classpath"-file
     // Note: For more information see the manual for the eclipse-plugin.
     final EclipseClasspath eclipseClasspath = ((GenerateEclipseClasspath) task).getClasspath();
     eclipseClasspath.file(new Action<XmlFileContentMerger>() {
@@ -117,8 +123,14 @@ public final class ClasspathFile {
           @Override
           public void execute(final XmlProvider xmlProvider) {
             final Node rootNode = xmlProvider.asNode();
+            
+            // show content of .classpath file before improving
             LOGGER.debug("addAction: rootNode.before improving:{}", rootNode);
+            
+            // improve
             improveEclipseClasspathFile(rootNode);
+            
+            // show content of .classpath file after improving
             LOGGER.debug("addAction: rootNode.after  improving:{}", rootNode);
           } // end inner method
         }); // end inner class Action<XmlProvider)
@@ -131,12 +143,12 @@ public final class ClasspathFile {
    * 
    * <p>This method modifies the given content of a ".classpath"-file in the following ways:
    * <ol>
-   *   <li>Each "classpathentry" with a gradle_used_by_scope of test
-   *       gets an additional attribute test = "true".
    *   <li>Each "classpathentry" of kind = "con" with a path containing "JRE_CONTAINER"
    *       is moved to the module-path.
-   *   <li>Each "classpathentry" of kind = "lib" with a gradle_used_by_scope of "main"
-   *       is moved to the module-path.
+   *   <li>Each "classpathentry" of kind = "lib" with a gradle_used_by_scope containing "main"
+   *       gets an additional attribute module = "true".
+   *   <li>Each "classpathentry" with a gradle_used_by_scope of "test"
+   *       gets an additional attribute test = "true".
    * </ol>
    * 
    * @param rootNode
@@ -144,76 +156,56 @@ public final class ClasspathFile {
    */
   /* package */ void improveEclipseClasspathFile(final Node rootNode) {
     putJreOnModulePath(rootNode);
+    markMain(rootNode);
     markTest(rootNode);
-    //markMain(rootNode);
-    
-    // #############################################################################################
-    // Note 20: The eclipse-plugin in Gradle puts everything on the classpath and nothing on the
-    //          module-path. Its seems appropriate to adjust things such that non-test dependencies
-    //          are tagged such that they appear on the module-path. This works at least with the
-    //          following versions:
-    //          Gradle 5.6.2, Eclipse 2019-09
-    
-    // #############################################################################################
-    // Note 30: Strategy for improving is as follows:
-    //          a. check that we got an XML-node.
-    //          b. loop over all children in given XML-node
-    //          c. if node's attribute "kind" has value "lib" then check how gradle treats it.
-    //             If gradle's scope contains main then add a node to "attribute" with content:
-    //             <attribute name="module" value="true"/>
-    
-    // Excerpt from an entry which should be improved:
+  } // end method */
+  
+  /**
+   * Marks everything which is kin of {@code lib} with a {@code gradle_used_by_scope} containing
+   * {@code main} as {@code module}.
+   * 
+   * <p>All children of {@code rootNode} with name {@link #NAME_CHILD} which have a child with
+   * name {@link #NAME_GRAND} and an attribute with name {@link #NAME_ATTRIBUTE} which contains
+   * {@code main} become an attribute {@code module="true"} if they don't already have such an
+   * attribute.
+   * 
+   * <p><i><b>Note:</b>
+   * Currently Gradle's eclipse-plugin creates ".classpath" files such that
+   * from Eclipse's point of view all libraries appear on the classpath.
+   * Its seems appropriate to adjust things such that libraries with a gradle scope containing
+   * "main" are changed such that they appear on the module-path from Eclipse's point of view.
+   * This works at least with the following versions:<br>
+   * - Gradle 5.3.1, Eclipse 2019-09
+   * - Gradle 5.6.4, Eclipse 2019-09
+   * - Gradle 6.0.1, Eclipse 2019-09
+   * </i>
+   * 
+   * @param rootNode
+   *        XML-content to be improved
+   */
+  /* package */ void markMain(final Node rootNode) {
+    // Excerpt from a child which should be improved:
     // <classpathentry sourcepath="D:/.p/..." kind="lib" path="D:/.p/...">
     //   <attributes>
     //     <attribute name="gradle_used_by_scope" value="main,test"/>
     //   </attributes>
     // </classpathentry>
     
-    // System.out.printf("improve before:%n%s%n", object);
-    
-    /*
-    final Map<String, String> flagTest = new LinkedHashMap<>();
-    flagTest.put("name",  "test");
-    flagTest.put("value", "true");
-    
-    // --- loop over all items in rootNode and collect those of type Node with name "classpathentry"
-    final List<Node> classpathEntries = (List<Node>) rootNode.children().stream()
-        .filter(i -> i instanceof Node) // better safe than sorry
-        .filter(i -> NAME_ITEM.equals(((Node)i).name())) // filter nodes with name "classpathentry"
-        .collect(Collectors.toList());
-    
-    
-    
-    
-    
-        .filter(i -> isKindOfLib(i)) // filter nodes which are kind of "lib"
-        .forEach(item -> {
-          // ... item has type Node and name "classpathentry"
-          // ... item is a kind of "lib"
-          
-          // --- loop over all children of item and investigate those with name "attributes"
-          ((Node) item).children().stream()
-              .filter(j -> j instanceof Node) // better safe than sorry
-              .filter(j -> NAME_CHILD.equals(((Node)j).name())) // nodes with name "attributes"
-              .filter(j -> shouldBeOnModulePath(j)) // child should be on module-path
-              .forEach(j -> {
-                // ... item has type Node and name "classpathentry"
-                // ... item is a kind of "lib"
-                // ... child of item has type Node and name "attributes"
-                // ... grandChild of item indicates that it should be on module-path, but isn't yet
-                ((Node) j).appendNode(NAME_GRAND, flagModule); // move to module-path
-              }); // end forEach(j -> ...)
-        }); // end forEach(i -> ...)
-        // */
+    rootNode.children().stream()                                // loop over all children
+        .filter(i  -> i instanceof Node)                        // better safe than sorry
+        .filter(i  -> NAME_ITEM.equals(((Node)i).name()))       // with name "classpathentry"
+        .filter(i  -> isKindOf((Node)i, "lib"))                 // kind of "lib"
+        .filter(i  -> getGradleScope((Node)i).contains("main")) // appropriate gradle scope
+        .filter(i  -> hasNoAttributeModule((Node)i))            // without "module" information
+        .forEach(i -> move((Node)i, "module"));                 // add module="true" attribute
   } // end method */
   
   /**
-   * Marks everything with a {@code gradle_used_by_scope} of {@code test} accordingly.
+   * Marks everything with a gradle scope of {@code test} accordingly.
    * 
-   * <p>All children of {@code rootNode} with name {@link #NAME_CHILD} which have a child with
-   * name {@link #NAME_GRAND} and an attribute with name {@link #NAME_ATTRIBUTE} which has a value
-   * equal to {@code "test"} become an attribute "test" and value "true" if they don't already have
-   * such an attribute.
+   * <p>All children of {@code rootNode} named "attributes" which have a child named "attribute"
+   * and an attribute named {@link #NAME_ATTRIBUTE} which have a value equal to {@code "test"}
+   * become an attribute {@code test="true"} if they don't already have such an attribute.
    * 
    * <p><i><b>Note 1:</b>
    * The eclipse plugin in Gradle version 5.3.1 do not mark test-artifacts properly.
@@ -221,14 +213,14 @@ public final class ClasspathFile {
    * </i>
    * 
    * <p><i><b>Note 2:</b>
-   * The eclipse plugin in Gradle versions 5.6.4 mark test-artifacts properly.
+   * The eclipse plugin in Gradle versions 5.6.4, 6.0 and 6.0.1 mark test-artifacts properly.
    * </i>
    * 
    * @param rootNode
    *        XML-content to be improved
    */
   /* package */ void markTest(final Node rootNode) {
-    // Example of node to be improved
+    // Example of a child to be improved
     // <classpathentry output="bin/test" kind="src" path="src/test/java">
     //   <attributes>
     //     <attribute name="gradle_scope" value="test"/>
@@ -236,10 +228,12 @@ public final class ClasspathFile {
     //   </attributes>
     // </classpathentry>
     
-    rootNode.children().stream()                          // loop over all children
-        .filter(i  -> i instanceof Node)                  // better safe than sorry
-        .filter(i  -> NAME_ITEM.equals(((Node)i).name())) // with name "classpathentry"
-        .forEach(i -> checkGradleScopeTest((Node)i));     // add test="true" attribute
+    rootNode.children().stream()                              // loop over all children
+        .filter(i  -> i instanceof Node)                      // better safe than sorry
+        .filter(i  -> NAME_ITEM.equals(((Node)i).name()))     // with name "classpathentry"
+        .filter(i  -> "test".equals(getGradleScope((Node)i))) // appropriate gradle scope
+        .filter(i  -> hasNoAttributeTest((Node)i))            // without "test" information
+        .forEach(i -> move((Node)i, "test"));                 // add test="true" attribute
   } // end method */
   
   /**
@@ -247,6 +241,12 @@ public final class ClasspathFile {
    * 
    * <p>All children of {@code rootNode} with name {@link #NAME_CHILD} which are kind of "con"
    * and with a path containing {@link #NAME_JRE} are put on module-path.
+   * 
+   * <p><i><b>Node:</b>
+   * Currently Gradle's eclipse-plugin seems to be module agnostic. It seems safe to assume that
+   * in case someone uses "gradle-modules-plugin" the corresponding code is modular and thus uses
+   * a modular JRE. Thus the JRE is put on module-path.
+   * </i>
    * 
    * @param rootNode
    *        XML-content to be improved
@@ -257,42 +257,70 @@ public final class ClasspathFile {
         .filter(i  -> NAME_ITEM.equals(((Node)i).name())) // with name "classpathentry"
         .filter(i  -> isJre((Node)i))                     // indicating JRE
         .filter(i  -> hasNoAttributeModule((Node)i))      // without "module" information
-        .forEach(i -> moveToModulePath((Node)i));         // put on module-path
+        .forEach(i -> move((Node)i, "module"));           // put on module-path
   } // end method */
 
   /**
-   * Estimates whether given {@code node} contains a value for a key named "module".
+   * Retrieves gradle scope from given {@code item}.
+   * 
+   * <p>The following actions are performed:
+   * <ol>
+   *   <li>Searches in the children of {@code item} for the first one named {@link #NAME_CHILD}.
+   *   <li>If such a child doesn't exist an empty {@link String} is returned.
+   *   <li>If such a child exists then in the children of that child for first one named
+   *       {@link #NAME_GRAND} and an attribute with name {@link #NAME_ATTRIBUTE} is searched.
+   *   <li>If such an attribute is present then its value is returned.
+   *   <li>If such an attribute is absent  then an empty {@link String} is returned.
+   * </ol>
    * 
    * @param item
-   *        {@code Node} for which the estimation is performed
-   *        
-   * @return false if {@code node} has at least one child with name "attributes" and that child has
-   *         at least one child with name "attribute" containing an attribute named "module",
-   *         true otherwise
+   *        investigated for a gradle scope
+   * 
+   * @return value of attribute {@link #NAME_ATTRIBUTE} or
+   *         an empty {@link String} if such an attribute is not present
    */
-  /* package */ boolean hasNoAttributeModule(final Node item) {
+  /* package */ String getGradleScope(final Node item) {
+    final String empty = ""; // value if gradle scope is absent
+    
     // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
     
-    return item.children().stream()                       // loop over all children of node
-        .filter(c -> c instanceof Node)                   // better safe than sorry
-        .filter(c -> NAME_CHILD.equals(((Node)c).name())) // nodes with name "attributes"
-        .filter(c -> hasAttributeNamed((Node)c, "module"))
-        .findFirst()
-        .isEmpty();
+    final Optional<Node> oChild = item.children().stream() // loop over all children
+        .filter(c -> c instanceof Node)                    // better safe than sorry
+        .filter(c -> NAME_CHILD.equals(((Node)c).name()))  // with name "attributes"
+        .findFirst();                                      // first child named "attributes"
+    
+    if (oChild.isPresent() ) {
+      // ... child of type Node and name "attributes" is present
+      //     => search there for grand-child with gradle scope attribute
+      final Optional<Node> oGrand = getAttributeNamed(oChild.get(), NAME_ATTRIBUTE);
+      
+      if (oGrand.isPresent()) {
+        // ... grandChild of type Node named "attribute" with attribute named "gradle_used_by_scope"
+        //     => get its value (if there is one)
+        final Node   grand = oChild.get();
+        final Object value = grand.attribute("value"); // returns null if value is absent
+        
+        return (null == value) ? empty : value.toString(); // avoid NullPointerException
+      } // end if (oGrand present)
+      // ... no appropriate grand-child present => return empty string
+    } // end if (oChild present)
+    // ... no appropriate child present => return empty string
+    
+    return empty;
   } // end method */
-  
+
   /**
    * Retrieves first child of given {@code child} named "attribute" which has an attribute
    * named {@code name}.
    *  
    * @param child
-   *        {@code Node} for which the estimation is performed
+   *        {@link Node} for which the estimation is performed
    * 
    * @param name
    *        of attribute searched for
    * 
    * @return {@link Optional} for first child in {@code child} named "attribute" which has an
-   *         attribute named {@code name}
+   *         attribute named {@code name}.
    *         If no such {@link Node} exists an empty {@link Optional} is returned.
    */
   /* package */ Optional<Node> getAttributeNamed(final Node child, final String name) {
@@ -304,45 +332,51 @@ public final class ClasspathFile {
         .filter(g -> name.equals(((Node)g).attribute("name"))) // nodes with appropriate attribute
         .findFirst();
   } // end method */
-  
+
   /**
-   * Retrieves gradle scope from given {@code node}.
+   * Estimates whether given {@code item} contains a value for a key named "module".
    * 
-   * <p>The following actions are performed:
-   * <ol>
-   *   <li>Searches in the children of {@code node} for first one with name "attribute" and an
-   *       attribute with name {@link #NAME_ATTRIBUTE}.
-   *   <li>If such an attribute is present then its value is returned.
-   *   <li>If such an attribute is absent  then an empty {@link String} is returned.
-   * </ol>
-   * 
-   * @param node
-   *        investigated for a child with name "attribute" and an attribute named
-   *        {@link #NAME_ATTRIBUTE}
-   * 
-   * @return value of attribute {@link #NAME_ATTRIBUTE} or
-   *         an empty {@link String} if such an attribute is not present
+   * @param item
+   *        {@link Node} for which the estimation is performed
+   *        
+   * @return false if {@code item} has at least one child named "attributes" and that child has
+   *         at least one child named "attribute" containing an attribute named "module",
+   *         true otherwise
    */
-  /* package */ String getGradleScope(final Node node) {
-    // ... Note 1: In real usage (i.e. no test scenario) node has name "attributes".
+  /* package */ boolean hasNoAttributeModule(final Node item) {
+    // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
     
-    final Optional<Node> oChild = getAttributeNamed(node, NAME_ATTRIBUTE);
-    
-    if (oChild.isPresent()) {
-      // ... child with type Node and name "attribute" with attribute named "gradle_used_by_scope"
-      //     => get its value
-      final Node   child = oChild.get();
-      final Object value = child.attribute("value"); // might return null if value is absent
-      
-      return (null == value) ? "" : value.toString(); // avoid NullPointerException
-    } // end if
-    // ... no appropriate child present => return empty string
-    
-    return "";
+    return item.children().stream()                        // loop over all children
+        .filter(c -> c instanceof Node)                    // better safe than sorry
+        .filter(c -> NAME_CHILD.equals(((Node)c).name()))  // child named "attributes"
+        .filter(c -> hasAttributeNamed((Node)c, "module")) // grand-child with attribute "module"
+        .findFirst()
+        .isEmpty();
   } // end method */
 
   /**
-   * Estimates whether given {@code child} has a child named {@code "attribute"} and
+   * Estimates whether given {@code item} contains a value for a key named "test".
+   * 
+   * @param item
+   *        {@link Node} for which the estimation is performed
+   *        
+   * @return false if {@code item} has at least one child named "attributes" and that child has
+   *         at least one child named "attribute" containing an attribute named "test",
+   *         true otherwise
+   */
+  /* package */ boolean hasNoAttributeTest(final Node item) {
+    // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
+    
+    return item.children().stream()                       // loop over all children
+        .filter(c -> c instanceof Node)                   // better safe than sorry
+        .filter(c -> NAME_CHILD.equals(((Node)c).name())) // child named "attributes"
+        .filter(c -> hasAttributeNamed((Node)c, "test"))  // grand-child with attribute "test"
+        .findFirst()
+        .isEmpty();
+  } // end method */
+  
+  /**
+   * Estimates whether given {@code child} has a child named "attribute" and
    * that child has an attribute named {@code name}.
    *  
    * @param child
@@ -362,68 +396,27 @@ public final class ClasspathFile {
   } // end method */
   
   /**
-   * Improves nodes with a gradle scope of "test".
-   * 
-   * <p>The following actions are performed:
-   * <ol>
-   *   <li>Searches in given {@code node} for first child of
-   *       type {@link Node} named {@link #NAME_CHILD}.
-   *   <li>If that child has a gradle cope of "test" but no child named {@link #NAME_GRAND} with
-   *       an attribute named {@code test} then such child is added with {@code test="true"}.
-   * </ol>
-   * 
-   * @param node
-   *        a {@link Node} investigated whether it has a certain scope
-   * 
-   */
-  /* package */ void checkGradleScopeTest(final Node node) {
-    // ... Note 1: In real usage (i.e. no test scenario) node has name "classpathentry".
-    
-    node.children().stream() // loop over all children
-        .filter(i -> i instanceof Node)                   // better safe than sorry
-        .filter(i -> NAME_CHILD.equals(((Node)i).name())) // with name "attributes"
-        .findFirst()                                      // first child named "attributes"
-        .ifPresent(c -> {
-          final Node child = (Node)c;
-          if (
-              "test".equals(getGradleScope(child)) // appropriate gradle scope
-              && !hasAttributeNamed(child, "test") // actually no "test"-attribute
-          ) {
-            // ... child with name "attributes" is present
-            // ... child has a  child named "attribute" with a gradle scope equal to "test"
-            // ... child has no child named "attribute" with a "test"-attribute
-            
-            // --- add a child named "attribute" with test="true"
-            final Map<String, String> map = new LinkedHashMap<>();
-            map.put("name",  "test");
-            map.put("value", "true");
-            child.appendNode(NAME_GRAND, map);
-          } // end if
-        });
-  } // end method */
-  
-  /**
    * Estimates whether given {@link Node} belongs to a JRE description.
    * 
-   * @param node
+   * @param item
    *        a {@link Node} investigated whether it is of a certain kind
    * 
    * @return true if given {@link Node} is kind of "con" and has an attribute "path" containing
    *         "JRE_CONTAINER",
    *         false otherwise
    */
-  /* package */ boolean isJre(final Node node) {
+  /* package */ boolean isJre(final Node item) {
     // ... Note 1: In real usage (i.e. no test scenario) node has name "classpathentry".
     
-    final Object path = node.attribute("path"); // might return null
+    final Object path = item.attribute("path"); // might return null
     
-    return isKindOf(node, "con") && (null != path) && path.toString().contains(NAME_JRE);
+    return isKindOf(item, "con") && (null != path) && path.toString().contains(NAME_JRE);
   } // end method */
 
   /**
    * Estimates whether given {@link Node} is of certain kind.
    * 
-   * @param node
+   * @param item
    *        a {@link Node} investigated whether it is of a certain kind
    * 
    * @param kind
@@ -433,134 +426,54 @@ public final class ClasspathFile {
    *         equal to the given one in parameter {@code kind},
    *         false otherwise
    */
-  /* package */ boolean isKindOf(final Node node, final String kind) {
-    final Object attr = node.attribute("kind"); // might return null
+  /* package */ boolean isKindOf(final Node item, final String kind) {
+    // ... Note 1: In real usage (i.e. no test scenario) node has name "classpathentry".
+    
+    final Object attr = item.attribute("kind"); // might return null
     
     return kind.equals(attr);
   } // end method */
 
   /**
-   * Adds an attribute such that given {@code node} appears on the module path.
+   * Adds a grand-child {@link Node} with an {@code attributeName="true"}.
    * 
-   * <p>The implementation searches for the first child with name "attributes" and adds to that
-   * child a {@link Node} with name "attribute" and attributes
-   * {@code name="module"} and
-   * {@code value="true"}.
+   * <p>The implementation searches for the first child named "attributes" and
+   * adds to that child a {@link Node} with name "attribute" and attributes
+   * {@code attributeName="true"}.
    *  
-   * @param node
+   * @param item
    *        which should appear on the module path
+   * 
+   * @param attributeName
+   *        name of attribute 
    */
-  /* package */ void moveToModulePath(final Node node) {
-    final Map<String, String> flagModule = new LinkedHashMap<>();
-    flagModule.put("name",  "module");
-    flagModule.put("value", "true");
-  
+  /* package */ void move(final Node item, final String attributeName) {
+    // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
+    
+    final Map<String, String> map = new LinkedHashMap<>();
+    map.put("name",  attributeName);
+    map.put("value", "true");
+    
     // --- find first child named "attributes"
-    node.children().stream()                              // loop over all children
+    item.children().stream()                              // loop over all children
         .filter(c -> c instanceof Node)                   // better safe than sorry
-        .filter(n -> NAME_CHILD.equals(((Node)n).name())) // nodes with name "attributes"
+        .filter(c -> NAME_CHILD.equals(((Node)c).name())) // nodes with name "attributes"
         .findFirst()
         .ifPresentOrElse(
-            // ... node has a child named "attributes"
+            // ... item has a child named "attributes"
             //     => add appropriate child to that
-            n -> ((Node) n).appendNode(NAME_GRAND, flagModule),
+            c -> ((Node) c).appendNode(NAME_GRAND, map),
             
-            // ... node has no child named "attributes"
-            //     => add appropriate child to node
+            // ... item has no child named "attributes"
+            //     => add appropriate child to item
             new Runnable() {
               @Override
               public void run() {
-                node
-                    .appendNode(NAME_CHILD)               // add child with name "attributes" and
-                    .appendNode(NAME_GRAND, flagModule);  // grand-child with appropriate attributes
+                item
+                    .appendNode(NAME_CHILD)       // add child with name "attributes" and
+                    .appendNode(NAME_GRAND, map); // grand-child with appropriate attributes
               } // end inner method
             } // end inner class Runnable
         ); // end ifPresentOrElse(...)
-  } // end method */
-
-  /**
-   * Estimates whether the given {@link Node} indicates that is should be on the module-path.
-   *  
-   * @param object
-   *        a {@link Node}
-   * 
-   * @return true if a sub-node of given one indicates a gradle scope "main" but didn't indicate
-   *         that it should be on module-path,
-   *         false otherwise
-   */
-  private static boolean shouldBeOnModulePath(final Object object) {
-    // ... assertion object is of type Node
-    // ... assertion object has name "attributes"
-    final Node child = (Node) object;
-    
-    // check whether children of child contain a gradle scope and
-    // if so whether that contains main
-    // if so whether they already contain a module-path entry
-    // if not put that entry on module-path
-    
-    final boolean isGradleScopeMain = child.children().stream()
-        .filter(k -> k instanceof Node) // better safe than sorry
-        .filter(k -> NAME_GRAND.equals(((Node)k).name())) // nodes with name "attribute"
-        .filter(k -> isGradleScopeMain(k)) // nodes with gradle scope of main
-        .findFirst() // one grandChild per child is enough to trigger movement
-        .isPresent();
-    
-    if (isGradleScopeMain) {
-      // ... child has a gradle scope of "main"
-      //     => check whether it is already on the module-path
-      
-      final boolean isAlreadyMoved = child.children().stream()
-          .filter(k -> k instanceof Node) // better safe than sorry
-          .filter(k -> NAME_GRAND.equals(((Node)k).name())) // nodes with name "attribute"
-          .filter(k -> isAlreadyMoved(k)) // nodes indicating movement
-          .findFirst() // one grandChild per child is enough to trigger non-movement
-          .isPresent();
-      
-      return !isAlreadyMoved;
-    } // end if
-    
-    return false;
-  } // end method */
-  
-  /**
-   * Estimates whether given object indicates a gradle scope of "main".
-   * 
-   * @param object
-   *        a {@link Node}
-   *        
-   * @return true if given {@link Node} has a sub-node with name "attributes" and that sub-node
-   *         has an attribute "gradle_used_by_scope" and that attribute contains "main",
-   *         false otherwise
-   */
-  private static boolean isAlreadyMoved(final Object object) {
-    // ... assertion object is of type Node
-    // ... assertion has name "attribute"
-    
-    final Node grandChild = (Node) object;
-    final Object name  = grandChild.attribute("name");  // might be null
-    final Object value = grandChild.attribute("value"); // might be null
-    return "module".equals(name) && "true".equals(value);
-  } // end method */
-  
-  /**
-   * Estimates whether given object indicates being an module-path.
-   * 
-   * @param object
-   *        a {@link Node}
-   *        
-   * @return true if given {@link Node} has a sub-node with name "attributes" and that sub-node
-   *         has an attribute "module" and that attribute contains "true",
-   *         false otherwise
-   */
-  private static boolean isGradleScopeMain(final Object object) {
-    // ... assertion object is of type Node
-    // ... assertion has name "attribute"
-    
-    final Node grandChild = (Node) object;
-    final Object name  = grandChild.attribute("name");  // might be null
-    final Object scope = grandChild.attribute("value"); // might be null
-    return NAME_ATTRIBUTE.equals(name)
-        && (null != scope) // avoid NullPointerException
-        && scope.toString().contains("main"); // scope isn't null here
   } // end method */
 } // end class

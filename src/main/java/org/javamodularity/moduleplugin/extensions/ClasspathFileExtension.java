@@ -22,7 +22,7 @@ public class ClasspathFileExtension {
    * <ul>
    *   <li><b>TRUE</b>: In this case the {@code .classpath} file will be improved if not
    *       "opted-out" by the build-script. In the long run this might be the preferred
-   *       value for build-srcipt authors.<br>
+   *       value for build-script authors.<br>
    *       Con: Users of this plugin who already improve the {@code .classpath} file today have
    *       to "opt-out" after updating {@code gradle-modules-plugin}, because their improvement
    *       might interfere with the improvement in the updated version. In other words: The build
