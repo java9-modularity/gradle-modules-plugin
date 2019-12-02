@@ -6,11 +6,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
+import org.javamodularity.moduleplugin.extensions.ClasspathFileExtension;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import groovy.util.Node;
@@ -49,6 +52,7 @@ final class ClasspathFileTest {
   @BeforeEach
   void setUp() {
     insDut = new ClasspathFile(ProjectBuilder.builder().build());
+    assertNotNull(insDut);
   } // end method */
   
   /** Method executed after each test. */
@@ -62,14 +66,27 @@ final class ClasspathFileTest {
    */
   @Test
   void test_ClasspathFile__Project() {
-    fail("Not yet implemented"); // TODO
+    // Test strategy:
+    // --- a. create a project
+    // --- b. create an instance for class under test
+    // --- c. check that an appropriate extension is available
+    
+    final Project       project = ProjectBuilder.builder().build();
+    final ClasspathFile dut     = new ClasspathFile(project);
+    assertNotNull(dut);
+    
+    final var extension = project.getExtensions().getByName("classpathFileExtension");
+    assertNotNull(extension);
+    assertTrue(extension instanceof ClasspathFileExtension);
   } // end method */
   
   /**
    * Test method for {@link ClasspathFile#configure()}.
    */
   @Test
+  @Disabled
   void test_configure() {
+    // Don't know how to test => ignore
     fail("Not yet implemented"); // TODO
   } // end method */
   
@@ -80,20 +97,47 @@ final class ClasspathFileTest {
   void test_improveEclipseClasspathFile__Node() {
     // Test strategy:
     // ... assertion 1: method putJreOnModulePath(Node) works as intended
-    // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
+    // --- a. JRE,  rootNode with a bunch of entries and entries differing slightly
+    // --- b. Main, rootNode with a bunch of entries and entries differing slightly
+    // --- c. Test, rootNode with a bunch of entries and entries differing slightly
+    
+    final Node root = new Node(null, "root");
     
     // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
-    final Node rootNode = new Node(null, "root");
-    
     // a.1: difference in name of item
     final Map<String, String> mapA1 = new LinkedHashMap<>();
     mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
     mapA1.put("kind", "con");
-    rootNode.appendNode("classpathentry", mapA1); // ok
-    rootNode.appendNode("classpathEntry", mapA1); // not classpathentry
+    root.appendNode("classpathentry", mapA1); // ok
+    root.appendNode("classpathEntry", mapA1); // not classpathentry
+    
+    // --- b. Main, rootNode with a bunch of entries and entries differing slightly
+    // b.1: difference in name of item
+    final Map<String, String> kind = Map.of("kind", "lib");
+    final Map<String, String> mapB1 = new LinkedHashMap<>();
+    mapB1.put("name", ClasspathFile.NAME_ATTRIBUTE);
+    mapB1.put("value", "main");
+    root.appendNode("classpathentry", kind) // ok
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, mapB1);
+    root.appendNode("Classpathentry", kind) // not classpathentry
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, mapB1);
+    
+    // --- c. Test, rootNode with a bunch of entries and entries differing slightly
+    // c.1: difference in name of item
+    final Map<String, String> mapC1 = new LinkedHashMap<>();
+    mapC1.put("name", ClasspathFile.NAME_ATTRIBUTE);
+    mapC1.put("value", "test");
+    root.appendNode("classpathentry") // ok
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, mapC1);
+    root.appendNode("Classpathentry") // not classpathentry
+    .appendNode(ClasspathFile.NAME_CHILD)
+    .appendNode(ClasspathFile.NAME_GRAND, mapC1);
     
     // --- improve
-    insDut.improveEclipseClasspathFile(rootNode);
+    insDut.improveEclipseClasspathFile(root);
     
     // --- check
     assertEquals(
@@ -104,12 +148,38 @@ final class ClasspathFileTest {
         +       "attribute[attributes={name=module, value=true}; value=[]]"
         +     "]]]"
         +   "], "
-        +   "classpathEntry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=[]]"
+        +   "classpathEntry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=[]], "
+        
+        // b.1, begin
+        +   "classpathentry[attributes={kind=lib}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=gradle_used_by_scope, value=main}; value=[]], "
+        +       "attribute[attributes={name=module, value=true}; value=[]]"
+        +     "]]"
+        +   "]], "
+        +   "Classpathentry[attributes={kind=lib}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=gradle_used_by_scope, value=main}; value=[]]"
+        +     "]]"
+        +   "]], "
+        
+        // c.1, begin
+        +   "classpathentry[attributes={}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]], "
+        +       "attribute[attributes={name=test, value=true}; value=[]]"
+        +     "]]"
+        +   "]], "
+        +   "Classpathentry[attributes={}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]]"
+        +     "]]"
+        +   "]]"
+        
+        // end
         + "]]",
-        rootNode.toString()
+        root.toString()
     );
-    
-    fail("Not yet implemented"); // TODO
   } // end method */
 
   /**
@@ -117,7 +187,49 @@ final class ClasspathFileTest {
    */
   @Test
   void test_markMain__Node() {
-    fail("Not yet implemented"); // TODO
+    // ... assertion 1: method isKindOf(Node, String) works as expected
+    // ... assertion 2: method getGradleScope(Node) works as expected
+    // ... assertion 3: method hasNoAttributeModule(Node) works as expected
+    // ... assertion 4: method addAttribute(Node, String) works as expected 
+    //     => not much to check hereafter
+    
+    // Test strategy:
+    // --- a. items with improper name are not changed
+    // --- b. items with proper name are changed
+    
+    final Node root = new Node(null, "root");
+    final Map<String, String> kind = Map.of("kind", "lib");
+    final Map<String, String> mapProperScope = new LinkedHashMap<>();
+    mapProperScope.put("name", "gradle_used_by_scope");
+    mapProperScope.put("value", "main,test");
+    
+    // --- a. items with improper name are not changed
+    root.appendNode("classPathentry", kind) // wrong capitalization
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, mapProperScope);
+    
+    // --- b. items with proper name are changed
+    root.appendNode("classpathentry", kind)
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, mapProperScope);
+    
+    insDut.markMain(root);
+    assertEquals(
+        "root[attributes={}; value=["
+        +   "classPathentry[attributes={kind=lib}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=gradle_used_by_scope, value=main,test}; value=[]]"
+        +     "]]"
+        +   "]], "
+        +   "classpathentry[attributes={kind=lib}; value=["
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=gradle_used_by_scope, value=main,test}; value=[]], "
+        +       "attribute[attributes={name=module, value=true}; value=[]]"
+        +     "]]"
+        +   "]]"
+        + "]]",
+        root.toString()
+    );
   } // end method */
   
   /**
@@ -125,7 +237,9 @@ final class ClasspathFileTest {
    */
   @Test
   void test_markTest__Node() {
-    // ... assertion: method checkGradleScopeTest(Node) works as expected
+    // ... assertion 1: method getGradleScope(Node) works as expected
+    // ... assertion 2: method hasNoAttributeTest(Node) works as expected
+    // ... assertion 3: method addAttribute(Node, String) works as expected 
     //     => not much to check hereafter
     
     // Test strategy:
@@ -210,7 +324,58 @@ final class ClasspathFileTest {
    */
   @Test
   void test_getGradleScope__Node() {
-    fail("Not yet implemented"); // TODO
+    // Test strategy:
+    // --- a. minimal node with gradle scope plus value
+    // --- b. minimal node with gradle scope without value
+    // --- c. minimal node without gradle scope
+    // --- d. node without appropriate children
+    // --- e. node without children
+    
+    Node dut;
+    
+    // --- a. minimal node with gradle scope plus value
+    final String valueA = "foo.bar.A";
+    final Map<String, String> mapA = new LinkedHashMap<>();
+    mapA.put("name",  "gradle_used_by_scope");
+    mapA.put("value", valueA);
+    dut = new Node(null, "item.a");
+    dut
+      .appendNode(ClasspathFile.NAME_CHILD)
+      .appendNode(ClasspathFile.NAME_GRAND, mapA);
+    assertEquals(
+        "item.a[attributes={}; value=["
+        +   "attributes[attributes={}; value=["
+        +     "attribute[attributes={name=gradle_used_by_scope, value=foo.bar.A}; value=[]]"
+        +   "]]"
+        + "]]",
+        dut.toString()
+    );
+    assertEquals(valueA, insDut.getGradleScope(dut));
+    
+    // --- b. minimal node with gradle scope without value
+    final String empty = "";
+    dut = new Node(null, "item.b");
+    dut
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, Map.of("name",  "gradle_used_by_scope"));
+    assertEquals(empty, insDut.getGradleScope(dut));
+    
+    // --- c. minimal node without gradle scope
+    dut = new Node(null, "item.c");
+    dut
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, Map.of("name",  "gradle_used_by_Scope"));
+    assertEquals(empty, insDut.getGradleScope(dut));
+    
+    // --- d. node without appropriate children
+    dut = new Node(null, "item.d");
+    dut
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode("foo.bar");
+    assertEquals(empty, insDut.getGradleScope(dut));
+    
+    // --- e. node without children
+    assertEquals(empty, insDut.getGradleScope(new Node(null, "item.e")));
   } // end method */
   
   /**
@@ -348,9 +513,9 @@ final class ClasspathFileTest {
   ) {
     final Node result = new Node(null, "root");
     
-    addGrand(result.appendNode(1 == pos ? ClasspathFile.NAME_CHILD :  "Attributes"),  pos, map);
-    addGrand(result.appendNode(2 == pos ? ClasspathFile.NAME_CHILD :  "attributess"), pos, map);
-    addGrand(result.appendNode(3 == pos ? ClasspathFile.NAME_CHILD : "pattributes"),  pos, map);
+    addModule(result.appendNode(1 == pos ? ClasspathFile.NAME_CHILD :  "Attributes"),  pos, map);
+    addModule(result.appendNode(2 == pos ? ClasspathFile.NAME_CHILD :  "attributess"), pos, map);
+    addModule(result.appendNode(3 == pos ? ClasspathFile.NAME_CHILD : "pattributes"),  pos, map);
     
     return result;
   } // end method */
@@ -374,7 +539,7 @@ final class ClasspathFileTest {
    * @param map
    *        with attributes for child at position {@code pos}
    */
-  private void addGrand(
+  private void addModule(
       final Node                node,
       final int                 pos,
       final Map<String, String> map
@@ -393,7 +558,122 @@ final class ClasspathFileTest {
    */
   @Test
   void test_hasNoAttributeTest__Node() {
-    fail("Not yet implemented"); // TODO
+    // Test strategy:
+    // --- a. "short" node, i.e. node with not enough information (returns always true)
+    // --- b. node with just sufficient information
+    // --- c. node triggering false by first  child
+    // --- d. node triggering false by second child
+    // --- e. node triggering false by third  child
+    
+    // --- a. "short" node, i.e. node with not enough information (returns always true)
+    // a.1 empty node
+    final Node nodeA = new Node(null, "a");
+    assertTrue(insDut.hasNoAttributeTest(nodeA));
+    
+    // a.2 node with empty child
+    final Node childA = nodeA.appendNode(ClasspathFile.NAME_CHILD);
+    assertTrue(insDut.hasNoAttributeTest(nodeA));
+    
+    // a.3 node with empty grand-child
+    Node grandA = childA.appendNode(ClasspathFile.NAME_GRAND);
+    assertTrue(insDut.hasNoAttributeTest(nodeA));
+    
+    // a.4 node with non-empty grand-child, but inappropriate attributes
+    childA.remove(grandA);
+    grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "tes")); // not test
+    // LOGGER.quiet("a.3: {}", nodeA);
+    assertEquals(1, nodeA. children().size());
+    assertEquals(1, childA.children().size());
+    assertTrue(insDut.hasNoAttributeTest(nodeA));
+    
+    childA.remove(grandA);
+    grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "tEst")); // not test
+    assertTrue(insDut.hasNoAttributeTest(nodeA));
+    
+    childA.remove(grandA);
+    grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("naMe", "test")); // not name
+    assertTrue(insDut.hasNoAttributeTest(nodeA));
+    
+    // --- b. node with just sufficient information
+    childA.remove(grandA);
+    grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "test"));
+    assertFalse(insDut.hasNoAttributeTest(nodeA));
+    
+    // --- c. node triggering false by first  child
+    // two (slightly) different nodes, one returns true, the other false
+    assertTrue(insDut.hasNoAttributeTest(hnat(1, Map.of("name", "teSt"))));
+    assertFalse(insDut.hasNoAttributeTest(hnat(1, Map.of("name", "test"))));
+    
+    // --- d. node triggering false by second child
+    assertTrue(insDut.hasNoAttributeTest(hnat(2, Map.of("name", "teSt"))));
+    assertFalse(insDut.hasNoAttributeTest(hnat(2, Map.of("name", "test"))));
+    
+    // --- e. node triggering false by third  child
+    assertTrue(insDut.hasNoAttributeTest(hnat(3, Map.of("name", "Test"))));
+    assertFalse(insDut.hasNoAttributeTest(hnat(3, Map.of("name", "test"))));
+  } // end method */
+  
+  /**
+   * Creates a node with three sub-nodes.
+   * 
+   * <p>If {@code pos} is not in range [1,3] then no sub-node is named "attributes":
+   * <ol>
+   *   <li>1st node has wrong capitalization
+   *   <li>2nd node has trailing characters
+   *   <li>3rd node has prefix
+   * 
+   * @param pos
+   *        value from range [1, 3] indicating sub-node with proper name
+   *  
+   * @param map
+   *        with attributes for grand-children
+   * 
+   * @return {@link Node} with three sub-nodes each having three sub-nodes
+   */
+  private Node hnat(
+      final int                 pos,
+      final Map<String, String> map
+  ) {
+    final Node result = new Node(null, "root");
+    
+    addTest(result.appendNode(1 == pos ? ClasspathFile.NAME_CHILD :  "Attributes"),  pos, map);
+    addTest(result.appendNode(2 == pos ? ClasspathFile.NAME_CHILD :  "attributess"), pos, map);
+    addTest(result.appendNode(3 == pos ? ClasspathFile.NAME_CHILD : "pattributes"),  pos, map);
+    
+    return result;
+  } // end method */
+  
+  /**
+   * Adds three {@link Node}s to given node.
+   * 
+   * <p>If {@code pos} is not in range [1, 3] then no sub-node indicates attribute "module":
+   * <ol>
+   *   <li>1st node has trailing character ater "module"
+   *   <li>2nd node has wrong capitalization
+   *   <li>3rd node has wrong attribute name
+   * </ol>
+   * 
+   * @param node
+   *        where sub-nodes are added to
+   * 
+   * @param pos
+   *        value from range [1,3] indicating which child should get attributes from {@code map}
+   * 
+   * @param map
+   *        with attributes for child at position {@code pos}
+   */
+  private void addTest(
+      final Node                node,
+      final int                 pos,
+      final Map<String, String> map
+  ) {
+    final Map<String, String> map1 = Map.of("name", "tests"); // not test
+    final Map<String, String> map2 = Map.of("name", "tEst");  // not test
+    final Map<String, String> map3 = Map.of("Name", "test");  // not name
+    
+    node.appendNode(ClasspathFile.NAME_GRAND, 1 == pos ? map : map1);
+    node.appendNode(ClasspathFile.NAME_GRAND, 2 == pos ? map : map2);
+    node.appendNode(ClasspathFile.NAME_GRAND, 3 == pos ? map : map3);
   } // end method */
   
   /**
@@ -596,10 +876,150 @@ final class ClasspathFileTest {
   } // end method */
   
   /**
-   * Test method for {@link ClasspathFile#move(groovy.util.Node, java.lang.String)}.
+   * Test method for {@link ClasspathFile#addAttribute(groovy.util.Node, java.lang.String)}.
    */
   @Test
-  void test_move__Node_String() {
-    fail("Not yet implemented"); // TODO
+  void test_addAttritute__Node_String() {
+    // Test strategy:
+    // --- a. empty node
+    // --- b. node with children none named "attributes"
+    // --- c. node with several children named "attributes"
+    // --- d. node already moved
+    
+    Node dut;
+    
+    // --- a. empty node
+    dut = new Node(null, "rootA");
+    insDut.addAttribute(dut, "module");
+    assertEquals(
+        "rootA[attributes={}; value=["
+        +   "attributes[attributes={}; value=["
+        +     "attribute[attributes={name=module, value=true}; value=[]]"
+        +   "]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // --- b. node with children none named "attributes"
+    dut = new Node(null, "rootB");
+    dut.appendNode("foo");
+    dut.appendNode("bar");
+    insDut.addAttribute(dut, "test");
+    assertEquals(
+        "rootB[attributes={}; value=["
+        +   "foo[attributes={}; value=[]], "
+        +   "bar[attributes={}; value=[]], "
+        +   "attributes[attributes={}; value=["
+        +     "attribute[attributes={name=test, value=true}; value=[]]"
+        +   "]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // --- c. node with several children named "attributes"
+    // c.1 one child named "attributes"
+    dut = new Node(null, "rootC1");
+    dut.appendNode(ClasspathFile.NAME_CHILD);
+    insDut.addAttribute(dut, "foo.bar");
+    assertEquals(
+        "rootC1[attributes={}; value=["
+        +   "attributes[attributes={}; value=["
+        +     "attribute[attributes={name=foo.bar, value=true}; value=[]]"
+        +   "]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // c.2 two children named "attributes" but one other node before
+    dut = new Node(null, "rootC2");
+    dut.appendNode("foo");
+    Node child = dut.appendNode(ClasspathFile.NAME_CHILD);
+    child.appendNode("bar");
+    dut.appendNode(ClasspathFile.NAME_CHILD);
+    insDut.addAttribute(dut, "module");
+    assertEquals(
+        "rootC2[attributes={}; value=["
+        +   "foo[attributes={}; value=[]], "
+        +   "attributes[attributes={}; value=["
+        +     "bar[attributes={}; value=[]], "
+        +     "attribute[attributes={name=module, value=true}; value=[]]"
+        +   "]], "
+        +   "attributes[attributes={}; value=[]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // c.3 three children named "attributes" some other nodes around
+    dut = new Node(null, "rootC3");
+    dut.appendNode("foo");
+    child = dut.appendNode(ClasspathFile.NAME_CHILD, Map.of("ping", "pong"));
+    child.appendNode("bar");
+    child = dut.appendNode(ClasspathFile.NAME_CHILD);
+    child.appendNode("bar2");
+    dut.appendNode("foo2");
+    insDut.addAttribute(dut, "test");
+    assertEquals(
+        "rootC3[attributes={}; value=["
+        +   "foo[attributes={}; value=[]], "
+        +   "attributes[attributes={ping=pong}; value=["
+        +     "bar[attributes={}; value=[]], "
+        +     "attribute[attributes={name=test, value=true}; value=[]]"
+        +   "]], "
+        +   "attributes[attributes={}; value=["
+        +     "bar2[attributes={}; value=[]]"
+        +   "]], "
+        +   "foo2[attributes={}; value=[]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // --- d. node already moved
+    // d.1 move information in first child with name "attributes"
+    insDut.addAttribute(dut, "test");
+    assertEquals(
+        "rootC3[attributes={}; value=["
+        +   "foo[attributes={}; value=[]], "
+        +   "attributes[attributes={ping=pong}; value=["
+        +     "bar[attributes={}; value=[]], "
+        +     "attribute[attributes={name=test, value=true}; value=[]], "
+        +     "attribute[attributes={name=test, value=true}; value=[]]"
+        +   "]], "
+        +   "attributes[attributes={}; value=["
+        +     "bar2[attributes={}; value=[]]"
+        +   "]], "
+        +   "foo2[attributes={}; value=[]]"
+        + "]]",
+        dut.toString()
+    );
+    
+    // d.2 move information in 2nd child with name "attributes"
+    final Map<String, String> mapD2 = new LinkedHashMap<>();
+    mapD2.put("name", "module");
+    mapD2.put("value", "true");
+    
+    dut = new Node(null, "rootD2");
+    dut.appendNode("foo");
+    child = dut.appendNode(ClasspathFile.NAME_CHILD, Map.of("ping", "pong"));
+    child.appendNode("bar");
+    child = dut.appendNode(ClasspathFile.NAME_CHILD);
+    child.appendNode("bar2");
+    child.appendNode(ClasspathFile.NAME_GRAND, mapD2);
+    dut.appendNode("foo2");
+    insDut.addAttribute(dut, "module");
+    assertEquals(
+        "rootD2[attributes={}; value=["
+        +   "foo[attributes={}; value=[]], "
+        +   "attributes[attributes={ping=pong}; value=["
+        +     "bar[attributes={}; value=[]], "
+        +     "attribute[attributes={name=module, value=true}; value=[]]"
+        +   "]], "
+        +   "attributes[attributes={}; value=["
+        +     "bar2[attributes={}; value=[]], "
+        +     "attribute[attributes={name=module, value=true}; value=[]]"
+        +   "]], "
+        +   "foo2[attributes={}; value=[]]"
+        + "]]",
+        dut.toString()
+    );
   } // end method */
 } // end class

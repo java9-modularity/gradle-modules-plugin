@@ -197,7 +197,7 @@ public final class ClasspathFile {
         .filter(i  -> isKindOf((Node)i, "lib"))                 // kind of "lib"
         .filter(i  -> getGradleScope((Node)i).contains("main")) // appropriate gradle scope
         .filter(i  -> hasNoAttributeModule((Node)i))            // without "module" information
-        .forEach(i -> move((Node)i, "module"));                 // add module="true" attribute
+        .forEach(i -> addAttribute((Node)i, "module"));         // add module="true" attribute
   } // end method */
   
   /**
@@ -233,7 +233,7 @@ public final class ClasspathFile {
         .filter(i  -> NAME_ITEM.equals(((Node)i).name()))     // with name "classpathentry"
         .filter(i  -> "test".equals(getGradleScope((Node)i))) // appropriate gradle scope
         .filter(i  -> hasNoAttributeTest((Node)i))            // without "test" information
-        .forEach(i -> move((Node)i, "test"));                 // add test="true" attribute
+        .forEach(i -> addAttribute((Node)i, "test"));         // add test="true" attribute
   } // end method */
   
   /**
@@ -257,7 +257,7 @@ public final class ClasspathFile {
         .filter(i  -> NAME_ITEM.equals(((Node)i).name())) // with name "classpathentry"
         .filter(i  -> isJre((Node)i))                     // indicating JRE
         .filter(i  -> hasNoAttributeModule((Node)i))      // without "module" information
-        .forEach(i -> move((Node)i, "module"));           // put on module-path
+        .forEach(i -> addAttribute((Node)i, "module"));           // put on module-path
   } // end method */
 
   /**
@@ -297,7 +297,7 @@ public final class ClasspathFile {
       if (oGrand.isPresent()) {
         // ... grandChild of type Node named "attribute" with attribute named "gradle_used_by_scope"
         //     => get its value (if there is one)
-        final Node   grand = oChild.get();
+        final Node   grand = oGrand.get();
         final Object value = grand.attribute("value"); // returns null if value is absent
         
         return (null == value) ? empty : value.toString(); // avoid NullPointerException
@@ -435,7 +435,9 @@ public final class ClasspathFile {
   } // end method */
 
   /**
-   * Adds a grand-child {@link Node} with an {@code attributeName="true"}.
+   * Adds a grand-child {@link Node} named "attribute" and
+   * {@code name="attributeName"} and
+   * {@code value="true"}.
    * 
    * <p>The implementation searches for the first child named "attributes" and
    * adds to that child a {@link Node} with name "attribute" and attributes
@@ -447,7 +449,7 @@ public final class ClasspathFile {
    * @param attributeName
    *        name of attribute 
    */
-  /* package */ void move(final Node item, final String attributeName) {
+  /* package */ void addAttribute(final Node item, final String attributeName) {
     // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
     
     final Map<String, String> map = new LinkedHashMap<>();
