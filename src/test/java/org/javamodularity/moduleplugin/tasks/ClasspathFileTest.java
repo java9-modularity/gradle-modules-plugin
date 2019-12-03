@@ -1,10 +1,17 @@
-package org.javamodularity.moduleplugin.tasks;
+package org.javamodularity.moduleplugin.tasks; // NOPMD too many static imports
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.LinkedHashMap;
+import groovy.util.Node;
+
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
@@ -16,158 +23,157 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import groovy.util.Node;
-
 /**
  * Class testing {@link ClasspathFile}.
- * 
+ *
  * <p><b>Note:</b> This class performs white-box-tests.
- * 
+ *
  * @author <a href="mailto:alfred.65.fiedler@gmail.com">Dr.-Ing. Alfred Fiedler</a>
  */
-final class ClasspathFileTest {
+@edu.umd.cs.findbugs.annotations.SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_INFERRED")
+final class ClasspathFileTest { // NOPMD class with too many methods
   /**
-   * Logger.
-   *
-  private static final Logger LOGGER = Logging.getLogger(ClasspathFileTest.class); // */
-  
+   * Correct attribute name.
+   */
+  private static final String MODULE = "module"; // */
+
   /**
    * Device under test.
    */
-  private ClasspathFile insDut; // */
-  
+  private transient ClasspathFile insDut; // */
+
   /** Method executed before other tests. */
   @BeforeAll
   static void setUpBeforeClass() {
     // intentionally empty
   } // end method */
-  
+
   /** Method executed after other tests. */
   @AfterAll
   static void tearDownAfterClass() {
     // intentionally empty
   } // end method */
-  
+
   /** Method executed before each test. */
   @BeforeEach
   void setUp() {
     insDut = new ClasspathFile(ProjectBuilder.builder().build());
     assertNotNull(insDut);
   } // end method */
-  
+
   /** Method executed after each test. */
   @AfterEach
   void tearDown() {
     // intentionally empty
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#ClasspathFile(org.gradle.api.Project)}.
    */
   @Test
-  void test_ClasspathFile__Project() {
+  void test_ClasspathFile__Project() { // NOPMD strange method-name
     // Test strategy:
     // --- a. create a project
     // --- b. create an instance for class under test
     // --- c. check that an appropriate extension is available
-    
+
     final Project       project = ProjectBuilder.builder().build();
     final ClasspathFile dut     = new ClasspathFile(project);
     assertNotNull(dut);
-    
+
     final var extension = project.getExtensions().getByName("classpathFileExtension");
     assertNotNull(extension);
     assertTrue(extension instanceof ClasspathFileExtension);
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#configure()}.
    */
   @Test
   @Disabled
-  void test_configure() {
+  void test_configure() { // NOPMD strange method-name
     // Don't know how to test => ignore
     fail("Not yet implemented"); // TODO
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#improveEclipseClasspathFile(Node)}.
    */
   @Test
-  void test_improveEclipseClasspathFile__Node() {
+  void test_improveEclipseClasspathFile__Node() { // NOPMD strange method-name
     // Test strategy:
     // ... assertion 1: method putJreOnModulePath(Node) works as intended
     // --- a. JRE,  rootNode with a bunch of entries and entries differing slightly
     // --- b. Main, rootNode with a bunch of entries and entries differing slightly
     // --- c. Test, rootNode with a bunch of entries and entries differing slightly
-    
-    final Node root = new Node(null, "root");
-    
+
+    final Node root = new Node(null, "root"); // NOPMD string appears often
+
     // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
     // a.1: difference in name of item
-    final Map<String, String> mapA1 = new LinkedHashMap<>();
-    mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
-    mapA1.put("kind", "con");
-    root.appendNode("classpathentry", mapA1); // ok
+    final Map<String, String> mapA1 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix"); // NOPMD string appears often
+    mapA1.put("kind", "con"); // NOPMD string appears often
+    root.appendNode("classpathentry", mapA1); // NOPMD string appears often, ok
     root.appendNode("classpathEntry", mapA1); // not classpathentry
-    
+
     // --- b. Main, rootNode with a bunch of entries and entries differing slightly
     // b.1: difference in name of item
     final Map<String, String> kind = Map.of("kind", "lib");
-    final Map<String, String> mapB1 = new LinkedHashMap<>();
-    mapB1.put("name", ClasspathFile.NAME_ATTRIBUTE);
-    mapB1.put("value", "main");
+    final Map<String, String> mapB1 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    mapB1.put("name", ClasspathFile.NAME_ATTRIBUTE); // NOPMD string appears often
+    mapB1.put("value", "main"); // NOPMD string appears often
     root.appendNode("classpathentry", kind) // ok
         .appendNode(ClasspathFile.NAME_CHILD)
         .appendNode(ClasspathFile.NAME_GRAND, mapB1);
     root.appendNode("Classpathentry", kind) // not classpathentry
         .appendNode(ClasspathFile.NAME_CHILD)
         .appendNode(ClasspathFile.NAME_GRAND, mapB1);
-    
+
     // --- c. Test, rootNode with a bunch of entries and entries differing slightly
     // c.1: difference in name of item
-    final Map<String, String> mapC1 = new LinkedHashMap<>();
+    final Map<String, String> mapC1 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
     mapC1.put("name", ClasspathFile.NAME_ATTRIBUTE);
-    mapC1.put("value", "test");
+    mapC1.put("value", "test"); // NOPMD string appears often
     root.appendNode("classpathentry") // ok
         .appendNode(ClasspathFile.NAME_CHILD)
         .appendNode(ClasspathFile.NAME_GRAND, mapC1);
     root.appendNode("Classpathentry") // not classpathentry
-    .appendNode(ClasspathFile.NAME_CHILD)
-    .appendNode(ClasspathFile.NAME_GRAND, mapC1);
-    
+        .appendNode(ClasspathFile.NAME_CHILD)
+        .appendNode(ClasspathFile.NAME_GRAND, mapC1);
+
     // --- improve
     insDut.improveEclipseClasspathFile(root);
-    
+
     // --- check
     assertEquals(
-        "root[attributes={}; value=["
+        "root[attributes={}; value=[" // NOPMD string appears often
         // a.1, begin
-        +   "classpathentry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=["
-        +     "attributes[attributes={}; value=["
-        +       "attribute[attributes={name=module, value=true}; value=[]]"
+        +   "classpathentry[attributes={kind=con, path=prefixJRE_CONTAINERsuffix}; value=["
+        +     "attributes[attributes={}; value=[" // NOPMD string appears often
+        +       "attribute[attributes={name=module, value=true}; value=[]]" // NOPMD appears often
         +     "]]]"
         +   "], "
-        +   "classpathEntry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=[]], "
-        
+        +   "classpathEntry[attributes={kind=con, path=prefixJRE_CONTAINERsuffix}; value=[]], "
+
         // b.1, begin
         +   "classpathentry[attributes={kind=lib}; value=["
         +     "attributes[attributes={}; value=["
         +       "attribute[attributes={name=gradle_used_by_scope, value=main}; value=[]], "
         +       "attribute[attributes={name=module, value=true}; value=[]]"
         +     "]]"
-        +   "]], "
+        +   "]], " // NOPMD string appears often
         +   "Classpathentry[attributes={kind=lib}; value=["
         +     "attributes[attributes={}; value=["
         +       "attribute[attributes={name=gradle_used_by_scope, value=main}; value=[]]"
         +     "]]"
         +   "]], "
-        
+
         // c.1, begin
         +   "classpathentry[attributes={}; value=["
         +     "attributes[attributes={}; value=["
         +       "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]], "
-        +       "attribute[attributes={name=test, value=true}; value=[]]"
+        +       "attribute[attributes={name=test, value=true}; value=[]]" // NOPMD appears often
         +     "]]"
         +   "]], "
         +   "Classpathentry[attributes={}; value=["
@@ -175,7 +181,7 @@ final class ClasspathFileTest {
         +       "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]]"
         +     "]]"
         +   "]]"
-        
+
         // end
         + "]]",
         root.toString()
@@ -186,33 +192,33 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#markMain(groovy.util.Node)}.
    */
   @Test
-  void test_markMain__Node() {
+  void test_markMain__Node() { // NOPMD strange method-name
     // ... assertion 1: method isKindOf(Node, String) works as expected
     // ... assertion 2: method getGradleScope(Node) works as expected
     // ... assertion 3: method hasNoAttributeModule(Node) works as expected
-    // ... assertion 4: method addAttribute(Node, String) works as expected 
+    // ... assertion 4: method addAttribute(Node, String) works as expected
     //     => not much to check hereafter
-    
+
     // Test strategy:
     // --- a. items with improper name are not changed
     // --- b. items with proper name are changed
-    
+
     final Node root = new Node(null, "root");
     final Map<String, String> kind = Map.of("kind", "lib");
-    final Map<String, String> mapProperScope = new LinkedHashMap<>();
-    mapProperScope.put("name", "gradle_used_by_scope");
-    mapProperScope.put("value", "main,test");
-    
+    final Map<String, String> map = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    map.put("name", "gradle_used_by_scope"); // NOPMD string appears often
+    map.put("value", "main,test");
+
     // --- a. items with improper name are not changed
     root.appendNode("classPathentry", kind) // wrong capitalization
         .appendNode(ClasspathFile.NAME_CHILD)
-        .appendNode(ClasspathFile.NAME_GRAND, mapProperScope);
-    
+        .appendNode(ClasspathFile.NAME_GRAND, map);
+
     // --- b. items with proper name are changed
     root.appendNode("classpathentry", kind)
         .appendNode(ClasspathFile.NAME_CHILD)
-        .appendNode(ClasspathFile.NAME_GRAND, mapProperScope);
-    
+        .appendNode(ClasspathFile.NAME_GRAND, map);
+
     insDut.markMain(root);
     assertEquals(
         "root[attributes={}; value=["
@@ -231,36 +237,36 @@ final class ClasspathFileTest {
         root.toString()
     );
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#markTest(Node)}.
    */
   @Test
-  void test_markTest__Node() {
+  void test_markTest__Node() { // NOPMD strange method-name
     // ... assertion 1: method getGradleScope(Node) works as expected
     // ... assertion 2: method hasNoAttributeTest(Node) works as expected
-    // ... assertion 3: method addAttribute(Node, String) works as expected 
+    // ... assertion 3: method addAttribute(Node, String) works as expected
     //     => not much to check hereafter
-    
+
     // Test strategy:
     // --- a. items with improper name are not changed
     // --- b. items with proper name are changed
-    
+
     final Node root = new Node(null, "root");
-    final Map<String, String> mapProperScope = new LinkedHashMap<>();
-    mapProperScope.put("name", "gradle_used_by_scope");
-    mapProperScope.put("value", "test");
-    
+    final Map<String, String> map = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    map.put("name", "gradle_used_by_scope");
+    map.put("value", "test");
+
     // --- a. items with improper name are not changed
     root.appendNode("classPathentry") // wrong capitalization
         .appendNode(ClasspathFile.NAME_CHILD)
-        .appendNode(ClasspathFile.NAME_GRAND, mapProperScope);
-    
+        .appendNode(ClasspathFile.NAME_GRAND, map);
+
     // --- b. items with proper name are changed
     root.appendNode("classpathentry")
         .appendNode(ClasspathFile.NAME_CHILD)
-        .appendNode(ClasspathFile.NAME_GRAND, mapProperScope);
-    
+        .appendNode(ClasspathFile.NAME_GRAND, map);
+
     insDut.markTest(root);
     assertEquals(
         "root[attributes={}; value=["
@@ -284,58 +290,58 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#putJreOnModulePath(Node)}.
    */
   @Test
-  void test_putJreOnModulePath__Node() {
+  void test_putJreOnModulePath__Node() { // NOPMD strange method-name
     // Test strategy:
     // ... assertion 1: method isJre(Node)                works as intended
     // ... assertion 2: method hasNoAttributeModule(Node) works as intended
     // ... assertion 3: method moveToModulePath(Node)     works as intended
     // --- a. rootNode with a bunch of entries and entries differing slightly
-    
+
     // --- a. rootNode with a bunch of entries and entries differing slightly
     final Node rootNode = new Node(null, "root");
-    
+
     // a.1: difference in name of item
-    final Map<String, String> mapA1 = new LinkedHashMap<>();
+    final Map<String, String> mapA1 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
     mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
     mapA1.put("kind", "con");
     rootNode.appendNode("classpathentry", mapA1); // ok
     rootNode.appendNode("classpathEntry", mapA1); // not classpathentry
-    
+
     // --- improve
     insDut.putJreOnModulePath(rootNode);
-    
+
     // --- check
     assertEquals(
         "root[attributes={}; value=["
         // a.1, begin
-        +   "classpathentry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=["
+        +   "classpathentry[attributes={kind=con, path=prefixJRE_CONTAINERsuffix}; value=["
         +     "attributes[attributes={}; value=["
         +       "attribute[attributes={name=module, value=true}; value=[]]"
         +     "]]]"
         +   "], "
-        +   "classpathEntry[attributes={path=prefixJRE_CONTAINERsuffix, kind=con}; value=[]]"
+        +   "classpathEntry[attributes={kind=con, path=prefixJRE_CONTAINERsuffix}; value=[]]"
         + "]]",
         rootNode.toString()
     );
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#getGradleScope(groovy.util.Node)}.
    */
   @Test
-  void test_getGradleScope__Node() {
+  void test_getGradleScope__Node() { // NOPMD strange method-name
     // Test strategy:
     // --- a. minimal node with gradle scope plus value
     // --- b. minimal node with gradle scope without value
     // --- c. minimal node without gradle scope
     // --- d. node without appropriate children
     // --- e. node without children
-    
+
     Node dut;
-    
+
     // --- a. minimal node with gradle scope plus value
     final String valueA = "foo.bar.A";
-    final Map<String, String> mapA = new LinkedHashMap<>();
+    final Map<String, String> mapA = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
     mapA.put("name",  "gradle_used_by_scope");
     mapA.put("value", valueA);
     dut = new Node(null, "item.a");
@@ -351,7 +357,7 @@ final class ClasspathFileTest {
         dut.toString()
     );
     assertEquals(valueA, insDut.getGradleScope(dut));
-    
+
     // --- b. minimal node with gradle scope without value
     final String empty = "";
     dut = new Node(null, "item.b");
@@ -359,72 +365,72 @@ final class ClasspathFileTest {
         .appendNode(ClasspathFile.NAME_CHILD)
         .appendNode(ClasspathFile.NAME_GRAND, Map.of("name",  "gradle_used_by_scope"));
     assertEquals(empty, insDut.getGradleScope(dut));
-    
+
     // --- c. minimal node without gradle scope
     dut = new Node(null, "item.c");
     dut
         .appendNode(ClasspathFile.NAME_CHILD)
         .appendNode(ClasspathFile.NAME_GRAND, Map.of("name",  "gradle_used_by_Scope"));
     assertEquals(empty, insDut.getGradleScope(dut));
-    
+
     // --- d. node without appropriate children
     dut = new Node(null, "item.d");
     dut
         .appendNode(ClasspathFile.NAME_CHILD)
         .appendNode("foo.bar");
     assertEquals(empty, insDut.getGradleScope(dut));
-    
+
     // --- e. node without children
     assertEquals(empty, insDut.getGradleScope(new Node(null, "item.e")));
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#getAttributeNamed(Node, String)}.
    */
   @Test
-  void test_getAttributeNamed__Node_String() {
+  void test_getAttributeNamed__Node_String() { // NOPMD strange method-name
     // Test strategy:
     // a. Node without children SHALL return empty
     // b. Node with children not named "attribute" SHALL return empty
     // c. Node with children named "attribute" but without proper attribute SHALL return empty
     // d. Node with one or more children named "attribute" and proper attribute SHALL return node
-    
+
     // --- setup a node used for testing
     final Node dut = new Node(null, "dut"); // device under test
-    
+
     // --- setup a map with attributes for child-nodes
-    final Map<String, String> mapItem = new LinkedHashMap<>();
-    mapItem.put("name", "Alfred");
-    mapItem.put("Name", "foo");
-    
+    final Map<String, String> mapItem = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    mapItem.put("name", "Alfred"); // NOPMD "Alfred" appears often
+    mapItem.put("Name", "foo"); // NOPMD "foo" appears often
+
     // --- a. Node without children SHALL return empty
     assertEquals(0, dut.children().size());
-    assertEquals(false, insDut.getAttributeNamed(dut, "foo").isPresent());
+    assertFalse(insDut.getAttributeNamed(dut, "foo").isPresent());
 
     // --- b. Node with children not named "attribute" SHALL return empty
     dut.appendNode("Attribute", mapItem); // wrong capitalization
     dut.appendNode("attributes", mapItem); // extra characters
-    assertEquals(false, insDut.getAttributeNamed(dut, "foo").isPresent());
-    
+    assertFalse(insDut.getAttributeNamed(dut, "foo").isPresent());
+
     // --- c. Node with children named "attribute" but without proper attribute SHALL return empty
     // c.1 child "attribute" without attributes
     dut.appendNode(ClasspathFile.NAME_GRAND);
-    assertEquals(false, insDut.getAttributeNamed(dut, "foo").isPresent());
-    
+    assertFalse(insDut.getAttributeNamed(dut, "foo").isPresent());
+
     // c.2 child "attribute" with attributes
     final Node node1 = dut.appendNode(ClasspathFile.NAME_GRAND, mapItem);
     // Note: assertions for c.2 are combined with assertions in d, see below
-    
+
     // --- d. Node with children named "attribute" and proper attribute SHALL return node
     // d.1 Just one proper child
     assertFalse(insDut.getAttributeNamed(dut, "alfred").isPresent());  // wrong capitalization
     assertFalse(insDut.getAttributeNamed(dut, " Alfred").isPresent()); // extra prefix
     assertFalse(insDut.getAttributeNamed(dut, "Alfreds").isPresent()); // extra suffix
     assertSame(node1, insDut.getAttributeNamed(dut, "Alfred").get());
-    
+
     // d.2 More than one proper child
-    final Node node2 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "Fiedler"));
-    final Node node3 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "bar"));
+    final Node node2 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "Fiedler")); // NOPMD
+    final Node node3 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "bar")); // NOPMD bar
     assertSame(node1, insDut.getAttributeNamed(dut, "Alfred").get());  // match in 1st proper child
     assertSame(node2, insDut.getAttributeNamed(dut, "Fiedler").get()); // match in 2nd proper child
     assertSame(node3, insDut.getAttributeNamed(dut, "bar").get());     // match in 3rd proper child
@@ -434,27 +440,27 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#hasNoAttributeModule(Node)}.
    */
   @Test
-  void test_hasNoAttributeModule__Node() {
+  void test_hasNoAttributeModule__Node() { // NOPMD strange method-name
     // Test strategy:
     // --- a. "short" node, i.e. node with not enough information (returns always true)
     // --- b. node with just sufficient information
     // --- c. node triggering false by first  child
     // --- d. node triggering false by second child
     // --- e. node triggering false by third  child
-    
+
     // --- a. "short" node, i.e. node with not enough information (returns always true)
     // a.1 empty node
     final Node nodeA = new Node(null, "a");
     assertTrue(insDut.hasNoAttributeModule(nodeA));
-    
+
     // a.2 node with empty child
     final Node childA = nodeA.appendNode(ClasspathFile.NAME_CHILD);
     assertTrue(insDut.hasNoAttributeModule(nodeA));
-    
+
     // a.3 node with empty grand-child
     Node grandA = childA.appendNode(ClasspathFile.NAME_GRAND);
     assertTrue(insDut.hasNoAttributeModule(nodeA));
-    
+
     // a.4 node with non-empty grand-child, but inappropriate attributes
     childA.remove(grandA);
     grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "modul")); // not module
@@ -462,49 +468,50 @@ final class ClasspathFileTest {
     assertEquals(1, nodeA. children().size());
     assertEquals(1, childA.children().size());
     assertTrue(insDut.hasNoAttributeModule(nodeA));
-    
+
     childA.remove(grandA);
     grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "mOdule")); // not module
     assertTrue(insDut.hasNoAttributeModule(nodeA));
-    
+
     childA.remove(grandA);
-    grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("naMe", "module")); // not name
+    grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("naMe", MODULE)); // not name
     assertTrue(insDut.hasNoAttributeModule(nodeA));
-    
+
     // --- b. node with just sufficient information
     childA.remove(grandA);
-    grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "module"));
+    childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", MODULE));// NOPMD DU-anomaly
     assertFalse(insDut.hasNoAttributeModule(nodeA));
-    
+
     // --- c. node triggering false by first  child
     // two (slightly) different nodes, one returns true, the other false
     assertTrue(insDut.hasNoAttributeModule(hnam(1, Map.of("name", "modUle"))));
-    assertFalse(insDut.hasNoAttributeModule(hnam(1, Map.of("name", "module"))));
-    
+    assertFalse(insDut.hasNoAttributeModule(hnam(1, Map.of("name", MODULE))));
+
     // --- d. node triggering false by second child
     assertTrue(insDut.hasNoAttributeModule(hnam(2, Map.of("name", "modUle"))));
-    assertFalse(insDut.hasNoAttributeModule(hnam(2, Map.of("name", "module"))));
-    
+    assertFalse(insDut.hasNoAttributeModule(hnam(2, Map.of("name", MODULE))));
+
     // --- e. node triggering false by third  child
     assertTrue(insDut.hasNoAttributeModule(hnam(3, Map.of("name", "modUle"))));
-    assertFalse(insDut.hasNoAttributeModule(hnam(3, Map.of("name", "module"))));
+    assertFalse(insDut.hasNoAttributeModule(hnam(3, Map.of("name", MODULE))));
   } // end method */
-  
+
   /**
    * Creates a node with three sub-nodes.
-   * 
+   *
    * <p>If {@code pos} is not in range [1,3] then no sub-node is named "attributes":
    * <ol>
    *   <li>1st node has wrong capitalization
    *   <li>2nd node has trailing characters
    *   <li>3rd node has prefix
-   * 
+   * </ol>
+   *
    * @param pos
    *        value from range [1, 3] indicating sub-node with proper name
-   *  
+   *
    * @param map
    *        with attributes for grand-children
-   * 
+   *
    * @return {@link Node} with three sub-nodes each having three sub-nodes
    */
   private Node hnam(
@@ -512,30 +519,30 @@ final class ClasspathFileTest {
       final Map<String, String> map
   ) {
     final Node result = new Node(null, "root");
-    
+
     addModule(result.appendNode(1 == pos ? ClasspathFile.NAME_CHILD :  "Attributes"),  pos, map);
     addModule(result.appendNode(2 == pos ? ClasspathFile.NAME_CHILD :  "attributess"), pos, map);
     addModule(result.appendNode(3 == pos ? ClasspathFile.NAME_CHILD : "pattributes"),  pos, map);
-    
+
     return result;
   } // end method */
-  
+
   /**
    * Adds three {@link Node}s to given node.
-   * 
-   * <p>If {@code pos} is not in range [1, 3] then no sub-node indicates attribute "module":
+   *
+   * <p>If {@code pos} is not in range [1, 3] then no sub-node indicates attribute MODULE:
    * <ol>
-   *   <li>1st node has trailing character ater "module"
+   *   <li>1st node has trailing character ater MODULE
    *   <li>2nd node has wrong capitalization
    *   <li>3rd node has wrong attribute name
    * </ol>
-   * 
+   *
    * @param node
    *        where sub-nodes are added to
-   * 
+   *
    * @param pos
    *        value from range [1,3] indicating which child should get attributes from {@code map}
-   * 
+   *
    * @param map
    *        with attributes for child at position {@code pos}
    */
@@ -546,38 +553,38 @@ final class ClasspathFileTest {
   ) {
     final Map<String, String> map1 = Map.of("name", "modules"); // not module
     final Map<String, String> map2 = Map.of("name", "mOdule");  // not module
-    final Map<String, String> map3 = Map.of("Name", "module");  // not name
-    
+    final Map<String, String> map3 = Map.of("Name", MODULE);  // not name
+
     node.appendNode(ClasspathFile.NAME_GRAND, 1 == pos ? map : map1);
     node.appendNode(ClasspathFile.NAME_GRAND, 2 == pos ? map : map2);
     node.appendNode(ClasspathFile.NAME_GRAND, 3 == pos ? map : map3);
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#hasNoAttributeTest(groovy.util.Node)}.
    */
   @Test
-  void test_hasNoAttributeTest__Node() {
+  void test_hasNoAttributeTest__Node() { // NOPMD strange method-name
     // Test strategy:
     // --- a. "short" node, i.e. node with not enough information (returns always true)
     // --- b. node with just sufficient information
     // --- c. node triggering false by first  child
     // --- d. node triggering false by second child
     // --- e. node triggering false by third  child
-    
+
     // --- a. "short" node, i.e. node with not enough information (returns always true)
     // a.1 empty node
     final Node nodeA = new Node(null, "a");
     assertTrue(insDut.hasNoAttributeTest(nodeA));
-    
+
     // a.2 node with empty child
     final Node childA = nodeA.appendNode(ClasspathFile.NAME_CHILD);
     assertTrue(insDut.hasNoAttributeTest(nodeA));
-    
+
     // a.3 node with empty grand-child
     Node grandA = childA.appendNode(ClasspathFile.NAME_GRAND);
     assertTrue(insDut.hasNoAttributeTest(nodeA));
-    
+
     // a.4 node with non-empty grand-child, but inappropriate attributes
     childA.remove(grandA);
     grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "tes")); // not test
@@ -585,49 +592,50 @@ final class ClasspathFileTest {
     assertEquals(1, nodeA. children().size());
     assertEquals(1, childA.children().size());
     assertTrue(insDut.hasNoAttributeTest(nodeA));
-    
+
     childA.remove(grandA);
     grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "tEst")); // not test
     assertTrue(insDut.hasNoAttributeTest(nodeA));
-    
+
     childA.remove(grandA);
     grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("naMe", "test")); // not name
     assertTrue(insDut.hasNoAttributeTest(nodeA));
-    
+
     // --- b. node with just sufficient information
     childA.remove(grandA);
-    grandA = childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "test"));
+    childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "test"));// NOPMD DU-anomaly
     assertFalse(insDut.hasNoAttributeTest(nodeA));
-    
+
     // --- c. node triggering false by first  child
     // two (slightly) different nodes, one returns true, the other false
     assertTrue(insDut.hasNoAttributeTest(hnat(1, Map.of("name", "teSt"))));
     assertFalse(insDut.hasNoAttributeTest(hnat(1, Map.of("name", "test"))));
-    
+
     // --- d. node triggering false by second child
     assertTrue(insDut.hasNoAttributeTest(hnat(2, Map.of("name", "teSt"))));
     assertFalse(insDut.hasNoAttributeTest(hnat(2, Map.of("name", "test"))));
-    
+
     // --- e. node triggering false by third  child
     assertTrue(insDut.hasNoAttributeTest(hnat(3, Map.of("name", "Test"))));
     assertFalse(insDut.hasNoAttributeTest(hnat(3, Map.of("name", "test"))));
   } // end method */
-  
+
   /**
    * Creates a node with three sub-nodes.
-   * 
+   *
    * <p>If {@code pos} is not in range [1,3] then no sub-node is named "attributes":
    * <ol>
    *   <li>1st node has wrong capitalization
    *   <li>2nd node has trailing characters
    *   <li>3rd node has prefix
-   * 
+   * </ol>
+   *
    * @param pos
    *        value from range [1, 3] indicating sub-node with proper name
-   *  
+   *
    * @param map
    *        with attributes for grand-children
-   * 
+   *
    * @return {@link Node} with three sub-nodes each having three sub-nodes
    */
   private Node hnat(
@@ -635,30 +643,30 @@ final class ClasspathFileTest {
       final Map<String, String> map
   ) {
     final Node result = new Node(null, "root");
-    
+
     addTest(result.appendNode(1 == pos ? ClasspathFile.NAME_CHILD :  "Attributes"),  pos, map);
     addTest(result.appendNode(2 == pos ? ClasspathFile.NAME_CHILD :  "attributess"), pos, map);
     addTest(result.appendNode(3 == pos ? ClasspathFile.NAME_CHILD : "pattributes"),  pos, map);
-    
+
     return result;
   } // end method */
-  
+
   /**
    * Adds three {@link Node}s to given node.
-   * 
-   * <p>If {@code pos} is not in range [1, 3] then no sub-node indicates attribute "module":
+   *
+   * <p>If {@code pos} is not in range [1, 3] then no sub-node indicates attribute MODULE:
    * <ol>
-   *   <li>1st node has trailing character ater "module"
+   *   <li>1st node has trailing character ater MODULE
    *   <li>2nd node has wrong capitalization
    *   <li>3rd node has wrong attribute name
    * </ol>
-   * 
+   *
    * @param node
    *        where sub-nodes are added to
-   * 
+   *
    * @param pos
    *        value from range [1,3] indicating which child should get attributes from {@code map}
-   * 
+   *
    * @param map
    *        with attributes for child at position {@code pos}
    */
@@ -670,31 +678,31 @@ final class ClasspathFileTest {
     final Map<String, String> map1 = Map.of("name", "tests"); // not test
     final Map<String, String> map2 = Map.of("name", "tEst");  // not test
     final Map<String, String> map3 = Map.of("Name", "test");  // not name
-    
+
     node.appendNode(ClasspathFile.NAME_GRAND, 1 == pos ? map : map1);
     node.appendNode(ClasspathFile.NAME_GRAND, 2 == pos ? map : map2);
     node.appendNode(ClasspathFile.NAME_GRAND, 3 == pos ? map : map3);
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#hasAttributeNamed(Node, String)}.
    */
   @Test
-  void test_hasAttributeNamed__Node_String() {
+  void test_hasAttributeNamed__Node_String() { // NOPMD strange method-name
     // Test strategy:
     // a. Node without children SHALL return false
     // b. Node with children not named "attribute" SHALL return false
     // c. Node with children named "attribute" but without proper attribute SHALL return false
     // d. Node with one or more children named "attribute" and proper attribute SHALL return true
-    
+
     // --- setup a node used for testing
     final Node dut = new Node(null, "dut"); // device under test
-    
+
     // --- setup a map with attributes for child-nodes
-    final Map<String, String> mapItem = new LinkedHashMap<>();
+    final Map<String, String> mapItem = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
     mapItem.put("name", "Alfred");
     mapItem.put("Name", "foo");
-    
+
     // --- a. Node without children SHALL return false
     assertEquals(0, dut.children().size());
     assertFalse(insDut.hasAttributeNamed(dut, "foo"));
@@ -703,23 +711,23 @@ final class ClasspathFileTest {
     dut.appendNode("Attribute", mapItem); // wrong capitalization
     dut.appendNode("attributes", mapItem); // extra characters
     assertFalse(insDut.hasAttributeNamed(dut, "foo"));
-    
+
     // --- c. Node with children named "attribute" but without proper attribute SHALL return false
     // c.1 child "attribute" without attributes
     dut.appendNode(ClasspathFile.NAME_GRAND);
     assertFalse(insDut.hasAttributeNamed(dut, "foo"));
-    
+
     // c.2 child "attribute" with attributes
     dut.appendNode(ClasspathFile.NAME_GRAND, mapItem);
     // Note: assertions for c.2 are combined with assertions in d, see below
-    
+
     // --- d. Node with children named "attribute" and proper attribute SHALL return true
     // d.1 Just one proper child
     assertFalse(insDut.hasAttributeNamed(dut, "alfred"));  // wrong capitalization
     assertFalse(insDut.hasAttributeNamed(dut, " Alfred")); // extra prefix
     assertFalse(insDut.hasAttributeNamed(dut, "Alfreds")); // extra suffix
     assertTrue(insDut.hasAttributeNamed(dut, "Alfred"));
-    
+
     // d.2 More than one proper child
     dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "Fiedler"));
     dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "bar"));
@@ -732,12 +740,12 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#isJre(Node)}.
    */
   @Test
-  void test_isJre__Node() {
+  void test_isJre__Node() { // NOPMD strange method-name
     // Test strategy:
     // --- a.  kind of "con"   and   path contains "JRE_CONTAINER"
     // --- b. !kind of "con"   but   path contains "JRE_CONTAINER"
     // --- c.  kind of "con"   but  !path contains "JRE_CONTAINER"
-    
+
     // --- a.  kind of "con"   and   path contains "JRE_CONTAINER"
     assertTrue(insDut.isJre(new Node(null, "root", Map.of(
         "kind", "con",
@@ -751,7 +759,7 @@ final class ClasspathFileTest {
         "kind", "con",
         "path", ClasspathFile.NAME_JRE + "suffix"
     ))));
-    
+
     // --- b. !kind of "con"   but   path contains "JRE_CONTAINER"
     assertFalse(insDut.isJre(new Node(null, "root", Map.of(
         // no attribute kind
@@ -787,11 +795,10 @@ final class ClasspathFileTest {
               )))
           );
         }); // end forEach(con -> ...)
-    
+
     // --- c.  kind of "con"   but  !path contains "JRE_CONTAINER"
     assertFalse(insDut.isJre(new Node(null, "root", Map.of(
-        "kind", "con"
-        // no path attribute
+        "kind", "con" // no path attribute
     ))));
     Set.of(
         "path",  // ok
@@ -829,15 +836,15 @@ final class ClasspathFileTest {
    * Test method for {@link ClasspathFile#isKindOf(Node, String)}.
    */
   @Test
-  void test_isKindOf__Node_String() {
+  void test_isKindOf__Node_String() { // NOPMD strange method-name
     // Test strategy:
     // --- a. node without attributes
     // --- b. node without attribute "kind"
     // --- c. node with attribute "kind" and different values for that attribute
-    
+
     // --- a. node without attributes
     assertFalse(insDut.isKindOf(new Node(null, "a"), "con"));
-    
+
     // --- b. node without attribute "kind"
     assertFalse(insDut.isKindOf(
         new Node(null, "a", Map.of("Kind", "con")), // wrong capitalization
@@ -851,7 +858,7 @@ final class ClasspathFileTest {
         new Node(null, "a", Map.of("akind", "con")), // prefix
         "con"
     ));
-    
+
     // --- c. node with attribute "kind" and different values for that attribute
     final Set<String> variants = Set.of(
         "con",
@@ -859,38 +866,38 @@ final class ClasspathFileTest {
         "foo",
         "bar"
     );
-    
-    final Map<String, String> attributes = new LinkedHashMap<>();
+
+    final Map<String, String> attributes = new ConcurrentSkipListMap<>();// NOPMD use concurrent map
     variants.stream().forEach(i -> attributes.put(i, i));
-    
+
     variants.stream() // loop over all variants
         .forEach(kind -> {
           // node with just one attribute
           assertTrue(insDut.isKindOf(new Node(null, "root", Map.of("kind", kind)), kind));
-          
+
           // node with lots of attributes, but none fitting
-          final Node dut = new Node(null, "root" + kind, attributes);
+          final Node dut = new Node(null, "root" + kind, attributes); // NOPMD DU-anomaly
           variants.stream()
               .forEach(i -> assertFalse(insDut.isKindOf(dut, i)));
         }); // end forEach(kind -> ...)
   } // end method */
-  
+
   /**
    * Test method for {@link ClasspathFile#addAttribute(groovy.util.Node, java.lang.String)}.
    */
   @Test
-  void test_addAttritute__Node_String() {
+  void test_addAttritute__Node_String() { // NOPMD strange method-name
     // Test strategy:
     // --- a. empty node
     // --- b. node with children none named "attributes"
     // --- c. node with several children named "attributes"
     // --- d. node already moved
-    
+
     Node dut;
-    
+
     // --- a. empty node
     dut = new Node(null, "rootA");
-    insDut.addAttribute(dut, "module");
+    insDut.addAttribute(dut, MODULE);
     assertEquals(
         "rootA[attributes={}; value=["
         +   "attributes[attributes={}; value=["
@@ -899,7 +906,7 @@ final class ClasspathFileTest {
         + "]]",
         dut.toString()
     );
-    
+
     // --- b. node with children none named "attributes"
     dut = new Node(null, "rootB");
     dut.appendNode("foo");
@@ -907,15 +914,15 @@ final class ClasspathFileTest {
     insDut.addAttribute(dut, "test");
     assertEquals(
         "rootB[attributes={}; value=["
-        +   "foo[attributes={}; value=[]], "
-        +   "bar[attributes={}; value=[]], "
+        +   "foo[attributes={}; value=[]], " // NOPMD string appears often
+        +   "bar[attributes={}; value=[]], " // NOPMD string appears often
         +   "attributes[attributes={}; value=["
         +     "attribute[attributes={name=test, value=true}; value=[]]"
         +   "]]"
         + "]]",
         dut.toString()
     );
-    
+
     // --- c. node with several children named "attributes"
     // c.1 one child named "attributes"
     dut = new Node(null, "rootC1");
@@ -929,14 +936,14 @@ final class ClasspathFileTest {
         + "]]",
         dut.toString()
     );
-    
+
     // c.2 two children named "attributes" but one other node before
     dut = new Node(null, "rootC2");
     dut.appendNode("foo");
     Node child = dut.appendNode(ClasspathFile.NAME_CHILD);
     child.appendNode("bar");
     dut.appendNode(ClasspathFile.NAME_CHILD);
-    insDut.addAttribute(dut, "module");
+    insDut.addAttribute(dut, MODULE);
     assertEquals(
         "rootC2[attributes={}; value=["
         +   "foo[attributes={}; value=[]], "
@@ -948,7 +955,7 @@ final class ClasspathFileTest {
         + "]]",
         dut.toString()
     );
-    
+
     // c.3 three children named "attributes" some other nodes around
     dut = new Node(null, "rootC3");
     dut.appendNode("foo");
@@ -972,7 +979,7 @@ final class ClasspathFileTest {
         + "]]",
         dut.toString()
     );
-    
+
     // --- d. node already moved
     // d.1 move information in first child with name "attributes"
     insDut.addAttribute(dut, "test");
@@ -991,12 +998,12 @@ final class ClasspathFileTest {
         + "]]",
         dut.toString()
     );
-    
+
     // d.2 move information in 2nd child with name "attributes"
-    final Map<String, String> mapD2 = new LinkedHashMap<>();
-    mapD2.put("name", "module");
+    final Map<String, String> mapD2 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    mapD2.put("name", MODULE);
     mapD2.put("value", "true");
-    
+
     dut = new Node(null, "rootD2");
     dut.appendNode("foo");
     child = dut.appendNode(ClasspathFile.NAME_CHILD, Map.of("ping", "pong"));
@@ -1005,7 +1012,7 @@ final class ClasspathFileTest {
     child.appendNode("bar2");
     child.appendNode(ClasspathFile.NAME_GRAND, mapD2);
     dut.appendNode("foo2");
-    insDut.addAttribute(dut, "module");
+    insDut.addAttribute(dut, MODULE);
     assertEquals(
         "rootD2[attributes={}; value=["
         +   "foo[attributes={}; value=[]], "

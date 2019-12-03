@@ -6,6 +6,9 @@ plugins {
     id 'com.gradle.plugin-publish' version '0.10.1'
     id 'com.github.johnrengelman.shadow' version '5.0.0'
     id 'com.github.ben-manes.versions' version '0.21.0'
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '2.0.0'
+    id 'pmd'
 }
 
 buildScan {
@@ -21,6 +24,7 @@ targetCompatibility = 11
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 configurations {
@@ -37,6 +41,12 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.4.1' // see note 1 below
+
+    // dependecies for checking tools
+    checkstyle 'com.puppycrawl.tools:checkstyle:8.25' // use specific checkstyle version
+    pmd 'net.sourceforge.pmd:pmd-java:6.18.0'         // use specific pmd        version
+    spotbugs 'com.github.spotbugs:spotbugs:3.1.12'    // use specific spotbugs   version
+    implementation 'com.github.spotbugs:spotbugs-annotations:4.0.0-beta4' // spotbugs annotations
 }
 
 shadowJar {
@@ -107,8 +117,53 @@ publishing { // used for publishing to local maven repository
     }
 }
 
+checkstyle { // start checkstyle configuration ....................................................
+    config = resources.text.fromFile(
+      "${rootProject.projectDir}/config/checkstyle/afi_google_checks_8.25.xml",
+      "UTF-8"
+    )
+    ignoreFailures = true // don't stop on failures
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled false
+        html.enabled true
+    }
+} // end checkstyle configuration ______________________________________________________________ */
+
+pmd { // begin pmd configuration ..................................................................
+    toolVersion    = '6.18.0'
+    //ruleSets       = mutableListOf<String>()
+    ruleSetFiles   = files("${rootProject.projectDir}/config/pmd/afi_quickstart_6.18.0.xml")
+    ignoreFailures = true // don't stop on failures
+}
+
+tasks.withType(Pmd) {
+    reports {
+        xml.enabled false
+        html.enabled true
+    }
+} // end pmd configuration _____________________________________________________________________ */
+
+spotbugs { // begin spotbugs configuration ........................................................
+    toolVersion    = '3.1.12'
+    effort         = 'max' // choose one from set {min, less, more, max}
+    reportLevel    = 'low' // choose one from set {low, medium, high}
+    ignoreFailures = true  // don't stop on failures
+}
+
+tasks.withType(com.github.spotbugs.SpotBugsTask) {
+    reports {
+        // Note: At most one report type could be enabled.
+        emacs.enabled false
+        html.enabled  true
+        xml.enabled   false
+    }
+} // end spotbugs configuration ________________________________________________________________ */
+
 // ################################################################################################
-// ##################                    Appendix with notes                     ##################          
+// ##################                    Appendix with notes                     ##################
 // ################################################################################################
 
 /* 2019-11-16

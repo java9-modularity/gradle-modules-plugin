@@ -6,17 +6,17 @@ import org.javamodularity.moduleplugin.tasks.ClasspathFile;
 
 /**
  * This class provides options for {@link ClasspathFile}.
- * 
+ *
  * <p>An example on how to write an extension could be found here:
  * <a href="https://guides.gradle.org/implementing-gradle-plugins/">Gradle Guide</a>
- * 
+ *
  * @author <a href="mailto:alfred.65.fiedler@gmail.com">Alfred Fiedler</a>
  */
 // Note: Don't make this class final because Gradle will extend it
 public class ClasspathFileExtension {
   /**
    * Default value for {@link #improveClasspathFile}.
-   * 
+   *
    * <p>For the default value (i.e. the value if not set or changed by a build-script)
    * the following possibilities exist:
    * <ul>
@@ -34,19 +34,19 @@ public class ClasspathFileExtension {
    *       then every build-srcipt "opting-in" contains a no longer necessary statement "opt-in".
    *       This is a very moderate drawback.
    * </ul>
-   * 
-   * For the reasons stated above {@code false} is chosen as default value.
+   *
+   * <p>For the reasons stated above {@code false} is chosen as default value.
    */
-  /* package */ static boolean DEFAULT_VALUE = false; // */
-  
+  /* package */ static final boolean DEFAULT_VALUE = false; // NOPMD avoid redundant initializer */
+
   /**
    * Flag indicating whether the {@code .classpath} file should be improved (true) or not (false).
    */
   private final Property<Boolean> improveClasspathFile; // */
-  
+
   /**
    * Constructor.
-   * 
+   *
    * @param project
    *        this extension is associated with
    */
@@ -54,19 +54,19 @@ public class ClasspathFileExtension {
     improveClasspathFile = project.getObjects().property(Boolean.class);
     improveClasspathFile.set(DEFAULT_VALUE);
   } // end method */
-  
+
   /**
    * Returns {@link Property} indicating whether or not {@code gradle-modules-plugin} will
    * improve the {@code .classpath} file when task "eclipseClasspath" is executed.
-   * 
+   *
    * <p><i><b>Note 1: </b>
    * Use {@link Property#get()} for reading the value of the returned {@link Property}.
    * </i>
-   * 
+   *
    * <p><i><b>Note 2: </b>
    * Use {@link Property#set(Object)} to change the value of the returned {@link Property}.
    * </i>
-   * 
+   *
    * @return {@code improveClasspathFile} {@link Property}, the value of that {@link Property} is
    *         true if {@code gradle-modules-plugin} improves {@code .classpath} file,
    *         false otherwise
