@@ -1,4 +1,4 @@
-Compared to "gradle-modules-plugin" version 1.6.0 this folder contains several new sub-folders
+Compared to "gradle-modules-plugin" version 1.6.0 this project contains several new sub-folders
 with various (rather) small projects. Each of those additional sub-folders is explained hereafter
 briefly with reason and purpose.
 
@@ -8,11 +8,10 @@ Gradle: versions
   - 5.6.4: Latest 5.x version of Gradle
   - 6.0.1: As of 2019-11-28 current Gradle release
 
-Eclipse: version 2019-09 (as aof 2019-09-28 current Eclipse release)
+Eclipse: version 2019-09 (as of 2019-09-28 current Eclipse release)
 
 OS:
-  - Windows 7 (widley used)
-  - Windows 10 (also widely used)
+  - Windows 10 (widely used)
   - ubuntu 16.04 LTS (because I have access to it and whant to check the UN*X world as well)
 
 
@@ -21,7 +20,7 @@ The name of the sub-folders follow the following principle:
   prefix = test-project
   xyz    = indicating the gradle version which is used in that subfolder,
            e.g: 5.3.1 => gradle version 5.3.1, 601 => gradle version 6.0.1
-  -li    = hyphe followed by "li" indicating that these sub-folders contain gradle projects
+  -li    = hyphen followed by "li" indicating that these sub-folders contain gradle projects
            providing a library
   ?      = single character stating the (main) purpose of the gradle project
            b => a library consuming other libraries of type t or m
@@ -56,7 +55,8 @@ b. As shown in projects e.g. "test-project564-litu" and "test-project601-litu" G
    plugin in Gradle versions 5.6.4 and 6.0.1 is able to create appropriate Eclipse files for
    "simple" projects.
 c. As shown in project "test-project601-libu" Gradle's eclipse plugin in the current Gradle version
-   is not able to create appropriate Eclipse files for modular projects.
+   is not able to create appropriate Eclipse files for modular projects if external dependencies
+   exist.
    This problem is NOT fixed by "gradle-modules-plugin" in version 1.6.0.
    This problem is fixed in the contribution on branch afi33.
 
@@ -65,7 +65,7 @@ c. As shown in project "test-project601-libu" Gradle's eclipse plugin in the cur
 test-project531-litu
   Properties
   - Gradle version 5.3.1
-  - project provides a library intentded to be consumed by other projects in their test source-set
+  - modular project provides a library to be consumed by other projects in their test source-set
   - project uses JUnit 5 test engine only
 
 ###################################################################################################
@@ -73,7 +73,7 @@ test-project531-litu
 test-project564-litu
   Properties
   - Gradle version 5.6.4
-  - project provides a library intentded to be consumed by other projects in their test source-set
+  - modular project provides a library to be consumed by other projects in their test source-set
   - project uses JUnit 5 test engine only
 
 ###################################################################################################
@@ -81,7 +81,23 @@ test-project564-litu
 test-project601-libu
   Properties
   - Gradle version 6.0.1
-  - consumes a modular libary in main source-set (here from test-project601-limu)
+  - modular project consumes libaries in main source-set
+  - project uses JUnit 5 test engine only
+
+###################################################################################################
+
+test-project601-lima
+  Properties
+  - Gradle version 6.0.1
+  - non-modular project provides a library to be consumed by other projects in their main source-set
+  - project uses JUnit 5 test engine only
+
+###################################################################################################
+
+test-project601-limu
+  Properties
+  - Gradle version 6.0.1
+  - modular project provides a library to be consumed by other projects in their main source-set
   - project uses JUnit 5 test engine only
 
 ###################################################################################################
@@ -89,7 +105,7 @@ test-project601-libu
 test-project601-litu
   Properties
   - Gradle version 6.0.1
-  - project provides a library intentded to be consumed by other projects in their test source-set
+  - modular project provides a library to be consumed by other projects in their test source-set
   - project uses JUnit 5 test engine only
 
 ###################################################################################################

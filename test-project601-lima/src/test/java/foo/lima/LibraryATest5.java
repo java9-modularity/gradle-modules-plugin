@@ -1,13 +1,13 @@
-package foo.libu;
+package foo.lima;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("javadoc")
-final class LibraryTest5 {
+final class LibraryATest5 {
   @Test void test_Method() {
-    Library dut = new Library();
-    assertEquals(1 + 21, dut.method(), "expecting 22.a");
+    LibraryA dut = new LibraryA();
+    assertEquals(1, dut.method(), "expecting 1.a");
   }
 }
