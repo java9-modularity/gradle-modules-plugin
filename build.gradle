@@ -1,5 +1,4 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.2.1'
     id 'eclipse'
     id 'java-gradle-plugin'
     id 'maven-publish' // used for publishing to local maven repository
@@ -52,6 +51,13 @@ shadowJar {
 
 jar.enabled = false
 jar.dependsOn shadowJar
+
+configurations {
+    [apiElements, runtimeElements].each {
+        it.outgoing.artifacts.removeIf { it.buildDependencies.getDependencies(null).contains(jar) }
+        it.outgoing.artifact(shadowJar)
+    }
+}
 
 test {
     useJUnitPlatform()

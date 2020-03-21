@@ -5,6 +5,11 @@ pluginManagement {
                 includeGroup 'org.javamodularity.moduleplugin' // by 'publishToMavenLocal' task
             }
         }
+        gradlePluginPortal {
+            content {
+                includeGroup 'org.jetbrains.kotlin.jvm'
+            }
+        }
         mavenCentral {
             content {
                 includeGroup 'com.github.javaparser'

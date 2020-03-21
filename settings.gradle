@@ -1,4 +1,5 @@
-enableFeaturePreview('STABLE_PUBLISHING')
-
+plugins {
+    id "com.gradle.enterprise" version "3.1.1"
+}
 rootProject.name = 'moduleplugin'
 
