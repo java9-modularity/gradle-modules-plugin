@@ -52,15 +52,8 @@ For this guide we assume the following directory structure:
 The main build file should look as follows:
 
 ```groovy
-buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
-  }
-  dependencies {
-    classpath "org.javamodularity:moduleplugin:1.6.0"
-  }
+plugins {
+    id 'org.javamodularity.moduleplugin' version '1.6.0' apply false
 }
 
 subprojects {
