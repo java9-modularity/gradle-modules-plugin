@@ -21,7 +21,6 @@ targetCompatibility = 11
 
 repositories {
     mavenCentral()
-    gradlePluginPortal()
 }
 
 configurations {
