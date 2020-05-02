@@ -18,11 +18,5 @@ userHome/
 .java-version
 
 # Gradle wrapper in test projects
-/test-project-*/gradlew*
-/test-project-*/gradle/wrapper/*
-
-# afi extension
-bin
-/test-project*/out.txt
-/test-project*/bin
-/test-project*/???.classpath
+/test-project*/gradlew*
+/test-project*/gradle/wrapper/*

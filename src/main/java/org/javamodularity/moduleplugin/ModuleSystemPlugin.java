@@ -30,7 +30,6 @@ public class ModuleSystemPlugin implements Plugin<Project> {
         new TestTask(project).configureTestJava();
         new RunTask(project).configureRun();
         new JavadocTask(project).configureJavaDoc();
-        new ClasspathFile(project).configure(); // improve .classpath-file
         ModularJavaExec.configure(project);
         ModularCreateStartScripts.configure(project);
     }

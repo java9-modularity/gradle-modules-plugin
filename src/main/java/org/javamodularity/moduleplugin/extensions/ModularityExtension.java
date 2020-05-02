@@ -43,4 +43,22 @@ public interface ModularityExtension {
      *                              (allowed range: 9+)
      */
     void mixedJavaRelease(int mainJavaRelease, int moduleInfoJavaRelease);
+
+    /**
+     * Calling this method improves the ".classpath"-file created by Gradle's eclipse-plugin.
+     *
+     * <p>This method configures the plugin such that the given content of a ".classpath"-file
+     * is modified in the following ways:
+     * <ol>
+     *   <li>Each "classpathentry" of kind = "con" with a path containing "JRE_CONTAINER"
+     *       is moved to the module-path.
+     *   <li>Each "classpathentry" of kind = "lib" with a gradle_used_by_scope containing "main"
+     *       gets an additional attribute module = "true".
+     *   <li>Each "classpathentry" with a gradle_used_by_scope of "test"
+     *       gets an additional attribute test = "true".
+     * </ol>
+     *
+     * <p>For more information see Gradle's manual for the eclipse-plugin.
+     */
+    void improveEclipseClasspathFile();
 }

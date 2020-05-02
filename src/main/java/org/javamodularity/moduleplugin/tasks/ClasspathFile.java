@@ -1,22 +1,14 @@
 package org.javamodularity.moduleplugin.tasks;
 
 import groovy.util.Node;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListMap;
-
-import org.gradle.api.Action;
-import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.XmlProvider;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-import org.gradle.plugins.ide.api.XmlFileContentMerger;
 import org.gradle.plugins.ide.eclipse.GenerateEclipseClasspath;
 import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
-import org.javamodularity.moduleplugin.JavaProjectHelper;
-import org.javamodularity.moduleplugin.extensions.ClasspathFileExtension;
 
 /**
  * This class provides functionality to improve the content of {@code .classpath} file created
@@ -24,7 +16,6 @@ import org.javamodularity.moduleplugin.extensions.ClasspathFileExtension;
  *
  * @author <a href="mailto:alfred.65.fiedler@gmail.com">Alfred Fiedler</a>
  */
-@edu.umd.cs.findbugs.annotations.SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_INFERRED")
 public final class ClasspathFile {
   /**
    * Logger.
@@ -57,85 +48,35 @@ public final class ClasspathFile {
   /* package */ static final String NAME_JRE = "JRE_CONTAINER"; // */
 
   /**
-   * The project.
-   */
-  private final transient Project insProject; // */
-
-  /**
-   * Extension controlling whether {@code .classpath} file is improved or not.
-   */
-  private final transient ClasspathFileExtension insExtension; // */
-
-  /**
-   * Comfort constructor.
-   *
-   * @param project
-   *        this instance is related to
-   */
-  public ClasspathFile(final Project project) {
-    insProject   = project;
-    insExtension = insProject.getExtensions().create(
-        "classpathFileExtension",
-        ClasspathFileExtension.class,
-        insProject
-    );
-  } // end constructor */
-
-  /**
-   * Configures appropriate action if project has task "eclipseClasspath" and
-   * {@link ClasspathFileExtension} indicates that ".classpath" file is to be
-   * improved.
-   */
-  public void configure() {
-    insProject.afterEvaluate(p -> {
-      final boolean flag = insExtension.getImproveClasspathFile().get();
-      LOGGER.debug("configure, extension.value   : {}", flag);
-
-      if (flag) {
-        // ... flag indicates that .classpath file should be improved
-        LOGGER.debug("gradle-modules-plugin configures improvement of .classpath-file");
-        new JavaProjectHelper(insProject)
-          .findTask("eclipseClasspath", Task.class)
-          .ifPresent(this::configure);
-      } else {
-        // ... flag indicates that .classpath file shouldn't be improved
-        LOGGER.debug(".classpath-file isn't changed by gradle-modules-plugin");
-      } // end if
-    });
-  } // end method */
-
-  /**
-   * Configurations.
+   * Configures appropriate action if project has task "eclipseClasspath".
    *
    * @param task
    *        responsible for generating {@code .classpath} file
    */
-  private void configure(final Task task) {
+  public void configure(final Task task) {
     // LOGGER.quiet("configure, task: {}", task.getClass());
 
     // --- add functionality for enhancing the content of ".classpath"-file
     // Note: For more information see the manual for the eclipse-plugin.
     final EclipseClasspath eclipseClasspath = ((GenerateEclipseClasspath) task).getClasspath();
-    eclipseClasspath.file(new Action<XmlFileContentMerger>() {
-      @Override
-      public void execute(final XmlFileContentMerger xmlMerger) {
-        xmlMerger.withXml(new Action<XmlProvider>() {
-          @Override
-          public void execute(final XmlProvider xmlProvider) {
-            final Node rootNode = xmlProvider.asNode();
+    eclipseClasspath.file(
+        xmlFileContentMerger -> {
+          xmlFileContentMerger.withXml(
+              xmlProvider -> {
+                final Node rootNode = xmlProvider.asNode();
 
-            // show content of .classpath file before improving
-            LOGGER.debug("addAction: rootNode.before improving:{}", rootNode);
+                // show content of .classpath file before improving
+                LOGGER.debug("addAction: rootNode.before improving:{}", rootNode);
 
-            // improve
-            improveEclipseClasspathFile(rootNode);
+                // improve
+                improveEclipseClasspathFile(rootNode);
 
-            // show content of .classpath file after improving
-            LOGGER.debug("addAction: rootNode.after  improving:{}", rootNode);
-          } // end inner method
-        }); // end inner class Action<XmlProvider)
-      } // end inner method
-    }); // end inner class Action<XmlFileContentManager)
+                // show content of .classpath file after improving
+                LOGGER.debug("addAction: rootNode.after  improving:{}", rootNode);
+              } // end xmlProvider's lambda expression
+          );
+        } // end xmlFileContentMerger's lambda expression
+    );
   } // end method */
 
   /**
@@ -161,12 +102,12 @@ public final class ClasspathFile {
   } // end method */
 
   /**
-   * Marks everything which is kin of {@code lib} with a {@code gradle_used_by_scope} containing
+   * Marks everything which is kind of {@code lib} with a {@code gradle_used_by_scope} containing
    * {@code main} as {@code module}.
    *
    * <p>All children of {@code rootNode} with name {@link #NAME_CHILD} which have a child with
    * name {@link #NAME_GRAND} and an attribute with name {@link #NAME_ATTRIBUTE} which contains
-   * {@code main} become an attribute {@code module="true"} if they don't already have such an
+   * {@code main} get an attribute {@code module="true"} if they don't already have such an
    * attribute.
    *
    * <p><i><b>Note:</b>
@@ -175,9 +116,9 @@ public final class ClasspathFile {
    * Its seems appropriate to adjust things such that libraries with a gradle scope containing
    * "main" are changed such that they appear on the module-path from Eclipse's point of view.
    * This works at least with the following versions:<br>
-   * - Gradle 5.3.1, Eclipse 2019-09
-   * - Gradle 5.6.4, Eclipse 2019-09
-   * - Gradle 6.0.1, Eclipse 2019-09
+   * - Gradle 5.3.1, Eclipse 2019-09<br>
+   * - Gradle 5.6.4, Eclipse 2019-09<br>
+   * - Gradle 6.0.1, Eclipse 2019-09<br>
    * </i>
    *
    * @param rootNode
