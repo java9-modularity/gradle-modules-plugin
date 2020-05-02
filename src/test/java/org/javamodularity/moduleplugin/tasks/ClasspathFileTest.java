@@ -1,4 +1,4 @@
-package org.javamodularity.moduleplugin.tasks; // NOPMD too many static imports
+package org.javamodularity.moduleplugin.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -8,14 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import groovy.util.Node;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
-
-import org.gradle.api.Project;
-import org.gradle.testfixtures.ProjectBuilder;
-import org.javamodularity.moduleplugin.extensions.ClasspathFileExtension;
+import org.gradle.api.Task;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,8 +26,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author <a href="mailto:alfred.65.fiedler@gmail.com">Dr.-Ing. Alfred Fiedler</a>
  */
-@edu.umd.cs.findbugs.annotations.SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_INFERRED")
-final class ClasspathFileTest { // NOPMD class with too many methods
+final class ClasspathFileTest {
   /**
    * Correct attribute name.
    */
@@ -57,7 +52,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
   /** Method executed before each test. */
   @BeforeEach
   void setUp() {
-    insDut = new ClasspathFile(ProjectBuilder.builder().build());
+    insDut = new ClasspathFile();
     assertNotNull(insDut);
   } // end method */
 
@@ -68,30 +63,23 @@ final class ClasspathFileTest { // NOPMD class with too many methods
   } // end method */
 
   /**
-   * Test method for {@link ClasspathFile#ClasspathFile(org.gradle.api.Project)}.
+   * Test method for {@link ClasspathFile#ClasspathFile()}.
    */
   @Test
-  void test_ClasspathFile__Project() { // NOPMD strange method-name
+  void test_ClasspathFile() {
     // Test strategy:
-    // --- a. create a project
-    // --- b. create an instance for class under test
-    // --- c. check that an appropriate extension is available
+    // --- a. check that default constructor is able to create an instance
 
-    final Project       project = ProjectBuilder.builder().build();
-    final ClasspathFile dut     = new ClasspathFile(project);
+    final ClasspathFile dut = new ClasspathFile();
     assertNotNull(dut);
-
-    final var extension = project.getExtensions().getByName("classpathFileExtension");
-    assertNotNull(extension);
-    assertTrue(extension instanceof ClasspathFileExtension);
   } // end method */
 
   /**
-   * Test method for {@link ClasspathFile#configure()}.
+   * Test method for {@link ClasspathFile#configure(Task)}.
    */
   @Test
   @Disabled
-  void test_configure() { // NOPMD strange method-name
+  void test_configure() {
     // Don't know how to test => ignore
     fail("Not yet implemented"); // TODO
   } // end method */
@@ -100,29 +88,29 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#improveEclipseClasspathFile(Node)}.
    */
   @Test
-  void test_improveEclipseClasspathFile__Node() { // NOPMD strange method-name
+  void test_improveEclipseClasspathFile__Node() {
     // Test strategy:
     // ... assertion 1: method putJreOnModulePath(Node) works as intended
     // --- a. JRE,  rootNode with a bunch of entries and entries differing slightly
     // --- b. Main, rootNode with a bunch of entries and entries differing slightly
     // --- c. Test, rootNode with a bunch of entries and entries differing slightly
 
-    final Node root = new Node(null, "root"); // NOPMD string appears often
+    final Node root = new Node(null, "root");
 
     // --- a. JRE, rootNode with a bunch of entries and entries differing slightly
     // a.1: difference in name of item
-    final Map<String, String> mapA1 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
-    mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix"); // NOPMD string appears often
-    mapA1.put("kind", "con"); // NOPMD string appears often
-    root.appendNode("classpathentry", mapA1); // NOPMD string appears often, ok
+    final Map<String, String> mapA1 = new ConcurrentSkipListMap<>();
+    mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
+    mapA1.put("kind", "con");
+    root.appendNode("classpathentry", mapA1); // ok
     root.appendNode("classpathEntry", mapA1); // not classpathentry
 
     // --- b. Main, rootNode with a bunch of entries and entries differing slightly
     // b.1: difference in name of item
     final Map<String, String> kind = Map.of("kind", "lib");
-    final Map<String, String> mapB1 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
-    mapB1.put("name", ClasspathFile.NAME_ATTRIBUTE); // NOPMD string appears often
-    mapB1.put("value", "main"); // NOPMD string appears often
+    final Map<String, String> mapB1 = new ConcurrentSkipListMap<>();
+    mapB1.put("name", ClasspathFile.NAME_ATTRIBUTE);
+    mapB1.put("value", "main");
     root.appendNode("classpathentry", kind) // ok
         .appendNode(ClasspathFile.NAME_CHILD)
         .appendNode(ClasspathFile.NAME_GRAND, mapB1);
@@ -132,9 +120,9 @@ final class ClasspathFileTest { // NOPMD class with too many methods
 
     // --- c. Test, rootNode with a bunch of entries and entries differing slightly
     // c.1: difference in name of item
-    final Map<String, String> mapC1 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    final Map<String, String> mapC1 = new ConcurrentSkipListMap<>();
     mapC1.put("name", ClasspathFile.NAME_ATTRIBUTE);
-    mapC1.put("value", "test"); // NOPMD string appears often
+    mapC1.put("value", "test");
     root.appendNode("classpathentry") // ok
         .appendNode(ClasspathFile.NAME_CHILD)
         .appendNode(ClasspathFile.NAME_GRAND, mapC1);
@@ -147,11 +135,11 @@ final class ClasspathFileTest { // NOPMD class with too many methods
 
     // --- check
     assertEquals(
-        "root[attributes={}; value=[" // NOPMD string appears often
+        "root[attributes={}; value=["
         // a.1, begin
         +   "classpathentry[attributes={kind=con, path=prefixJRE_CONTAINERsuffix}; value=["
-        +     "attributes[attributes={}; value=[" // NOPMD string appears often
-        +       "attribute[attributes={name=module, value=true}; value=[]]" // NOPMD appears often
+        +     "attributes[attributes={}; value=["
+        +       "attribute[attributes={name=module, value=true}; value=[]]"
         +     "]]]"
         +   "], "
         +   "classpathEntry[attributes={kind=con, path=prefixJRE_CONTAINERsuffix}; value=[]], "
@@ -162,7 +150,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
         +       "attribute[attributes={name=gradle_used_by_scope, value=main}; value=[]], "
         +       "attribute[attributes={name=module, value=true}; value=[]]"
         +     "]]"
-        +   "]], " // NOPMD string appears often
+        +   "]], "
         +   "Classpathentry[attributes={kind=lib}; value=["
         +     "attributes[attributes={}; value=["
         +       "attribute[attributes={name=gradle_used_by_scope, value=main}; value=[]]"
@@ -173,7 +161,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
         +   "classpathentry[attributes={}; value=["
         +     "attributes[attributes={}; value=["
         +       "attribute[attributes={name=gradle_used_by_scope, value=test}; value=[]], "
-        +       "attribute[attributes={name=test, value=true}; value=[]]" // NOPMD appears often
+        +       "attribute[attributes={name=test, value=true}; value=[]]"
         +     "]]"
         +   "]], "
         +   "Classpathentry[attributes={}; value=["
@@ -192,7 +180,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#markMain(groovy.util.Node)}.
    */
   @Test
-  void test_markMain__Node() { // NOPMD strange method-name
+  void test_markMain__Node() {
     // ... assertion 1: method isKindOf(Node, String) works as expected
     // ... assertion 2: method getGradleScope(Node) works as expected
     // ... assertion 3: method hasNoAttributeModule(Node) works as expected
@@ -205,8 +193,8 @@ final class ClasspathFileTest { // NOPMD class with too many methods
 
     final Node root = new Node(null, "root");
     final Map<String, String> kind = Map.of("kind", "lib");
-    final Map<String, String> map = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
-    map.put("name", "gradle_used_by_scope"); // NOPMD string appears often
+    final Map<String, String> map = new ConcurrentSkipListMap<>();
+    map.put("name", "gradle_used_by_scope");
     map.put("value", "main,test");
 
     // --- a. items with improper name are not changed
@@ -242,7 +230,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#markTest(Node)}.
    */
   @Test
-  void test_markTest__Node() { // NOPMD strange method-name
+  void test_markTest__Node() {
     // ... assertion 1: method getGradleScope(Node) works as expected
     // ... assertion 2: method hasNoAttributeTest(Node) works as expected
     // ... assertion 3: method addAttribute(Node, String) works as expected
@@ -253,7 +241,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
     // --- b. items with proper name are changed
 
     final Node root = new Node(null, "root");
-    final Map<String, String> map = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    final Map<String, String> map = new ConcurrentSkipListMap<>();
     map.put("name", "gradle_used_by_scope");
     map.put("value", "test");
 
@@ -290,7 +278,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#putJreOnModulePath(Node)}.
    */
   @Test
-  void test_putJreOnModulePath__Node() { // NOPMD strange method-name
+  void test_putJreOnModulePath__Node() {
     // Test strategy:
     // ... assertion 1: method isJre(Node)                works as intended
     // ... assertion 2: method hasNoAttributeModule(Node) works as intended
@@ -301,7 +289,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
     final Node rootNode = new Node(null, "root");
 
     // a.1: difference in name of item
-    final Map<String, String> mapA1 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    final Map<String, String> mapA1 = new ConcurrentSkipListMap<>();
     mapA1.put("path", "prefix" + "JRE_CONTAINER" + "suffix");
     mapA1.put("kind", "con");
     rootNode.appendNode("classpathentry", mapA1); // ok
@@ -329,7 +317,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#getGradleScope(groovy.util.Node)}.
    */
   @Test
-  void test_getGradleScope__Node() { // NOPMD strange method-name
+  void test_getGradleScope__Node() {
     // Test strategy:
     // --- a. minimal node with gradle scope plus value
     // --- b. minimal node with gradle scope without value
@@ -341,7 +329,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
 
     // --- a. minimal node with gradle scope plus value
     final String valueA = "foo.bar.A";
-    final Map<String, String> mapA = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    final Map<String, String> mapA = new ConcurrentSkipListMap<>();
     mapA.put("name",  "gradle_used_by_scope");
     mapA.put("value", valueA);
     dut = new Node(null, "item.a");
@@ -388,7 +376,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#getAttributeNamed(Node, String)}.
    */
   @Test
-  void test_getAttributeNamed__Node_String() { // NOPMD strange method-name
+  void test_getAttributeNamed__Node_String() {
     // Test strategy:
     // a. Node without children SHALL return empty
     // b. Node with children not named "attribute" SHALL return empty
@@ -399,9 +387,9 @@ final class ClasspathFileTest { // NOPMD class with too many methods
     final Node dut = new Node(null, "dut"); // device under test
 
     // --- setup a map with attributes for child-nodes
-    final Map<String, String> mapItem = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
-    mapItem.put("name", "Alfred"); // NOPMD "Alfred" appears often
-    mapItem.put("Name", "foo"); // NOPMD "foo" appears often
+    final Map<String, String> mapItem = new ConcurrentSkipListMap<>();
+    mapItem.put("name", "Alfred");
+    mapItem.put("Name", "foo");
 
     // --- a. Node without children SHALL return empty
     assertEquals(0, dut.children().size());
@@ -429,8 +417,8 @@ final class ClasspathFileTest { // NOPMD class with too many methods
     assertSame(node1, insDut.getAttributeNamed(dut, "Alfred").get());
 
     // d.2 More than one proper child
-    final Node node2 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "Fiedler")); // NOPMD
-    final Node node3 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "bar")); // NOPMD bar
+    final Node node2 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "Fiedler"));
+    final Node node3 = dut.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "bar"));
     assertSame(node1, insDut.getAttributeNamed(dut, "Alfred").get());  // match in 1st proper child
     assertSame(node2, insDut.getAttributeNamed(dut, "Fiedler").get()); // match in 2nd proper child
     assertSame(node3, insDut.getAttributeNamed(dut, "bar").get());     // match in 3rd proper child
@@ -440,7 +428,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#hasNoAttributeModule(Node)}.
    */
   @Test
-  void test_hasNoAttributeModule__Node() { // NOPMD strange method-name
+  void test_hasNoAttributeModule__Node() {
     // Test strategy:
     // --- a. "short" node, i.e. node with not enough information (returns always true)
     // --- b. node with just sufficient information
@@ -479,7 +467,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
 
     // --- b. node with just sufficient information
     childA.remove(grandA);
-    childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", MODULE));// NOPMD DU-anomaly
+    childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", MODULE));
     assertFalse(insDut.hasNoAttributeModule(nodeA));
 
     // --- c. node triggering false by first  child
@@ -564,7 +552,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#hasNoAttributeTest(groovy.util.Node)}.
    */
   @Test
-  void test_hasNoAttributeTest__Node() { // NOPMD strange method-name
+  void test_hasNoAttributeTest__Node() {
     // Test strategy:
     // --- a. "short" node, i.e. node with not enough information (returns always true)
     // --- b. node with just sufficient information
@@ -603,7 +591,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
 
     // --- b. node with just sufficient information
     childA.remove(grandA);
-    childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "test"));// NOPMD DU-anomaly
+    childA.appendNode(ClasspathFile.NAME_GRAND, Map.of("name", "test"));
     assertFalse(insDut.hasNoAttributeTest(nodeA));
 
     // --- c. node triggering false by first  child
@@ -688,7 +676,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#hasAttributeNamed(Node, String)}.
    */
   @Test
-  void test_hasAttributeNamed__Node_String() { // NOPMD strange method-name
+  void test_hasAttributeNamed__Node_String() {
     // Test strategy:
     // a. Node without children SHALL return false
     // b. Node with children not named "attribute" SHALL return false
@@ -699,7 +687,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
     final Node dut = new Node(null, "dut"); // device under test
 
     // --- setup a map with attributes for child-nodes
-    final Map<String, String> mapItem = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    final Map<String, String> mapItem = new ConcurrentSkipListMap<>();
     mapItem.put("name", "Alfred");
     mapItem.put("Name", "foo");
 
@@ -740,7 +728,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#isJre(Node)}.
    */
   @Test
-  void test_isJre__Node() { // NOPMD strange method-name
+  void test_isJre__Node() {
     // Test strategy:
     // --- a.  kind of "con"   and   path contains "JRE_CONTAINER"
     // --- b. !kind of "con"   but   path contains "JRE_CONTAINER"
@@ -836,7 +824,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#isKindOf(Node, String)}.
    */
   @Test
-  void test_isKindOf__Node_String() { // NOPMD strange method-name
+  void test_isKindOf__Node_String() {
     // Test strategy:
     // --- a. node without attributes
     // --- b. node without attribute "kind"
@@ -867,7 +855,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
         "bar"
     );
 
-    final Map<String, String> attributes = new ConcurrentSkipListMap<>();// NOPMD use concurrent map
+    final Map<String, String> attributes = new ConcurrentSkipListMap<>();
     variants.stream().forEach(i -> attributes.put(i, i));
 
     variants.stream() // loop over all variants
@@ -876,7 +864,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
           assertTrue(insDut.isKindOf(new Node(null, "root", Map.of("kind", kind)), kind));
 
           // node with lots of attributes, but none fitting
-          final Node dut = new Node(null, "root" + kind, attributes); // NOPMD DU-anomaly
+          final Node dut = new Node(null, "root" + kind, attributes);
           variants.stream()
               .forEach(i -> assertFalse(insDut.isKindOf(dut, i)));
         }); // end forEach(kind -> ...)
@@ -886,7 +874,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
    * Test method for {@link ClasspathFile#addAttribute(groovy.util.Node, java.lang.String)}.
    */
   @Test
-  void test_addAttritute__Node_String() { // NOPMD strange method-name
+  void test_addAttritute__Node_String() {
     // Test strategy:
     // --- a. empty node
     // --- b. node with children none named "attributes"
@@ -914,8 +902,8 @@ final class ClasspathFileTest { // NOPMD class with too many methods
     insDut.addAttribute(dut, "test");
     assertEquals(
         "rootB[attributes={}; value=["
-        +   "foo[attributes={}; value=[]], " // NOPMD string appears often
-        +   "bar[attributes={}; value=[]], " // NOPMD string appears often
+        +   "foo[attributes={}; value=[]], "
+        +   "bar[attributes={}; value=[]], "
         +   "attributes[attributes={}; value=["
         +     "attribute[attributes={name=test, value=true}; value=[]]"
         +   "]]"
@@ -1000,7 +988,7 @@ final class ClasspathFileTest { // NOPMD class with too many methods
     );
 
     // d.2 move information in 2nd child with name "attributes"
-    final Map<String, String> mapD2 = new ConcurrentSkipListMap<>(); // NOPMD use concurrent map
+    final Map<String, String> mapD2 = new ConcurrentSkipListMap<>();
     mapD2.put("name", MODULE);
     mapD2.put("value", "true");
 

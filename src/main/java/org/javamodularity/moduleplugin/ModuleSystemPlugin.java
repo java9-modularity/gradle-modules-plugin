@@ -7,7 +7,15 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.javamodularity.moduleplugin.extensions.DefaultModularityExtension;
 import org.javamodularity.moduleplugin.extensions.ModularityExtension;
 import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
-import org.javamodularity.moduleplugin.tasks.*;
+import org.javamodularity.moduleplugin.tasks.CompileModuleInfoTask;
+import org.javamodularity.moduleplugin.tasks.CompileTask;
+import org.javamodularity.moduleplugin.tasks.CompileTestTask;
+import org.javamodularity.moduleplugin.tasks.JavadocTask;
+import org.javamodularity.moduleplugin.tasks.MergeClassesTask;
+import org.javamodularity.moduleplugin.tasks.ModularCreateStartScripts;
+import org.javamodularity.moduleplugin.tasks.ModularJavaExec;
+import org.javamodularity.moduleplugin.tasks.RunTask;
+import org.javamodularity.moduleplugin.tasks.TestTask;
 
 public class ModuleSystemPlugin implements Plugin<Project> {
 
@@ -30,7 +38,6 @@ public class ModuleSystemPlugin implements Plugin<Project> {
         new TestTask(project).configureTestJava();
         new RunTask(project).configureRun();
         new JavadocTask(project).configureJavaDoc();
-        new ClasspathFile(project).configure(); // improve .classpath-file
         ModularJavaExec.configure(project);
         ModularCreateStartScripts.configure(project);
     }
