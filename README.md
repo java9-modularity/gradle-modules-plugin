@@ -201,17 +201,17 @@ Typically we would have a structure as follows:
 ├── build.gradle
 └── src
     ├── main
-    │   ├── java
-    │   │   ├── examples
-    │   │   │   └── greeter
-    │   │   │       └── Friendly.java
-    │   │   └── module-info.java
-    │   └── resources
+    │   ├── java
+    │   │   ├── examples
+    │   │   │   └── greeter
+    │   │   │       └── Friendly.java
+    │   │   └── module-info.java
+    │   └── resources
     └── test
         ├── java
-        │   └── examples
-        │       └── greeter
-        │           └── FriendlyTest.java
+        │   └── examples
+        │       └── greeter
+        │           └── FriendlyTest.java
         └── resources
 
 ```
