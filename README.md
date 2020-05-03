@@ -555,6 +555,52 @@ Note that `modularity.mixedJavaRelease` does *not* configure a
 [multi-release JAR](https://docs.oracle.com/javase/9/docs/specs/jar/jar.html#Multi-release)
 (in other words, `module-info.class` remains in the root directory of the JAR).
 
+Improve Eclipse `.classpath`-file
+===
+When applying the [eclipse-plugin](https://docs.gradle.org/current/userguide/eclipse_plugin.html)
+(among others) a task called "eclipseClasspath" is added by that plugin creating a `.classpath`-file.
+The `.classpath`-file created by that task doesn't take into account modularity. As described by the
+documentation it is possible to configure the `.classpath`-file via configuration hooks.
+
+Up to and including version 1.6.0 this plugin (i.e. "gradle-modules-plugin") doesn't touch the
+content of the `.classpath`-file created by Gradle's eclipse-plugin.
+A new feature was added to version 1.6.1 **(TODO check whether this version number is correct)**
+and that feature is able to improve the `.classpath`-file created by Gradle's eclipse-plugin.
+
+The **default** behavior is that his new feature (improving `.classpath`-file) is disabled in order
+to ensure backward compatibility with earlier versions of "gradle-modules-plugin". It is possible
+to enable the feature by just adding one line to build.gradle(.kts):
+
+
+<details open>
+<summary>Groovy DSL</summary>
+
+```groovy
+modularity.improveEclipseClasspathFile()
+```
+
+</details>
+<details>
+<summary>Kotlin DSL</summary>
+
+```kotlin
+modularity.improveEclipseClasspathFile()
+```
+
+</details>
+
+**Contributor's note to maintainer of "gradles-modules-plugin":**
+I moved the example projects form the former PR to a dedicated GitHub-project.
+Just the examples with an explanatory `README.md`.
+Users of your plugin might or might not be interested in these examples.
+I provide the link hereafter. Feel free to keep or remove the following paragraph as you like.
+**End of contributor's note.**
+
+Examples on how and where Gradle's eclipse-plugin could (and should) be improved and how a
+`.classpath`-file is affected if the feature is enabled are available on
+[GitHub](https://github.com/Alfred-65/gradle-modules-plugin.investigation).
+
+
 Limitations
 ===
 
