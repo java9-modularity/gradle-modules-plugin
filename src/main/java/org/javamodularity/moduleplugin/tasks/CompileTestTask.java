@@ -55,7 +55,7 @@ public class CompileTestTask extends AbstractModulePluginTask {
                 moduleName + "=" + helper().testSourceSet().getJava().getSourceDirectories().getAsPath()
         ).mutateArgs(compilerArgs);
 
-        TestEngine.select(project).ifPresent(testEngine -> {
+        TestEngine.selectMultiple(project).forEach(testEngine -> {
             new TaskOption("--add-modules", testEngine.moduleName).mutateArgs(compilerArgs);
             new TaskOption("--add-reads", moduleName + "=" + testEngine.moduleName).mutateArgs(compilerArgs);
         });
