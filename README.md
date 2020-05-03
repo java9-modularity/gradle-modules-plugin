@@ -578,14 +578,8 @@ When applying the [eclipse-plugin](https://docs.gradle.org/current/userguide/ecl
 The `.classpath`-file created by that task doesn't take into account modularity. As described by the
 documentation it is possible to configure the `.classpath`-file via configuration hooks.
 
-Up to and including version 1.6.0 this plugin (i.e. "gradle-modules-plugin") doesn't touch the
-content of the `.classpath`-file created by Gradle's eclipse-plugin.
-A new feature was added to version 1.6.1 **(TODO check whether this version number is correct)**
-and that feature is able to improve the `.classpath`-file created by Gradle's eclipse-plugin.
-
-The **default** behavior is that his new feature (improving `.classpath`-file) is disabled in order
-to ensure backward compatibility with earlier versions of "gradle-modules-plugin". It is possible
-to enable the feature by just adding one line to build.gradle(.kts):
+Since version 1.7.0, the gradle-modules-plugin provides the `modularity.improveEclipseClasspathFile()` method,
+which configures the `.classpath`-file via configuration hooks:
 
 
 <details open>

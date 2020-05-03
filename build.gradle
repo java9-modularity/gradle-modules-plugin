@@ -36,7 +36,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.1'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.4.1' // see note 1 below
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.4.1' // required when testing in Eclipse
 }
 
 shadowJar {
@@ -106,51 +106,3 @@ publishing { // used for publishing to local maven repository
         }
     }
 }
-
-// ################################################################################################
-// ##################                    Appendix with notes                     ##################
-// ################################################################################################
-
-/* 2019-11-16
- * Note 1, regarding dependency
- *  testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.4.1'
- * a. Environment as reported by "gradlew --version"
-
-            ------------------------------------------------------------
-            Gradle 5.3.1
-            ------------------------------------------------------------
-
-            Build time:   2019-03-28 09:09:23 UTC
-            Revision:     f2fae6ba563cfb772c8bc35d31e43c59a5b620c3
-
-            Kotlin:       1.3.21
-            Groovy:       2.5.4
-            Ant:          Apache Ant(TM) version 1.9.13 compiled on July 10 2018
-            JVM:          13.0.1 (AdoptOpenJDK 13.0.1+9)
-            OS:           Windows 10 10.0 amd64
- * b. Directly after "git clone https://github.com/java9-modularity/gradle-modules-plugin.git"
- *    gradle is able to build (i.e. compile and test) successfully.
- * c. After generating Eclipse files via "gradlew eclipse" compiling in Eclipse is also successful,
- *    but testing in Eclipse is not. The failure I got is similaar (if not identical) to failures
- *    described e.g. in
- *    - https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849
- *    - https://bugs.eclipse.org/bugs/show_bug.cgi?id=547594
- *    In particular:
- *    - Eclipse opens a popup-window with message "No test found with test runner 'JUnit 5'."
- *    - Eclipse console shows the following exception:
- *      java.lang.NoClassDefFoundError: org/junit/platform/commons/PreconditionViolationException
- *        at org.eclipse.jdt.internal.junit5.runner.JUnit5TestLoader.createTest(JUnit5TestLoader.java:90)
- *        at org.eclipse.jdt.internal.junit5.runner.JUnit5TestLoader.loadTests(JUnit5TestLoader.java:48)
- *        at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:525)
- *        at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:763)
- *        at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:463)
- *        at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:209)
- *      Caused by: java.lang.ClassNotFoundException: org.junit.platform.commons.PreconditionViolationException
- *        at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:581)
- *        at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:178)
- *        at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:521)
- *        ... 6 more
- * d. Solutions often suggest to add an extra dependency for "junit-platform-launcher". After adding
- *    such a dependency and recreation of eclipse configuration files via
- *    "gradlew cleanEclipse eclipse" testing with Eclipse (i.e. Run as "JUnit test") is successful.
- */
