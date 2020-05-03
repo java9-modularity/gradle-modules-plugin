@@ -12,8 +12,8 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
-import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.javamodularity.moduleplugin.extensions.TestModuleOptions;
+import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.File;
@@ -63,19 +63,20 @@ public class TestTask extends AbstractModulePluginTask {
     private List<String> buildJvmArgs(Test testJava, TestModuleOptions testModuleOptions) {
         var jvmArgs = new ArrayList<>(testJava.getJvmArgs());
 
-        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
 
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(testJava.getClasspath());
-        patchModuleExtension.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
+        var patchModuleContainer = PatchModuleContainer.copyOf(helper().modularityExtension().patchModuleContainer());
+        String moduleName = helper().moduleName();
+        buildPatchModulePathStream().forEach(path -> patchModuleContainer.addDir(moduleName, path.toString()));
+        patchModuleContainer.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
 
-        patchModuleExtension.resolvePatched(classpath).mutateArgs(jvmArgs);
+        patchModuleContainer.mutator(classpath).mutateArgs(jvmArgs);
 
-        new TaskOption("--patch-module", buildPatchModuleOptionValue()).mutateArgs(jvmArgs);
         new TaskOption("--add-modules", "ALL-MODULE-PATH").mutateArgs(jvmArgs);
 
         testModuleOptions.mutateArgs(jvmArgs);
 
-        TestEngine.select(project).ifPresent(testEngine -> {
+        TestEngine.selectMultiple(project).forEach(testEngine -> {
             buildAddReadsOption(testEngine).mutateArgs(jvmArgs);
             buildAddOpensOptionStream(testEngine).forEach(option -> option.mutateArgs(jvmArgs));
         });
@@ -83,12 +84,6 @@ public class TestTask extends AbstractModulePluginTask {
         ModuleInfoTestHelper.mutateArgs(project, jvmArgs::add);
 
         return jvmArgs;
-    }
-
-    private String buildPatchModuleOptionValue() {
-        return helper().moduleName() + "=" + buildPatchModulePathStream()
-                .map(Path::toString)
-                .collect(Collectors.joining(pathSeparator));
     }
 
     private Stream<Path> buildPatchModulePathStream() {

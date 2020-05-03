@@ -53,7 +53,7 @@ The main build file should look as follows:
 
 ```groovy
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.6.0' apply false
+    id 'org.javamodularity.moduleplugin' version '1.7.0' apply false
 }
 
 subprojects {
@@ -460,7 +460,7 @@ Additionally, it exposes the same properties and methods as the [`CreateStartScr
 However, you don't need to set the properties `mainClassName`, `outputDir`, `classpath`, or `defaultJvmOpts`, because they are automatically set by the plugin, based on the configuration of the associated `runTask`.
 
 Patching modules to prevent split packages
-=== 
+===
 
 The Java Platform Module System doesn't allow split packages.
 A split package means that the same package exists in multiple modules.
@@ -480,11 +480,27 @@ The plugin takes care of the following:
 * Removing the JAR from the module path
 * Moving the JAR to a `patchlibs` folder for distribution tasks
 
+**Recommended approach**
+
+As of 1.7.0, the recommended way to patch modules is by means of the [`modularity.patchModule`][ModularityExtension] function:
+
+```groovy
+modularity.patchModule("java.annotation", "jsr305-3.0.2.jar")
+```
+
+The `patchModule` method can be called more than once for the same module, if the module needs to be patched with the content of several JARs.
+
+**Legacy approach**
+
+Before 1.7.0, patching modules was possible only by setting `patchModules.config`:
+
 ```groovy
 patchModules.config = [
         "java.annotation=jsr305-3.0.2.jar"
 ]
-``` 
+```
+
+For compatibility reasons, this way of patching modules is still supported in newer releases, but it is discouraged. Note that this method does not allow patching a module with more than one JAR.
 
 Compilation
 ===
@@ -554,6 +570,52 @@ modularity.mixedJavaRelease(8)
 Note that `modularity.mixedJavaRelease` does *not* configure a
 [multi-release JAR](https://docs.oracle.com/javase/9/docs/specs/jar/jar.html#Multi-release)
 (in other words, `module-info.class` remains in the root directory of the JAR).
+
+Improve Eclipse `.classpath`-file
+===
+When applying the [eclipse-plugin](https://docs.gradle.org/current/userguide/eclipse_plugin.html)
+(among others) a task called "eclipseClasspath" is added by that plugin creating a `.classpath`-file.
+The `.classpath`-file created by that task doesn't take into account modularity. As described by the
+documentation it is possible to configure the `.classpath`-file via configuration hooks.
+
+Up to and including version 1.6.0 this plugin (i.e. "gradle-modules-plugin") doesn't touch the
+content of the `.classpath`-file created by Gradle's eclipse-plugin.
+A new feature was added to version 1.6.1 **(TODO check whether this version number is correct)**
+and that feature is able to improve the `.classpath`-file created by Gradle's eclipse-plugin.
+
+The **default** behavior is that his new feature (improving `.classpath`-file) is disabled in order
+to ensure backward compatibility with earlier versions of "gradle-modules-plugin". It is possible
+to enable the feature by just adding one line to build.gradle(.kts):
+
+
+<details open>
+<summary>Groovy DSL</summary>
+
+```groovy
+modularity.improveEclipseClasspathFile()
+```
+
+</details>
+<details>
+<summary>Kotlin DSL</summary>
+
+```kotlin
+modularity.improveEclipseClasspathFile()
+```
+
+</details>
+
+**Contributor's note to maintainer of "gradles-modules-plugin":**
+I moved the example projects form the former PR to a dedicated GitHub-project.
+Just the examples with an explanatory `README.md`.
+Users of your plugin might or might not be interested in these examples.
+I provide the link hereafter. Feel free to keep or remove the following paragraph as you like.
+**End of contributor's note.**
+
+Examples on how and where Gradle's eclipse-plugin could (and should) be improved and how a
+`.classpath`-file is affected if the feature is enabled are available on
+[GitHub](https://github.com/Alfred-65/gradle-modules-plugin.investigation).
+
 
 Limitations
 ===

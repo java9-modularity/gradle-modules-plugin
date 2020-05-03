@@ -36,22 +36,4 @@ public class CompileModuleOptions extends ModuleOptions {
         }
         this.compileModuleInfoSeparately = compileModuleInfoSeparately;
     }
-
-    @Override
-    public void mutateArgs(List<String> args) {
-        super.mutateArgs(args);
-
-        List<File> otherDirs = mergeClassesHelper().otherCompileTaskStream()
-                .map(AbstractCompile::getDestinationDir)
-                .collect(Collectors.toList());
-        if(!otherDirs.isEmpty()) {
-            new TaskOption(
-                    "--patch-module",
-                    helper().moduleName() + "=" +
-                            otherDirs.stream()
-                                    .map(File::getAbsolutePath)
-                                    .collect(Collectors.joining(File.pathSeparator))
-            ).mutateArgs(args);
-        }
-    }
 }

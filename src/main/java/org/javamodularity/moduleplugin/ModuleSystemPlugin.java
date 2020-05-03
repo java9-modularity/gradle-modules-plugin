@@ -7,6 +7,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.javamodularity.moduleplugin.extensions.DefaultModularityExtension;
 import org.javamodularity.moduleplugin.extensions.ModularityExtension;
 import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
+import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
 import org.javamodularity.moduleplugin.tasks.*;
 
 public class ModuleSystemPlugin implements Plugin<Project> {
@@ -32,5 +33,6 @@ public class ModuleSystemPlugin implements Plugin<Project> {
         new JavadocTask(project).configureJavaDoc();
         ModularJavaExec.configure(project);
         ModularCreateStartScripts.configure(project);
+        PatchModuleContainer.configure(project);
     }
 }

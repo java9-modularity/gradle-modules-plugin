@@ -12,17 +12,18 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("ConstantConditions")
 class ModulePluginSmokeTest {
 
-    private static final String GRADLE_VERSION = "5.3.1";
+    private static final String[] GRADLE_VERSIONS = {"5.3.1", "6.3"};
 
     private List<File> pluginClasspath;
 
@@ -34,14 +35,45 @@ class ModulePluginSmokeTest {
                 .collect(Collectors.toList());
     }
 
+    private void forAllGradleVersions(Consumer<String> gradleTest) {
+        assertAll(Arrays.stream(GRADLE_VERSIONS).map(v -> () -> gradleTest.accept(v)));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     void smokeTest(String projectName) {
+        forAllGradleVersions(v -> doSmokeTest(v, projectName));
+    }
+
+    void doSmokeTest(String gradleVersion, String projectName) {
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(GRADLE_VERSION)
+                .withGradleVersion(gradleVersion)
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "run", "--stacktrace")
+                .forwardOutput()
+                .build();
+
+        assertTasksSuccessful(result, "greeter.api", "build");
+        assertTasksSuccessful(result, "greeter.provider", "build");
+        assertTasksSuccessful(result, "greeter.provider.test", "build");
+        assertTasksSuccessful(result, "greeter.runner", "build", "run");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2"})
+    void smokeTestJunit5(String junitVersionPair) {
+        forAllGradleVersions(v -> doSmokeTestJunit5(v, junitVersionPair));
+    }
+    void doSmokeTestJunit5(String gradleVersion, String junitVersionPair) {
+        var junitVersionParts = junitVersionPair.split("/");
+        var junitVersionProperty = String.format("-PjUnitVersion=%s", junitVersionParts[0]);
+        var junitPlatformVersionProperty = String.format("-PjUnitPlatformVersion=%s", junitVersionParts[1]);
+        var result = GradleRunner.create()
+                .withProjectDir(new File("test-project/"))
+                .withPluginClasspath(pluginClasspath)
+                .withGradleVersion(gradleVersion)
+                .withArguments("-c", "smoke_test_settings.gradle", junitVersionProperty, junitPlatformVersionProperty, "clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();
 
@@ -53,10 +85,13 @@ class ModulePluginSmokeTest {
 
     @Test
     void smokeTestMixed() throws IOException {
+        forAllGradleVersions(this::doSmokeTestMixed);
+    }
+    void doSmokeTestMixed(String gradleVersion) {
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project-mixed"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(GRADLE_VERSION)
+                .withGradleVersion(gradleVersion)
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "--stacktrace")
                 .forwardOutput()
                 .build();
@@ -73,13 +108,13 @@ class ModulePluginSmokeTest {
 
     private static void verifyMixedTestResult(
             BuildResult result, String subprojectName,
-            int mainJavaRelease, int moduleInfoJavaRelease) throws IOException {
+            int mainJavaRelease, int moduleInfoJavaRelease) {
         assertTasksSuccessful(result, subprojectName, "build");
         assertExpectedClassFileFormats(subprojectName, mainJavaRelease, moduleInfoJavaRelease);
     }
 
     private static void assertExpectedClassFileFormats(
-            String subprojectName, int mainJavaRelease, int moduleInfoJavaRelease) throws IOException {
+            String subprojectName, int mainJavaRelease, int moduleInfoJavaRelease) {
         Path basePath = Path.of("test-project-mixed").resolve(subprojectName).resolve("build/classes");
         Path classesDir = basePath.resolve("java/main");
         Path moduleInfoClassesDir = basePath.resolve("module-info");
@@ -90,19 +125,26 @@ class ModulePluginSmokeTest {
                 .collect(Collectors.toList());
         assertEquals(1, moduleInfoPaths.size(), "module-info.class found in multiple locations: " + moduleInfoPaths);
         Path moduleInfoClassPath = moduleInfoPaths.get(0);
-        SmokeTestHelper.assertClassFileJavaVersion(moduleInfoJavaRelease, moduleInfoClassPath);
+        try {
+            SmokeTestHelper.assertClassFileJavaVersion(moduleInfoJavaRelease, moduleInfoClassPath);
 
-        Path nonModuleInfoClassPath = SmokeTestHelper.anyNonModuleInfoClassFilePath(classesDir);
-        SmokeTestHelper.assertClassFileJavaVersion(mainJavaRelease, nonModuleInfoClassPath);
+            Path nonModuleInfoClassPath = SmokeTestHelper.anyNonModuleInfoClassFilePath(classesDir);
+            SmokeTestHelper.assertClassFileJavaVersion(mainJavaRelease, nonModuleInfoClassPath);
+        } catch (IOException e) {
+            fail(e);
+        }
     }
 
     @ParameterizedTest
     @ValueSource(strings = "test-project")
     void smokeTestDist(String projectName) {
+        forAllGradleVersions(v -> doSmokeTestDist(v, projectName));
+    }
+    void doSmokeTestDist(String gradleVersion, String projectName) {
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(GRADLE_VERSION)
+                .withGradleVersion(gradleVersion)
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", ":greeter.runner:installDist", "--stacktrace")
                 .forwardOutput()
                 .build();
@@ -130,10 +172,13 @@ class ModulePluginSmokeTest {
     @ParameterizedTest
     @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     void smokeTestRunDemo(String projectName) {
+        forAllGradleVersions(v -> doSmokeTestRunDemo(v, projectName));
+    }
+    void doSmokeTestRunDemo(String gradleVersion, String projectName) {
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(GRADLE_VERSION)
+                .withGradleVersion(gradleVersion)
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build",
                         ":greeter.javaexec:runDemo1", ":greeter.javaexec:runDemo2", "--info", "--stacktrace")
                 .forwardOutput()
@@ -145,10 +190,13 @@ class ModulePluginSmokeTest {
     @ParameterizedTest
     @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     void smokeTestRunStartScripts(String projectName) {
+        forAllGradleVersions(v -> doSmokeTestRunStartScripts(v, projectName));
+    }
+    void doSmokeTestRunStartScripts(String gradleVersion, String projectName) {
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(GRADLE_VERSION)
+                .withGradleVersion(gradleVersion)
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", ":greeter.startscripts:installDist", "--info", "--stacktrace")
                 .forwardOutput()
                 .build();

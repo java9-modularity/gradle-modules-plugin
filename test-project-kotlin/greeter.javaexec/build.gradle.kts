@@ -10,6 +10,9 @@ dependencies {
 patchModules.config = listOf(
         "java.annotation=jsr305-3.0.2.jar"
 )
+modularity {
+    patchModule("java.annotation", "jsr250-api-1.0.jar")
+}
 
 File("${project.projectDir}/src/main/kotlin/demo")
         .listFiles({ _, name -> Regex("Demo.*\\.kt") matches name })

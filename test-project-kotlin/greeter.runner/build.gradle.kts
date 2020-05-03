@@ -19,8 +19,11 @@ application {
     applicationDefaultJvmArgs = listOf("-XX:+PrintGCDetails")
 }
 
+modularity {
+    patchModule("java.annotation", "jsr305-3.0.2.jar")
+}
 patchModules.config = listOf(
-        "java.annotation=jsr305-3.0.2.jar"
+    "java.annotation=jsr250-api-1.0.jar"
 )
 
 (run) {
