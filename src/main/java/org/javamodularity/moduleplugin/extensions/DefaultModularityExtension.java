@@ -8,7 +8,6 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
-
 import org.javamodularity.moduleplugin.tasks.ClasspathFile;
 
 public class DefaultModularityExtension implements ModularityExtension {
