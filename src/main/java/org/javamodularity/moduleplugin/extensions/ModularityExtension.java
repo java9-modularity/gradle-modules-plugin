@@ -1,5 +1,7 @@
 package org.javamodularity.moduleplugin.extensions;
 
+import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
+
 /**
  * A project-wide extension that provides the most common modularity-related actions.
  *
@@ -43,6 +45,13 @@ public interface ModularityExtension {
      *                              (allowed range: 9+)
      */
     void mixedJavaRelease(int mainJavaRelease, int moduleInfoJavaRelease);
+
+
+    PatchModuleContainer patchModuleContainer();
+
+    default void patchModule(String moduleName, String jarName) {
+        patchModuleContainer().addJar(moduleName, jarName);
+    }
 
     /**
      * Calling this method improves the ".classpath"-file created by Gradle's eclipse-plugin.

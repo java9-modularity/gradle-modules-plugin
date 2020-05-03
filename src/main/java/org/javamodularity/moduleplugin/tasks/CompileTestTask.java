@@ -8,7 +8,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.TestEngine;
 import org.javamodularity.moduleplugin.extensions.CompileTestModuleOptions;
-import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
+import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
@@ -45,15 +45,12 @@ public class CompileTestTask extends AbstractModulePluginTask {
         var compilerArgs = new ArrayList<>(compileTestJava.getOptions().getCompilerArgs());
 
         String moduleName = helper().moduleName();
-        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(compileTestJava.getClasspath());
 
-        patchModuleExtension.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(compilerArgs));
-
-        new TaskOption(
-                "--patch-module",
-                moduleName + "=" + helper().testSourceSet().getJava().getSourceDirectories().getAsPath()
-        ).mutateArgs(compilerArgs);
+        var patchModuleContainer = PatchModuleContainer.copyOf(helper().modularityExtension().patchModuleContainer());
+        FileCollection testSourceDirs = helper().testSourceSet().getJava().getSourceDirectories();
+        testSourceDirs.forEach(dir -> patchModuleContainer.addDir(moduleName, dir.getAbsolutePath()));
+        patchModuleContainer.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(compilerArgs));
 
         TestEngine.selectMultiple(project).forEach(testEngine -> {
             new TaskOption("--add-modules", testEngine.moduleName).mutateArgs(compilerArgs);
@@ -62,7 +59,7 @@ public class CompileTestTask extends AbstractModulePluginTask {
 
         moduleOptions.mutateArgs(compilerArgs);
 
-        patchModuleExtension.resolvePatched(classpath).mutateArgs(compilerArgs);
+        patchModuleContainer.mutator(classpath).mutateArgs(compilerArgs);
 
         ModuleInfoTestHelper.mutateArgs(project, compilerArgs::add);
 

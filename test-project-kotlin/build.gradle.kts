@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.20" apply false
-    id("org.javamodularity.moduleplugin") version "1.6.0" apply false
+    kotlin("jvm") version "1.3.72" apply false
+    id("org.javamodularity.moduleplugin") version "1.7.0" apply false
 }
 
 subprojects {
@@ -39,7 +39,6 @@ subprojects {
 
         testLogging {
             events("PASSED", "FAILED", "SKIPPED")
-            setStackTraceFilters(listOf())
         }
     }
 

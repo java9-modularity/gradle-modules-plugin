@@ -6,6 +6,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
+import org.javamodularity.moduleplugin.extensions.DefaultModularityExtension;
 import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +32,7 @@ class CompileJavaTaskMutatorTest {
                 .create("moduleOptions", CompileModuleOptions.class, project);
         project.getExtensions().add("moduleName", getClass().getName());
         project.getExtensions().create("patchModules", PatchModuleExtension.class);
+        project.getExtensions().create("modularity", DefaultModularityExtension.class, project);
 
         CompileJavaTaskMutator mutator = new CompileJavaTaskMutator(project, compileJava.getClasspath(), moduleOptions);
 

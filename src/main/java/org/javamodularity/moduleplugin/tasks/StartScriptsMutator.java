@@ -10,7 +10,6 @@ import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.file.RelativePath;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.application.CreateStartScripts;
-import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
@@ -71,12 +70,12 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
     private List<String> buildStartScriptsJvmArgs(CreateStartScripts startScriptsTask) {
         var jvmArgs = new ArrayList<String>();
 
-        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
         var moduleOptions = execTask.getExtensions().getByType(RunModuleOptions.class);
 
         moduleOptions.mutateArgs(jvmArgs);
 
-        patchModuleExtension.resolvePatched(jarName -> PATCH_LIBS_PLACEHOLDER + "/" + jarName).mutateArgs(jvmArgs);
+        var patchModuleContainer = helper().modularityExtension().patchModuleContainer();
+        patchModuleContainer.mutator(jarName -> PATCH_LIBS_PLACEHOLDER + "/" + jarName).mutateArgs(jvmArgs);
 
         startScriptsTask.getDefaultJvmOpts().forEach(jvmArgs::add);
 
@@ -97,15 +96,15 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
     }
 
     public void movePatchedLibs() {
-        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
-        if (patchModuleExtension.getConfig().isEmpty()) {
+        var patchedJarNames = helper().modularityExtension().patchModuleContainer().patchedJarNames();
+        if (patchedJarNames.isEmpty()) {
             return;
         }
 
         Distribution mainDistribution = helper().extension("distributions", DistributionContainer.class)
                 .getByName("main");
         mainDistribution.contents(
-                copySpec -> copySpec.filesMatching(patchModuleExtension.getJars(), this::updateRelativePath)
+                copySpec -> copySpec.filesMatching(patchedJarNames, this::updateRelativePath)
         );
     }
 

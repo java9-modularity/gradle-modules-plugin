@@ -15,9 +15,10 @@ dependencies {
     runtimeOnly(project(":greeter.provider"))
 }
 
-patchModules.config = listOf(
-        "java.annotation=jsr305-3.0.2.jar"
-)
+modularity {
+    patchModule("java.annotation", "jsr250-api-1.0.jar")
+    patchModule("java.annotation", "jsr305-3.0.2.jar")
+}
 
 application {
     mainClassName = "$moduleName/startscripts.MainDemoKt"

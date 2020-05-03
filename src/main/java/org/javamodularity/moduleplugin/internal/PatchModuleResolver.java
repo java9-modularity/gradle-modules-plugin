@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+/** @deprecated As of 1.7.0, this class is no longer used and can be removed */
+@Deprecated(since = "1.7.0", forRemoval = true)
 public final class PatchModuleResolver {
 
     private static final Logger LOGGER = Logging.getLogger(PatchModuleResolver.class);

@@ -53,7 +53,7 @@ The main build file should look as follows:
 
 ```groovy
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.6.0' apply false
+    id 'org.javamodularity.moduleplugin' version '1.7.0' apply false
 }
 
 subprojects {
@@ -460,7 +460,7 @@ Additionally, it exposes the same properties and methods as the [`CreateStartScr
 However, you don't need to set the properties `mainClassName`, `outputDir`, `classpath`, or `defaultJvmOpts`, because they are automatically set by the plugin, based on the configuration of the associated `runTask`.
 
 Patching modules to prevent split packages
-=== 
+===
 
 The Java Platform Module System doesn't allow split packages.
 A split package means that the same package exists in multiple modules.
@@ -480,11 +480,27 @@ The plugin takes care of the following:
 * Removing the JAR from the module path
 * Moving the JAR to a `patchlibs` folder for distribution tasks
 
+**Recommended approach**
+
+As of 1.7.0, the recommended way to patch modules is by means of the [`modularity.patchModule`][ModularityExtension] function:
+
+```groovy
+modularity.patchModule("java.annotation", "jsr305-3.0.2.jar")
+```
+
+The `patchModule` method can be called more than once for the same module, if the module needs to be patched with the content of several JARs.
+
+**Legacy approach**
+
+Before 1.7.0, patching modules was possible only by setting `patchModules.config`:
+
 ```groovy
 patchModules.config = [
         "java.annotation=jsr305-3.0.2.jar"
 ]
-``` 
+```
+
+For compatibility reasons, this way of patching modules is still supported in newer releases, but it is discouraged. Note that this method does not allow patching a module with more than one JAR.
 
 Compilation
 ===

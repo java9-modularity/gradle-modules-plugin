@@ -2,13 +2,16 @@ package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
-import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
+import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class CompileJavaTaskMutator {
 
@@ -48,13 +51,16 @@ class CompileJavaTaskMutator {
     }
 
     private List<String> buildCompilerArgs(JavaCompile javaCompile) {
+        var patchModuleContainer = PatchModuleContainer.copyOf(helper().modularityExtension().patchModuleContainer());
+        String moduleName = helper().moduleName();
+        new MergeClassesHelper(project).otherCompileTaskStream()
+                .map(AbstractCompile::getDestinationDir)
+                .forEach(dir -> patchModuleContainer.addDir(moduleName, dir.getAbsolutePath()));
+
         var compilerArgs = new ArrayList<>(javaCompile.getOptions().getCompilerArgs());
-
-        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
-
-        patchModuleExtension.buildModulePathOption(compileJavaClasspath)
+        patchModuleContainer.buildModulePathOption(compileJavaClasspath)
                 .ifPresent(option -> option.mutateArgs(compilerArgs));
-        patchModuleExtension.resolvePatched(compileJavaClasspath).mutateArgs(compilerArgs);
+        patchModuleContainer.mutator(compileJavaClasspath).mutateArgs(compilerArgs);
 
         moduleOptions.mutateArgs(compilerArgs);
 

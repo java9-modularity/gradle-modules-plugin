@@ -6,6 +6,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.javamodularity.moduleplugin.extensions.ModularityExtension;
 
 import java.io.File;
 import java.util.Optional;
@@ -31,6 +32,10 @@ public final class JavaProjectHelper {
 
     public <T> T extension(String name, Class<T> extensionType) {
         return extensionType.cast(project.getExtensions().getByName(name));
+    }
+
+    public ModularityExtension modularityExtension() {
+        return extension(ModularityExtension.class);
     }
 
     public String moduleName() {

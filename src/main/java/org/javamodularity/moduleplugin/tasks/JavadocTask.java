@@ -8,7 +8,6 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.CoreJavadocOptions;
 import org.javamodularity.moduleplugin.extensions.JavadocModuleOptions;
-import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
 import org.javamodularity.moduleplugin.internal.StreamHelper;
 
 public class JavadocTask extends AbstractModulePluginTask {
@@ -37,12 +36,12 @@ public class JavadocTask extends AbstractModulePluginTask {
 
     private void addJavadocOptions(Javadoc javadoc, JavadocModuleOptions moduleOptions) {
         var options = (CoreJavadocOptions) javadoc.getOptions();
-        var patchModuleExtension = helper().extension(PatchModuleExtension.class);
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(javadoc.getClasspath());
 
+        var patchModuleContainer = helper().modularityExtension().patchModuleContainer();
         StreamHelper.concat(
-                patchModuleExtension.buildModulePathOption(classpath).stream(),
-                patchModuleExtension.resolvePatched(classpath).buildOptionStream(),
+                patchModuleContainer.buildModulePathOption(classpath).stream(),
+                patchModuleContainer.mutator(classpath).taskOptionStream(),
                 moduleOptions.buildFullOptionStreamLogged()
         ).forEach(option -> option.mutateOptions(options));
     }
