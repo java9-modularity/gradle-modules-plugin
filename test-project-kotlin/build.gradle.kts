@@ -34,6 +34,10 @@ subprojects {
         mavenCentral()
     }
 
+    configure<org.javamodularity.moduleplugin.extensions.ModularityExtension> {
+        improveEclipseClasspathFile()
+    }
+
     test {
         useJUnitPlatform()
 

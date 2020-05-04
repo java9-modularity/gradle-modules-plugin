@@ -10,6 +10,8 @@ subprojects {
         mavenCentral()
     }
 
+    modularity.improveEclipseClasspathFile()
+
     test {
         useJUnitPlatform()
 
