@@ -599,13 +599,6 @@ modularity.improveEclipseClasspathFile()
 
 </details>
 
-**Contributor's note to maintainer of "gradles-modules-plugin":**
-I moved the example projects form the former PR to a dedicated GitHub-project.
-Just the examples with an explanatory `README.md`.
-Users of your plugin might or might not be interested in these examples.
-I provide the link hereafter. Feel free to keep or remove the following paragraph as you like.
-**End of contributor's note.**
-
 Examples on how and where Gradle's eclipse-plugin could (and should) be improved and how a
 `.classpath`-file is affected if the feature is enabled are available on
 [GitHub](https://github.com/Alfred-65/gradle-modules-plugin.investigation).
