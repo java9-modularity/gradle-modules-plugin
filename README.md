@@ -108,6 +108,30 @@ module greeter.api {
 For Gradle, just make sure the plugin is applied.
 This will make sure the correct compiler flags are used such as `--module-path` instead of `-cp`.
 
+Setting the module version
+---
+
+![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen)
+By default, the plugin uses the value of the project version to set the version of the module. You can configure a different module version using the `modularity.version` method:
+<details open>
+<summary>Groovy DSL</summary>
+
+```groovy
+modularity.version '1.2.3'
+```
+
+</details>
+<details>
+<summary>Kotlin DSL</summary>
+
+```kotlin
+modularity.version("1.2.3")
+```
+
+</details>
+
+If no project version is specified and you don't call the `modularity.version` method, the module is created without a version.
+
 Module dependencies
 ===
 
@@ -482,7 +506,8 @@ The plugin takes care of the following:
 
 **Recommended approach**
 
-As of 1.7.0, the recommended way to patch modules is by means of the [`modularity.patchModule`][ModularityExtension] function:
+![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen)
+The recommended way to patch modules is by means of the [`modularity.patchModule`][ModularityExtension] function:
 
 ```groovy
 modularity.patchModule("java.annotation", "jsr305-3.0.2.jar")
@@ -492,6 +517,7 @@ The `patchModule` method can be called more than once for the same module, if th
 
 **Legacy approach**
 
+![Legacy 1.x](https://img.shields.io/badge/legacy-1.x-darkgray)
 Before 1.7.0, patching modules was possible only by setting `patchModules.config`:
 
 ```groovy
@@ -578,7 +604,8 @@ When applying the [eclipse-plugin](https://docs.gradle.org/current/userguide/ecl
 The `.classpath`-file created by that task doesn't take into account modularity. As described by the
 documentation it is possible to configure the `.classpath`-file via configuration hooks.
 
-Since version 1.7.0, the gradle-modules-plugin provides the `modularity.improveEclipseClasspathFile()` method,
+![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen)
+The gradle-modules-plugin provides the `modularity.improveEclipseClasspathFile()` method,
 which configures the `.classpath`-file via configuration hooks:
 
 

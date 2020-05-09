@@ -3,6 +3,7 @@ package org.javamodularity.moduleplugin.internal;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 
 import java.io.File;
 import java.util.ArrayList;

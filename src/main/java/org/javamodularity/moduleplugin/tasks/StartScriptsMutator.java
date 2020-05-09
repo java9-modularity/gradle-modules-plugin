@@ -74,7 +74,7 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
 
         moduleOptions.mutateArgs(jvmArgs);
 
-        var patchModuleContainer = helper().modularityExtension().patchModuleContainer();
+        var patchModuleContainer = helper().modularityExtension().optionContainer().getPatchModuleContainer();
         patchModuleContainer.mutator(jarName -> PATCH_LIBS_PLACEHOLDER + "/" + jarName).mutateArgs(jvmArgs);
 
         startScriptsTask.getDefaultJvmOpts().forEach(jvmArgs::add);
@@ -96,7 +96,7 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
     }
 
     public void movePatchedLibs() {
-        var patchedJarNames = helper().modularityExtension().patchModuleContainer().patchedJarNames();
+        var patchedJarNames = helper().modularityExtension().optionContainer().getPatchModuleContainer().patchedJarNames();
         if (patchedJarNames.isEmpty()) {
             return;
         }

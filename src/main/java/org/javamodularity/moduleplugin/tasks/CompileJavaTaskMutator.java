@@ -6,12 +6,11 @@ import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
-import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
+import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
+import org.javamodularity.moduleplugin.internal.MutatorHelper;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 class CompileJavaTaskMutator {
 
@@ -51,7 +50,8 @@ class CompileJavaTaskMutator {
     }
 
     private List<String> buildCompilerArgs(JavaCompile javaCompile) {
-        var patchModuleContainer = PatchModuleContainer.copyOf(helper().modularityExtension().patchModuleContainer());
+        var patchModuleContainer = PatchModuleContainer.copyOf(
+                helper().modularityExtension().optionContainer().getPatchModuleContainer());
         String moduleName = helper().moduleName();
         new MergeClassesHelper(project).otherCompileTaskStream()
                 .map(AbstractCompile::getDestinationDir)
@@ -63,6 +63,7 @@ class CompileJavaTaskMutator {
         patchModuleContainer.mutator(compileJavaClasspath).mutateArgs(compilerArgs);
 
         moduleOptions.mutateArgs(compilerArgs);
+        MutatorHelper.configureModuleVersion(helper(), compilerArgs);
 
         return compilerArgs;
     }

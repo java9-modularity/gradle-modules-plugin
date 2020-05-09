@@ -1,9 +1,10 @@
-package org.javamodularity.moduleplugin.internal;
+package org.javamodularity.moduleplugin.extensions;
 
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
-import org.javamodularity.moduleplugin.extensions.PatchModuleExtension;
+import org.javamodularity.moduleplugin.internal.PatchModuleMutator;
+import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.File;
 import java.util.*;
@@ -68,7 +69,7 @@ public class PatchModuleContainer {
     }
 
     public static void configure(Project project) {
-        PatchModuleContainer container = new JavaProjectHelper(project).modularityExtension().patchModuleContainer();
+        PatchModuleContainer container = new JavaProjectHelper(project).modularityExtension().optionContainer().getPatchModuleContainer();
         project.afterEvaluate(container::configureAfterEvaluate);
     }
 

@@ -13,7 +13,7 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
 import org.javamodularity.moduleplugin.TestEngine;
 import org.javamodularity.moduleplugin.extensions.TestModuleOptions;
-import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
+import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.File;
@@ -24,8 +24,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.io.File.pathSeparator;
 
 public class TestTask extends AbstractModulePluginTask {
 
@@ -65,7 +63,8 @@ public class TestTask extends AbstractModulePluginTask {
 
 
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(testJava.getClasspath());
-        var patchModuleContainer = PatchModuleContainer.copyOf(helper().modularityExtension().patchModuleContainer());
+        var patchModuleContainer = PatchModuleContainer.copyOf(
+                helper().modularityExtension().optionContainer().getPatchModuleContainer());
         String moduleName = helper().moduleName();
         buildPatchModulePathStream().forEach(path -> patchModuleContainer.addDir(moduleName, path.toString()));
         patchModuleContainer.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
