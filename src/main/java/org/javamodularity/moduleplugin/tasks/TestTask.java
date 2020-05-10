@@ -78,6 +78,7 @@ public class TestTask extends AbstractModulePluginTask {
         TestEngine.selectMultiple(project).forEach(testEngine -> {
             buildAddReadsOption(testEngine).mutateArgs(jvmArgs);
             buildAddOpensOptionStream(testEngine).forEach(option -> option.mutateArgs(jvmArgs));
+            testEngine.additionalTaskOptions.forEach(option -> option.mutateArgs(jvmArgs));
         });
 
         ModuleInfoTestHelper.mutateArgs(project, jvmArgs::add);

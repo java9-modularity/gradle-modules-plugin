@@ -21,6 +21,10 @@ The plugin supports the following test engines:
 * JUnit 5
 * JUnit 4
 * TestNG
+* Spock
+* AssertJ
+* Mockito
+* EasyMock
 
 An example application using this plugin is available [here](https://github.com/java9-modularity/gradle-modules-plugin-example).
 
@@ -260,7 +264,7 @@ Essentially, the plugin enables the following compiler flags:
 
 * `--module-path` containing all dependencies
 * `--patch-module` to merge the test classes into the modules
-* `--add-modules` to add the test runtime (JUnit 5, JUnit 4 and TestNG are supported)
+* `--add-modules` to add the test runtime (JUnit 5, JUnit 4, TestNG, Spock, AssertJ, Mockito, and EasyMock are supported)
 * `--add-reads` for the test runtime. This way we don't have to `require` the test engine in our module.
 * `--add-opens` so that the test engine can access the tests without having to export/open them in `--module-info.java`.
 
