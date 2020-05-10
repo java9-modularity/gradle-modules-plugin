@@ -11,6 +11,7 @@ subprojects {
     }
 
     modularity.improveEclipseClasspathFile()
+    modularity.moduleVersion '1.2.3'
 
     test {
         useJUnitPlatform()

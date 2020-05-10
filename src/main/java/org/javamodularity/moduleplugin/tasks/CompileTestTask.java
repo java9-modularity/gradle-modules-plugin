@@ -8,7 +8,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.TestEngine;
 import org.javamodularity.moduleplugin.extensions.CompileTestModuleOptions;
-import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
+import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
@@ -47,7 +47,8 @@ public class CompileTestTask extends AbstractModulePluginTask {
         String moduleName = helper().moduleName();
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(compileTestJava.getClasspath());
 
-        var patchModuleContainer = PatchModuleContainer.copyOf(helper().modularityExtension().patchModuleContainer());
+        var patchModuleContainer = PatchModuleContainer.copyOf(
+                helper().modularityExtension().optionContainer().getPatchModuleContainer());
         FileCollection testSourceDirs = helper().testSourceSet().getJava().getSourceDirectories();
         testSourceDirs.forEach(dir -> patchModuleContainer.addDir(moduleName, dir.getAbsolutePath()));
         patchModuleContainer.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(compilerArgs));

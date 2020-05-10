@@ -7,13 +7,12 @@ import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
-import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
 import org.javamodularity.moduleplugin.tasks.ClasspathFile;
 
 public class DefaultModularityExtension implements ModularityExtension {
 
     private final Project project;
-    private final PatchModuleContainer patchModuleContainer = new PatchModuleContainer();
+    private final OptionContainer optionContainer = new OptionContainer();
 
     public DefaultModularityExtension(Project project) {
         this.project = project;
@@ -46,8 +45,8 @@ public class DefaultModularityExtension implements ModularityExtension {
     }
 
     @Override
-    public PatchModuleContainer patchModuleContainer() {
-        return patchModuleContainer;
+    public OptionContainer optionContainer() {
+        return optionContainer;
     }
 
     private static void validateMixedJavaReleaseArgs(int mainJavaRelease, int moduleInfoJavaRelease) {
@@ -102,4 +101,10 @@ public class DefaultModularityExtension implements ModularityExtension {
                     .ifPresent(new ClasspathFile()::configure);
 
         });
-    }}
+    }
+
+    @Override
+    public void moduleVersion(String version) {
+        optionContainer.setModuleVersion(version);
+    }
+}

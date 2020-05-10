@@ -36,6 +36,7 @@ subprojects {
 
     configure<org.javamodularity.moduleplugin.extensions.ModularityExtension> {
         improveEclipseClasspathFile()
+        moduleVersion("1.2.3")
     }
 
     test {

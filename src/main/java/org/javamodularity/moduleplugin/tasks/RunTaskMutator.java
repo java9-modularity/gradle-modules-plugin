@@ -6,7 +6,7 @@ import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.JavaExec;
 import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
-import org.javamodularity.moduleplugin.internal.PatchModuleContainer;
+import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
@@ -44,7 +44,8 @@ public class RunTaskMutator extends AbstractExecutionMutator {
         moduleOptions.mutateArgs(jvmArgs);
 
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(execTask.getClasspath());
-        var patchModuleContainer = PatchModuleContainer.copyOf(helper().modularityExtension().patchModuleContainer());
+        var patchModuleContainer = PatchModuleContainer.copyOf(
+                helper().modularityExtension().optionContainer().getPatchModuleContainer());
         patchModuleContainer.addDir(moduleName, helper().mainSourceSet().getOutput().getResourcesDir().getAbsolutePath());
         patchModuleContainer.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
         patchModuleContainer.mutator(classpath).mutateArgs(jvmArgs);
