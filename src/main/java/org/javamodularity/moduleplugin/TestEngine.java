@@ -1,6 +1,7 @@
 package org.javamodularity.moduleplugin;
 
 import org.gradle.api.Project;
+import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,19 +16,24 @@ public enum TestEngine {
     TESTNG("org.testng", "testng", "testng", "testng"),
     ASSERTJ("org.assertj", "assertj-core", "org.assertj.core", "org.assertj.core"),
     MOCKITO("org.mockito", "mockito-core", "org.mockito", "org.mockito"),
-    EASYMOCK("org.easymock", "easymock", "org.easymock", "org.easymock");
+    EASYMOCK("org.easymock", "easymock", "org.easymock", "org.easymock"),
+    SPOCK("org.spockframework", "spock-core", "org.spockframework.core", "org.spockframework.core",
+            new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.util=org.spockframework.core,ALL-UNNAMED"),
+            new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.logging=org.spockframework.core,ALL-UNNAMED"));
 
     private final String groupId;
     private final String artifactId;
 
     public final String moduleName;
     public final String addOpens;
+    public final List<TaskOption> additionalTaskOptions;
 
-    TestEngine(String groupId, String artifactId, String moduleName, String addOpens) {
+    TestEngine(String groupId, String artifactId, String moduleName, String addOpens, TaskOption... additionalTaskOptions) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.moduleName = moduleName;
         this.addOpens = addOpens;
+        this.additionalTaskOptions = Arrays.asList(additionalTaskOptions);
     }
 
     public static List<TestEngine> selectMultiple(Project project) {
