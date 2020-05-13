@@ -102,9 +102,4 @@ public class DefaultModularityExtension implements ModularityExtension {
 
         });
     }
-
-    @Override
-    public void moduleVersion(String version) {
-        optionContainer.setModuleVersion(version);
-    }
 }

@@ -69,5 +69,14 @@ public interface ModularityExtension {
      */
     void improveEclipseClasspathFile();
 
-    void moduleVersion(String version);
+    default void moduleVersion(String version) {
+        optionContainer().setModuleVersion(version);
+    }
+
+    /**
+     * Apply workaround for https://github.com/gradle/gradle/issues/11124 (see also: https://github.com/java9-modularity/gradle-modules-plugin/issues/65)
+     */
+    default void disableEffectiveArgumentsAdjustment() {
+        optionContainer().setEffectiveArgumentsAdjustmentEnabled(false);
+    }
 }

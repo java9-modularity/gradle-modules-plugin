@@ -4,6 +4,8 @@ public class OptionContainer {
     private String moduleVersion;
     private final PatchModuleContainer patchModuleContainer = new PatchModuleContainer();
 
+    private boolean effectiveArgumentsAdjustmentEnabled = true;
+
     public String getModuleVersion() {
         return moduleVersion;
     }
@@ -14,5 +16,13 @@ public class OptionContainer {
 
     public PatchModuleContainer getPatchModuleContainer() {
         return patchModuleContainer;
+    }
+
+    public boolean isEffectiveArgumentsAdjustmentEnabled() {
+        return effectiveArgumentsAdjustmentEnabled;
+    }
+
+    public void setEffectiveArgumentsAdjustmentEnabled(boolean effectiveArgumentsAdjustmentEnabled) {
+        this.effectiveArgumentsAdjustmentEnabled = effectiveArgumentsAdjustmentEnabled;
     }
 }
