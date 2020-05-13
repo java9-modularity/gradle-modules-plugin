@@ -21,10 +21,10 @@ The plugin supports the following test engines:
 * JUnit 5
 * JUnit 4
 * TestNG
-* Spock
-* AssertJ
-* Mockito
-* EasyMock
+* ![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen) Spock 2 with Groovy 3
+* ![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen) AssertJ
+* ![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen) Mockito
+* ![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen) EasyMock
 
 An example application using this plugin is available [here](https://github.com/java9-modularity/gradle-modules-plugin-example).
 

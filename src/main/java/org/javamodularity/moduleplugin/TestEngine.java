@@ -12,7 +12,8 @@ import java.util.stream.Stream;
 public enum TestEngine {
 
     JUNIT_4("junit", "junit", "junit", "junit"),
-    JUNIT_5("org.junit.jupiter", "junit-jupiter-api", "org.junit.jupiter.api", "org.junit.platform.commons"),
+    JUNIT_5_API("org.junit.jupiter", "junit-jupiter-api", "org.junit.jupiter.api", "org.junit.platform.commons"),
+    JUNIT_5("org.junit.jupiter", "junit-jupiter", "org.junit.jupiter.api", "org.junit.jupiter.api"),
     TESTNG("org.testng", "testng", "testng", "testng"),
     ASSERTJ("org.assertj", "assertj-core", "org.assertj.core", "org.assertj.core"),
     MOCKITO("org.mockito", "mockito-core", "org.mockito", "org.mockito"),
