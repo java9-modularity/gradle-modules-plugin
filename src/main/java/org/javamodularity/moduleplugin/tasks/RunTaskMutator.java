@@ -4,15 +4,18 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.JavaExec;
-import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
+import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RunTaskMutator extends AbstractExecutionMutator {
+    private static final Logger LOGGER = Logging.getLogger(RunTaskMutator.class);
 
     public RunTaskMutator(JavaExec execTask, Project project) {
         super(execTask, project);
@@ -37,7 +40,6 @@ public class RunTaskMutator extends AbstractExecutionMutator {
 
     private List<String> buildJavaExecJvmArgs() {
         var jvmArgs = new ArrayList<String>();
-
         String moduleName = helper().moduleName();
         var moduleOptions = execTask.getExtensions().getByType(RunModuleOptions.class);
 
@@ -53,6 +55,8 @@ public class RunTaskMutator extends AbstractExecutionMutator {
         jvmArgs.addAll(execTask.getJvmArgs());
 
         new TaskOption("--module", getMainClassName()).mutateArgs(jvmArgs);
+
+        LOGGER.info("jvmArgs for task {}: {}", execTask.getName(), jvmArgs);
 
         return jvmArgs;
     }

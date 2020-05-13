@@ -2,6 +2,8 @@ package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class CompileJavaTaskMutator {
+    private static final Logger LOGGER = Logging.getLogger(CompileJavaTaskMutator.class);
 
     private final Project project;
     /**
@@ -39,6 +42,8 @@ class CompileJavaTaskMutator {
     void modularizeJavaCompileTask(JavaCompile javaCompile) {
         List<String> compilerArgs = buildCompilerArgs(javaCompile);
         javaCompile.getOptions().setCompilerArgs(compilerArgs);
+        LOGGER.info("compiler args for task {}: {}", javaCompile.getName(), javaCompile.getOptions().getAllCompilerArgs());
+
         javaCompile.setClasspath(project.files());
         configureSourcepath(javaCompile);
     }

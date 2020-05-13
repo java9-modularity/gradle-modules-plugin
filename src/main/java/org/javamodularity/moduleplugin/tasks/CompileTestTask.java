@@ -4,6 +4,8 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.TestEngine;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CompileTestTask extends AbstractModulePluginTask {
+    private static final Logger LOGGER = Logging.getLogger(CompileTestTask.class);
 
     public CompileTestTask(Project project) {
         super(project);
@@ -35,6 +38,8 @@ public class CompileTestTask extends AbstractModulePluginTask {
             public void execute(Task task) {
                 var compilerArgs = buildCompilerArgs(compileTestJava, moduleOptions);
                 compileTestJava.getOptions().setCompilerArgs(compilerArgs);
+                LOGGER.info("compiler args for task {}: {}", compileTestJava.getName(),
+                        compileTestJava.getOptions().getAllCompilerArgs());
                 compileTestJava.setClasspath(project.files());
             }
         });
