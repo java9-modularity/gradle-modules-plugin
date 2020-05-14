@@ -16,7 +16,7 @@ dependencies {
 
 application {
     mainClassName = "$moduleName/examples.RunnerKt"
-    applicationDefaultJvmArgs = listOf("-XX:+PrintGCDetails")
+    applicationDefaultJvmArgs = listOf("-Dgreeter.sender=gradle-modules-plugin")
 }
 
 modularity {
@@ -31,5 +31,5 @@ patchModules.config = listOf(
         addModules = listOf("java.sql")
     }
 
-    jvmArgs = listOf("-XX:+PrintGCDetails")
+    jvmArgs = listOf("-Dgreeter.sender=gradle-modules-plugin")
 }

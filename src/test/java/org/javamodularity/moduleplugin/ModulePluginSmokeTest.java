@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -59,6 +60,32 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.provider.test", "build");
         assertTasksSuccessful(result, "greeter.runner", "build", "run");
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
+    void smokeTestRun(String projectName) {
+        forAllGradleVersions(v -> doSmokeTestRun(v, projectName));
+    }
+
+    void doSmokeTestRun(String gradleVersion, String projectName) {
+        var writer = new StringWriter(256);
+        var result = GradleRunner.create()
+                .withProjectDir(new File(projectName + "/"))
+                .withPluginClasspath(pluginClasspath)
+                .withGradleVersion(gradleVersion)
+                .withArguments("-q", "-c", "smoke_test_settings.gradle", "clean", ":greeter.runner:run", "--args", "aaa bbb")
+                .forwardStdOutput(writer)
+                .forwardStdError(writer)
+                .build();
+
+        assertTasksSuccessful(result, "greeter.runner", "run");
+
+        var lines = writer.toString().lines().collect(Collectors.toList());
+        assertEquals("args: [aaa, bbb]", lines.get(0));
+        assertEquals("greeter.sender: gradle-modules-plugin", lines.get(1));
+        assertEquals("welcome", lines.get(2));
+    }
+
 
     @ParameterizedTest
     @ValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2"})
