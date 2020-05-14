@@ -15,6 +15,9 @@ public class RunTask extends AbstractModulePluginTask {
     }
 
     private void doConfigureRun() {
+        if(helper().shouldFixEffectiveArguments()) {
+            project.getTasks().replace(ApplicationPlugin.TASK_RUN_NAME, ModularJavaExec.class);
+        }
         var mutator = new RunTaskMutator(getRunTask(), project);
         mutator.configureRun();
         project.afterEvaluate(p -> configureStartScripts());

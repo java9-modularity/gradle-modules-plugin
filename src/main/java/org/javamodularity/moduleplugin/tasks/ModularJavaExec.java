@@ -3,12 +3,14 @@ package org.javamodularity.moduleplugin.tasks;
 import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.process.ExecResult;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.ModularityExtension;
 
@@ -57,8 +59,7 @@ public class ModularJavaExec extends JavaExec {
 
     @TaskAction
     public void exec() {
-        ModularityExtension modularityExtension = new JavaProjectHelper(getProject()).modularityExtension();
-        if(modularityExtension.optionContainer().isEffectiveArgumentsAdjustmentEnabled()) {
+        if(new JavaProjectHelper(getProject()).shouldFixEffectiveArguments()) {
             execFixEffectiveArguments();
         } else {
             super.exec();
@@ -117,7 +118,9 @@ public class ModularJavaExec extends JavaExec {
         if (!this.isIgnoreExitValue()) {
             execResult.assertNormalExitValue();
         }
-        ((Property<ExecResult>)this.getExecutionResult()).set(execResult);
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.1")) >= 0) {
+            ((Property<ExecResult>)this.getExecutionResult()).set(execResult);
+        }
     }
 
     //region CONFIGURE
@@ -126,7 +129,11 @@ public class ModularJavaExec extends JavaExec {
     }
 
     private static void configureAfterEvaluate(Project project) {
-        project.getTasks().withType(ModularJavaExec.class).forEach(execTask -> configure(execTask, project));
+        project.getTasks().withType(ModularJavaExec.class).forEach(execTask -> {
+            if(!execTask.getName().equals(ApplicationPlugin.TASK_RUN_NAME)) {
+                configure(execTask, project);
+            }
+        });
     }
 
     private static void configure(ModularJavaExec execTask, Project project) {
