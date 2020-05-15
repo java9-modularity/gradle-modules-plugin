@@ -8,6 +8,8 @@ import java.util.ServiceLoader
 @CompileStatic
 class Runner {
     static void main(String[] args) {
+        println "args: $args"
+        println "greeter.sender: ${System.properties['greeter.sender']}"
         Greeter greeter = ServiceLoader.load(Greeter.class).findFirst().orElseThrow { new RuntimeException('No Greeter found!') }
         println(greeter.hello())
         if(Version.value != '3.14.15') {

@@ -5,6 +5,8 @@ import examples.greeter.api.Greeter
 import java.util.ServiceLoader
 
 fun main(args: Array<String>) {
+    println("args: " + java.util.Arrays.asList(*args))
+    println("greeter.sender: " + System.getProperty("greeter.sender"))
     val greeter = ServiceLoader.load(Greeter::class.java)
             .findFirst()
             .orElseThrow{RuntimeException("No Greeter found!")}

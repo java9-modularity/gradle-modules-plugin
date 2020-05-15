@@ -6,6 +6,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.extensions.ModularityExtension;
 
 import java.io.File;
@@ -40,6 +41,11 @@ public final class JavaProjectHelper {
 
     public String moduleName() {
         return extension("moduleName", String.class);
+    }
+
+    public boolean shouldFixEffectiveArguments() {
+        return GradleVersion.current().compareTo(GradleVersion.version("6.3")) <= 0
+                && modularityExtension().optionContainer().isEffectiveArgumentsAdjustmentEnabled();
     }
 
     //region SOURCE SETS

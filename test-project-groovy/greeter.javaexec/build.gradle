@@ -18,6 +18,6 @@ new File("$projectDir/src/main/groovy/demo").eachFileMatch(~/Demo.*\.groovy/) { 
         group = 'Demo'
         description = "Run the $demoClassName program"
         main = "greeter.javaexec/demo.$demoClassName"
-        jvmArgs = ['-XX:+PrintGCDetails']
+        jvmArgs = ['-Dgreeter.sender=gradle-modules-plugin']
     }
 }
