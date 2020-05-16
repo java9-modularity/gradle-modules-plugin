@@ -1,8 +1,12 @@
 package org.javamodularity.moduleplugin.internal;
 
 import org.gradle.external.javadoc.CoreJavadocOptions;
+import org.gradle.util.GradleVersion;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Stores a flag and its value that can be used as: compiler args, JVM args, and Javadoc options.
@@ -58,7 +62,14 @@ public final class TaskOption {
     }
 
     public void mutateOptions(CoreJavadocOptions options) {
-        options.addStringOption(getJavadocFlag(), value);
+        String javadocFlag = getJavadocFlag();
+        if(javadocFlag.equals("-module-path") && GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            String[] paths = value.split(System.getProperty("path.separator"));
+            List<File> modulePath = Arrays.stream(paths).map(File::new).collect(Collectors.toList());
+            options.modulePath(modulePath);
+        } else {
+            options.addStringOption(javadocFlag, value);
+        }
     }
     //endregion
 }

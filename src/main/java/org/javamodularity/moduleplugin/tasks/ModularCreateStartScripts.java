@@ -6,18 +6,38 @@ import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.application.CreateStartScripts;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 
 public class ModularCreateStartScripts extends CreateStartScripts {
     public static final String UNDEFINED_MAIN_CLASS_NAME = "<undefined>";
 
+    private String changedMain;
+
     @Internal
     private ModularJavaExec runTask;
 
     public ModularCreateStartScripts() {
         setClasspath(getProject().files());
-        setMainClassName(UNDEFINED_MAIN_CLASS_NAME);
+    }
+
+    @Nullable
+    @Override
+    public String getMainClassName() {
+        String main = changedMain;
+        if(main == null) {
+            main = super.getMainClassName();
+        }
+        if(main == null) {
+            main = UNDEFINED_MAIN_CLASS_NAME;
+        }
+        return main;
+    }
+
+    @Override
+    public void setMainClassName(@Nullable String mainClassName) {
+        changedMain = mainClassName;
     }
 
     public ModularJavaExec getRunTask() {

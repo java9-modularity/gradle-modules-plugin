@@ -4,6 +4,7 @@ import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 
 import java.util.Objects;
@@ -26,7 +27,9 @@ abstract class AbstractExecutionMutator {
                 "Main class name not found. Try setting 'application.mainClassName' in your Gradle build file."
         );
         if (!mainClassName.contains("/")) {
-            LOGGER.warn("No module was provided for main class, assuming the current module. Prefer providing 'mainClassName' in the following format: '$moduleName/a.b.Main'");
+            if(GradleVersion.current().compareTo(GradleVersion.version("6.3")) <= 0) {
+                LOGGER.warn("No module was provided for main class, assuming the current module. Prefer providing 'mainClassName' in the following format: '$moduleName/a.b.Main'");
+            }
             return helper().moduleName() + "/" + mainClassName;
         }
         return mainClassName;

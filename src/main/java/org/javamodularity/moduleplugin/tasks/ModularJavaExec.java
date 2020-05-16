@@ -12,12 +12,12 @@ import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.process.ExecResult;
 import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
-import org.javamodularity.moduleplugin.extensions.ModularityExtension;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.joor.Reflect.*;
+import static org.joor.Reflect.on;
+import static org.joor.Reflect.onClass;
 
 public class ModularJavaExec extends JavaExec {
     private static final Logger LOGGER = Logging.getLogger(ModularJavaExec.class);
@@ -57,6 +57,31 @@ public class ModularJavaExec extends JavaExec {
         super.setJvmArgs(arguments);
     }
 
+    @Override
+    public String getMain() {
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            return stripModule(getMainClass().getOrNull());
+        } else {
+            return super.getMain();
+        }
+    }
+
+    @Override
+    public JavaExec setMain(String mainClassName) {
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            getMainClass().set(stripModule(mainClassName));
+        } else {
+            super.setMain(mainClassName);
+        }
+        return this;
+    }
+
+    private static String stripModule(String main) {
+        if(main == null) return main;
+        int idx = main.indexOf('/');
+        return (idx < 0) ? main : main.substring(idx + 1);
+    }
+
     @TaskAction
     public void exec() {
         if(new JavaProjectHelper(getProject()).shouldFixEffectiveArguments()) {
@@ -67,7 +92,6 @@ public class ModularJavaExec extends JavaExec {
     }
 
     private void execFixEffectiveArguments() {
-        this.setMain(this.getMain());
         this.setJvmArgs(this.getJvmArgs());
 
         var hb = on(this).field("javaExecHandleBuilder").get();
