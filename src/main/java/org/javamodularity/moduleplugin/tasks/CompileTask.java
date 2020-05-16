@@ -10,6 +10,7 @@ import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.util.GradleVersion;
@@ -47,6 +48,8 @@ public class CompileTask extends AbstractCompileTask {
 
         var moduleOptions = compileJava.getExtensions().create("moduleOptions", CompileModuleOptions.class, project);
         project.afterEvaluate(p -> {
+            adjustMainClass(compileJava);
+
             MergeClassesHelper.POST_JAVA_COMPILE_TASK_NAMES.stream()
                     .map(name -> helper().findTask(name, AbstractCompile.class))
                     .flatMap(Optional::stream)
@@ -60,6 +63,19 @@ public class CompileTask extends AbstractCompileTask {
                 configureModularityForCompileJava(compileJava, moduleOptions);
             }
         });
+    }
+
+    private void adjustMainClass(JavaCompile compileJava) {
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            Property<String> mainClassProp = compileJava.getOptions().getJavaModuleMainClass();
+            String mainClass = mainClassProp.getOrNull();
+            if(mainClass != null) {
+                int idx = mainClass.indexOf('/');
+                if(idx >= 0) {
+                    mainClassProp.set(mainClass.substring(idx + 1));
+                }
+            }
+        }
     }
 
     // see https://github.com/gradle/gradle/issues/890#issuecomment-623392772 and issue #143

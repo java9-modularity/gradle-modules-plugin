@@ -44,8 +44,8 @@ public final class JavaProjectHelper {
     }
 
     public boolean shouldFixEffectiveArguments() {
-        return GradleVersion.current().compareTo(GradleVersion.version("6.3")) <= 0
-                && modularityExtension().optionContainer().isEffectiveArgumentsAdjustmentEnabled();
+        return /*GradleVersion.current().compareTo(GradleVersion.version("6.3")) <= 0
+                && */ modularityExtension().optionContainer().isEffectiveArgumentsAdjustmentEnabled();
     }
 
     //region SOURCE SETS

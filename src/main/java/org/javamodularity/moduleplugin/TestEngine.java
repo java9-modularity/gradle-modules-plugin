@@ -20,7 +20,9 @@ public enum TestEngine {
     EASYMOCK("org.easymock", "easymock", "org.easymock", "org.easymock"),
     SPOCK("org.spockframework", "spock-core", "org.spockframework.core", "org.spockframework.core",
             new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.util=org.spockframework.core,ALL-UNNAMED"),
-            new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.logging=org.spockframework.core,ALL-UNNAMED"));
+            new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.logging=org.spockframework.core,ALL-UNNAMED"),
+            new TaskOption("--add-exports", "org.junit.platform.engine/org.junit.platform.engine.support.filter=org.junit.jupiter.engine,ALL-UNNAMED")
+    );
 
     private final String groupId;
     private final String artifactId;
