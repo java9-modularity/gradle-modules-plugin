@@ -643,7 +643,10 @@ Please file issues if you run into any problems or have additional requirements!
 Requirements
 ===
 
-This plugin requires JDK 11 to be used when running Gradle.
+This plugin requires JDK 11 or newer to be used when running Gradle.
+
+The minimum Gradle version supported by this plugin is 5.1.
+However, we strongly recommend to use at least Gradle 5.6, because there are a few special cases that cannot be handled correctly when using older versions.
 
 Contributing
 ===
