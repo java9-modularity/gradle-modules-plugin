@@ -6,7 +6,7 @@ deploy:
   provider: script
   on:
     tags: true
-  script: "./gradlew publishPlugin"
+  script: "./gradlew publishPlugins"
   skip_cleanup: true
 
 before_install:
