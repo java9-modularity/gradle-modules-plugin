@@ -19,6 +19,7 @@ subprojects {
     val testRuntimeOnly by configurations
 
     val jUnitVersion: String by project
+    val jUnitPlatformVersion: String by project
     //endregion
 
     //region KOTLIN
@@ -51,6 +52,7 @@ subprojects {
         testImplementation("org.junit.jupiter:junit-jupiter-api:$jUnitVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$jUnitVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:$jUnitPlatformVersion")
     }
 
 //    build.dependsOn(javadoc) // TODO: No public or protected classes found to document
