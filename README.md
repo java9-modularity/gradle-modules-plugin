@@ -116,12 +116,12 @@ Setting the module version
 ---
 
 ![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen)
-By default, the plugin uses the value of the project version to set the version of the module. You can configure a different module version using the `modularity.version` method:
+By default, the plugin uses the value of the project version to set the version of the module. You can configure a different module version using the `modularity.moduleVersion` method:
 <details open>
 <summary>Groovy DSL</summary>
 
 ```groovy
-modularity.version '1.2.3'
+modularity.moduleVersion '1.2.3'
 ```
 
 </details>
@@ -129,12 +129,12 @@ modularity.version '1.2.3'
 <summary>Kotlin DSL</summary>
 
 ```kotlin
-modularity.version("1.2.3")
+modularity.moduleVersion("1.2.3")
 ```
 
 </details>
 
-If no project version is specified and you don't call the `modularity.version` method, the module is created without a version.
+If no project version is specified and you don't call the `modularity.moduleVersion` method, the module is created without a version.
 
 Module dependencies
 ===
