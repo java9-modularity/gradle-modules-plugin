@@ -12,8 +12,6 @@ import org.gradle.external.javadoc.internal.MultilineStringsJavadocOptionFileOpt
 import org.javamodularity.moduleplugin.extensions.JavadocModuleOptions;
 import org.javamodularity.moduleplugin.internal.StreamHelper;
 
-import java.util.List;
-
 public class JavadocTask extends AbstractModulePluginTask {
 
     public JavadocTask(Project project) {
