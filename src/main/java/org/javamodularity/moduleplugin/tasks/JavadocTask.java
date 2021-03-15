@@ -7,6 +7,8 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.external.javadoc.CoreJavadocOptions;
+import org.gradle.external.javadoc.JavadocOptionFileOption;
+import org.gradle.external.javadoc.internal.MultilineStringsJavadocOptionFileOption;
 import org.javamodularity.moduleplugin.extensions.JavadocModuleOptions;
 import org.javamodularity.moduleplugin.internal.StreamHelper;
 
@@ -38,12 +40,23 @@ public class JavadocTask extends AbstractModulePluginTask {
         var options = (CoreJavadocOptions) javadoc.getOptions();
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(javadoc.getClasspath());
 
+        JavadocOptionFileOption<?>[] addExportsOption = new JavadocOptionFileOption<?>[] { null };
         var patchModuleContainer = helper().modularityExtension().optionContainer().getPatchModuleContainer();
         StreamHelper.concat(
                 patchModuleContainer.buildModulePathOption(classpath).stream(),
                 patchModuleContainer.mutator(classpath).taskOptionStream(),
                 moduleOptions.buildFullOptionStreamLogged()
-        ).forEach(option -> option.mutateOptions(options));
+        ).forEach(option -> {
+            if(option.getJavadocFlag().equals("-add-exports")) {
+                if(addExportsOption[0] == null) {
+                    addExportsOption[0] = options.addMultilineStringsOption("-add-exports");
+                }
+                var opt = (MultilineStringsJavadocOptionFileOption)addExportsOption[0];
+                opt.getValue().add(option.getValue());
+            } else {
+                option.mutateOptions(options);
+            }
+        });
     }
 
 }
