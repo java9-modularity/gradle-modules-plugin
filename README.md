@@ -568,7 +568,7 @@ Separate compilation of `module-info.java`
 ----
 
 If you need to compile the main `module-info.java` separately from the rest of `src/main/java`
-files, you can enable `compileModuleInfoSeparately` option on `compileJava` task. It will exclude `module-info.java`
+files, you can enable `moduleOptions.compileModuleInfoSeparately` option on `compileJava` task. It will exclude `module-info.java`
 from `compileJava` and introduce a dedicated `compileModuleInfoJava` task.
 
 Typically, this feature would be used by libraries which target JDK 6-8 but want to make the most of JPMS by:
@@ -578,7 +578,7 @@ Typically, this feature would be used by libraries which target JDK 6-8 but want
 
 This plugin provides an easy way to do just that by means of its
 [`modularity.mixedJavaRelease`][ModularityExtension] function, which implicitly sets
-`compileJava.compileModuleInfoSeparately = true` and configures the [`--release`][javacRelease] compiler options.
+`compileJava.moduleOptions.compileModuleInfoSeparately = true` and configures the [`--release`][javacRelease] compiler options.
 
 For example, if your library targets JDK 8, and you want your `module-info.class` to target JDK 9
 (default), put the following line in your `build.gradle(.kts)`:
