@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.com/java9-modularity/gradle-modules-plugin.svg?branch=master)](https://travis-ci.com/java9-modularity/gradle-modules-plugin)
+[![Build Status](https://img.shields.io/github/workflow/status/javamodularity/gradle-modules-plugin/Build)](https://github.com/javamodularity/gradle-modules-plugin/actions?query=workflow%3A%22Build%22)
+
 
 Introduction
 ===
