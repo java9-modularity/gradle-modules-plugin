@@ -12,6 +12,7 @@ import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.process.ExecResult;
 import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
+import org.joor.Reflect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,34 +95,35 @@ public class ModularJavaExec extends JavaExec {
     private void execFixEffectiveArguments() {
         this.setJvmArgs(this.getJvmArgs());
 
+        boolean afterGradle6_6 = (GradleVersion.current().compareTo(GradleVersion.version("6.6")) >= 0);
+        if(afterGradle6_6) {
+            execFixEffectiveArgumentsAfterGradle6_6();
+        } else {
+            execFixEffectiveArgumentsBeforeGradle6_6();
+        }
+    }
+
+    private void execFixEffectiveArgumentsAfterGradle6_6() {
+        var hb = on(this).field("javaExecSpec").get();
+        var execSpec = on(hb);
+        String executable = getExecutable();
+        if (executable == null || executable.isEmpty()) throw new IllegalStateException("execCommand == null!");
+        var arguments = adjustArguments(execSpec.call("getAllJvmArgs").get());
+        var handleBuilder = on(getExecActionFactory().newJavaExecAction());
+        handleExec(handleBuilder, arguments, executable);
+    }
+
+    private void execFixEffectiveArgumentsBeforeGradle6_6() {
         var hb = on(this).field("javaExecHandleBuilder").get();
         var handleBuilder = on(hb);
         String executable = handleBuilder.call("getExecutable").get();
         if (executable == null || executable.isEmpty()) throw new IllegalStateException("execCommand == null!");
-
         List<String> arguments = handleBuilder.field("javaOptions").call("getAllJvmArgs").get();
-        LOGGER.info("run: raw jvmArgs = " + arguments);
-        int idx = arguments.lastIndexOf("--module");
-        if(idx < 0) {
-            idx = arguments.lastIndexOf("-m");
-        }
-        if(idx >= 0 && idx < arguments.size() - 2) {
-            List<String> fixedArgs = new ArrayList<>(arguments.subList(0, idx));
-            fixedArgs.addAll(arguments.subList(idx + 2, arguments.size()));
-            fixedArgs.addAll(arguments.subList(idx, idx+2));
-            arguments = fixedArgs;
-        }
-        LOGGER.info("run: adjusted jvmArgs = " + arguments);
-        if(idx < 0) {
-            arguments.add(getMain());
-        }
+        arguments = adjustArguments(arguments);
+        handleExec(handleBuilder, arguments, executable);
+    }
 
-        arguments.addAll(getArgs());
-        for (CommandLineArgumentProvider provider : getArgumentProviders()) {
-            provider.asArguments().forEach(arguments::add);
-        }
-        LOGGER.info("run: effectiveArgs = " + arguments);
-
+    private void handleExec(Reflect handleBuilder, List<String> arguments, String executable) {
         var execHandle = onClass("org.gradle.process.internal.DefaultExecHandle").create(
                 handleBuilder.call("getDisplayName").get(),
                 handleBuilder.call("getWorkingDir").get(),
@@ -142,9 +144,33 @@ public class ModularJavaExec extends JavaExec {
         if (!this.isIgnoreExitValue()) {
             execResult.assertNormalExitValue();
         }
-        if(GradleVersion.current().compareTo(GradleVersion.version("6.1")) >= 0) {
-            ((Property<ExecResult>)this.getExecutionResult()).set(execResult);
+        if (GradleVersion.current().compareTo(GradleVersion.version("6.1")) >= 0) {
+            ((Property<ExecResult>) this.getExecutionResult()).set(execResult);
         }
+    }
+
+    private List<String> adjustArguments(List<String> arguments) {
+        LOGGER.info("run: raw jvmArgs = " + arguments);
+        int idx = arguments.lastIndexOf("--module");
+        if(idx < 0) {
+            idx = arguments.lastIndexOf("-m");
+        }
+        if(idx >= 0 && idx < arguments.size() - 2) {
+            List<String> fixedArgs = new ArrayList<>(arguments.subList(0, idx));
+            fixedArgs.addAll(arguments.subList(idx + 2, arguments.size()));
+            fixedArgs.addAll(arguments.subList(idx, idx+2));
+            arguments = fixedArgs;
+        }
+        LOGGER.info("run: adjusted jvmArgs = " + arguments);
+        if(idx < 0) {
+            arguments.add(getMain());
+        }
+        arguments.addAll(getArgs());
+        for (CommandLineArgumentProvider provider : getArgumentProviders()) {
+            provider.asArguments().forEach(arguments::add);
+        }
+        LOGGER.info("run: effectiveArgs = " + arguments);
+        return arguments;
     }
 
     //region CONFIGURE
