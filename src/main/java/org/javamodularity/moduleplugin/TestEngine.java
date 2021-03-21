@@ -49,6 +49,7 @@ public enum TestEngine {
     public static Collection<TestEngine> selectMultiple(Project project) {
         var configurations = project.getConfigurations();
         var engines = List.of(
+                "compileClasspath", "compileOnly", "implementation", "runtimeClasspath", "runtimeOnly",
                 "testImplementation", "testCompile", "testRuntime", "testRuntimeOnly",
                 "testFixturesApi", "testFixturesCompile", "testFixturesImplementation", "testFixturesRuntime", "testFixturesRuntimeOnly")
                 .stream()
