@@ -87,11 +87,21 @@ public class TestTask extends AbstractModulePluginTask {
     }
 
     private Stream<Path> buildPatchModulePathStream() {
-        SourceSet testSourceSet = helper().testSourceSet();
         SourceSet mainSourceSet = helper().mainSourceSet();
+        SourceSet testSourceSet = helper().testSourceSet();
+        Optional<SourceSet> testFixturesSourceSet = helper().findTestFixturesSourceSet();
 
-        Stream<File> classesFileStream = testSourceSet.getOutput().getClassesDirs().getFiles().stream();
-        Stream<File> resourceFileStream = Stream.of(mainSourceSet, testSourceSet)
+        var classesSourceSets = new ArrayList<SourceSet>();
+        classesSourceSets.add(testSourceSet);
+        testFixturesSourceSet.ifPresent(classesSourceSets::add);
+
+        var sourceSets = new ArrayList<SourceSet>();
+        sourceSets.add(mainSourceSet);
+        sourceSets.addAll(classesSourceSets);
+
+        Stream<File> classesFileStream = classesSourceSets.stream()
+                .flatMap(sourceSet -> sourceSet.getOutput().getClassesDirs().getFiles().stream());
+        Stream<File> resourceFileStream = sourceSets.stream()
                 .map(sourceSet -> sourceSet.getOutput().getResourcesDir());
 
         return Stream.concat(classesFileStream, resourceFileStream).map(File::toPath);

@@ -1,0 +1,14 @@
+plugins {
+    id "java-test-fixtures"
+}
+
+dependencies {
+    implementation project(':greeter.api')
+    testFixturesImplementation project(':greeter.api')
+    runtimeOnly project(':greeter.provider')
+}
+
+modularity {
+    patchModule('java.annotation', 'jsr305-3.0.2.jar')
+    patchModule('java.annotation', 'jsr250-api-1.0.jar')
+}

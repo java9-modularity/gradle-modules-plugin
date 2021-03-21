@@ -1,4 +1,4 @@
-[![Build Status](https://img.shields.io/github/workflow/status/javamodularity/gradle-modules-plugin/Build)](https://github.com/javamodularity/gradle-modules-plugin/actions?query=workflow%3A%22Build%22)
+[![Build Status](https://img.shields.io/github/workflow/status/java9-modularity/gradle-modules-plugin/Build)](https://github.com/java9-modularity/gradle-modules-plugin/actions?query=workflow%3A%22Build%22)
 
 
 Introduction
@@ -650,7 +650,7 @@ Requirements
 This plugin requires JDK 11 or newer to be used when running Gradle.
 
 The minimum Gradle version supported by this plugin is 5.1.
-However, we strongly recommend to use at least Gradle 5.6, because there are a few special cases that cannot be handled correctly when using older versions.
+However, we strongly recommend to use at least Gradle 6.0, because there are a few special cases that cannot be handled correctly when using older versions.
 
 Contributing
 ===

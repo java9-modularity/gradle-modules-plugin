@@ -9,6 +9,7 @@ import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 import org.javamodularity.moduleplugin.internal.CompileModuleInfoHelper;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -53,7 +54,18 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
             }
         });
 
-        project.getTasks().withType(Jar.class).configureEach(jar -> jar.from(helper().getModuleInfoDir()));
+        project.getTasks().withType(Jar.class).configureEach(jar -> {
+            File moduleInfoDir = helper().getModuleInfoDir();
+            jar.from(moduleInfoDir);
+            jar.doFirst(task -> {
+                File classesDir = helper().mainSourceSet().getJava().getOutputDir();
+                File mainModuleInfoFile = new File(classesDir, "module-info.class");
+                File customModuleInfoFile = new File(moduleInfoDir, "module-info.class");
+                if(mainModuleInfoFile.isFile() && customModuleInfoFile.isFile()) {
+                    mainModuleInfoFile.delete();
+                }
+            });
+        });
     }
 
     /**
