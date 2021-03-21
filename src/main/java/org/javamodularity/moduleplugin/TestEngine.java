@@ -19,7 +19,7 @@ public enum TestEngine {
             new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"),
             new TaskOption("--add-exports", "org.junit.platform.engine/org.junit.platform.engine.support.filter=org.junit.jupiter.engine,ALL-UNNAMED")
     ),
-    TESTNG("org.testng", "testng", "testng", "testng"),
+    TESTNG("org.testng", "testng", "org.testng", "org.testng"),
     ASSERTJ("org.assertj", "assertj-core", "org.assertj.core", "org.assertj.core"),
     MOCKITO("org.mockito", "mockito-core", "org.mockito", "org.mockito"),
     EASYMOCK("org.easymock", "easymock", "org.easymock", "org.easymock"),
