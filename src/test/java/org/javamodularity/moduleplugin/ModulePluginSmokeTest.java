@@ -17,7 +17,6 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,11 +26,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class ModulePluginSmokeTest {
     private static final Logger LOGGER = Logging.getLogger(ModulePluginSmokeTest.class);
 
-    private static final String[] GRADLE_VERSIONS_TEST = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"};
-
-    // Test JavaExec tasks only with versions < 6.6. See https://github.com/java9-modularity/gradle-modules-plugin/issues/165
-    private static final String[] GRADLE_VERSIONS_RUN = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"};
-
     private List<File> pluginClasspath;
 
     @BeforeEach
@@ -40,17 +34,6 @@ class ModulePluginSmokeTest {
                 .stream()
                 .map(File::new)
                 .collect(Collectors.toList());
-    }
-
-    private void forTestGradleVersions(Consumer<String> gradleTest) {
-        forGradleVersions(GRADLE_VERSIONS_TEST, gradleTest);
-    }
-    private void forRunGradleVersions(Consumer<String> gradleTest) {
-        forGradleVersions(GRADLE_VERSIONS_RUN, gradleTest);
-    }
-
-    private void forGradleVersions(String[] versions, Consumer<String> gradleTest) {
-        assertAll(Arrays.stream(versions).map(v -> () -> gradleTest.accept(v)));
     }
 
     @CartesianProductTest(name = "smokeTest({arguments})")

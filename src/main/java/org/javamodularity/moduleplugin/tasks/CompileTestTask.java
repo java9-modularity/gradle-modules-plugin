@@ -25,9 +25,9 @@ public class CompileTestTask extends AbstractModulePluginTask {
     }
 
     public void configureCompileTestJava() {
+        helper().findTask(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, JavaCompile.class)
+                .ifPresent(this::configureCompileTestJava);
         project.afterEvaluate(p -> {
-            helper().findTask(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, JavaCompile.class)
-                    .ifPresent(this::configureCompileTestJava);
             helper().findTask(JavaProjectHelper.COMPILE_TEST_FIXTURES_JAVA_TASK_NAME, JavaCompile.class)
                     .ifPresent(task -> task.exclude("module-info.java"));
         });
