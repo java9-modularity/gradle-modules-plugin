@@ -17,6 +17,7 @@ public enum TestEngine {
     JUNIT_5("org.junit.jupiter", "junit-jupiter", "org.junit.jupiter.api", "org.junit.jupiter.api"),
     TESTNG("org.testng", "testng", "testng", "testng"),
     ASSERTJ("org.assertj", "assertj-core", "org.assertj.core", "org.assertj.core"),
+    TRUTH("com.google.truth", "truth", "truth", "truth"),
     MOCKITO("org.mockito", "mockito-core", "org.mockito", "org.mockito"),
     EASYMOCK("org.easymock", "easymock", "org.easymock", "org.easymock"),
     SPOCK("org.spockframework", "spock-core", "org.spockframework.core", "org.spockframework.core",
