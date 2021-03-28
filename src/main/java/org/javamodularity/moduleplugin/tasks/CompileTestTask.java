@@ -8,6 +8,7 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.TestEngine;
 import org.javamodularity.moduleplugin.extensions.CompileTestModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
@@ -26,6 +27,10 @@ public class CompileTestTask extends AbstractModulePluginTask {
     public void configureCompileTestJava() {
         helper().findTask(JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME, JavaCompile.class)
                 .ifPresent(this::configureCompileTestJava);
+        project.afterEvaluate(p -> {
+            helper().findTask(JavaProjectHelper.COMPILE_TEST_FIXTURES_JAVA_TASK_NAME, JavaCompile.class)
+                    .ifPresent(task -> task.exclude("module-info.java"));
+        });
     }
 
     private void configureCompileTestJava(JavaCompile compileTestJava) {
@@ -55,7 +60,12 @@ public class CompileTestTask extends AbstractModulePluginTask {
         var patchModuleContainer = PatchModuleContainer.copyOf(
                 helper().modularityExtension().optionContainer().getPatchModuleContainer());
         FileCollection testSourceDirs = helper().testSourceSet().getJava().getSourceDirectories();
-        testSourceDirs.forEach(dir -> patchModuleContainer.addDir(moduleName, dir.getAbsolutePath()));
+        FileCollection testFixturesSourceDirs = helper().findTestFixturesSourceSet()
+                .map(sourceSet -> sourceSet.getJava().getSourceDirectories())
+                .orElse(project.files());
+        FileCollection allTestSourceDirs = testSourceDirs.plus(testFixturesSourceDirs);
+
+        allTestSourceDirs.forEach(dir -> patchModuleContainer.addDir(moduleName, dir.getAbsolutePath()));
         patchModuleContainer.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(compilerArgs));
 
         TestEngine.selectMultiple(project).forEach(testEngine -> {

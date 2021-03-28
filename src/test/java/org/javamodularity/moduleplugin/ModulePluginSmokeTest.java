@@ -2,12 +2,14 @@ package org.javamodularity.moduleplugin;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
+import org.gradle.util.GradleVersion;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junitpioneer.jupiter.CartesianProductTest;
+import org.junitpioneer.jupiter.CartesianValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +17,6 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,8 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("ConstantConditions")
 class ModulePluginSmokeTest {
-
-    private static final String[] GRADLE_VERSIONS = {"5.1", "5.6", "6.3", "6.4.1"};
+    private static final Logger LOGGER = Logging.getLogger(ModulePluginSmokeTest.class);
 
     private List<File> pluginClasspath;
 
@@ -36,17 +36,11 @@ class ModulePluginSmokeTest {
                 .collect(Collectors.toList());
     }
 
-    private void forAllGradleVersions(Consumer<String> gradleTest) {
-        assertAll(Arrays.stream(GRADLE_VERSIONS).map(v -> () -> gradleTest.accept(v)));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    void smokeTest(String projectName) {
-        forAllGradleVersions(v -> doSmokeTest(v, projectName));
-    }
-
-    void doSmokeTest(String gradleVersion, String projectName) {
+    @CartesianProductTest(name = "smokeTest({arguments})")
+    @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"})
+    void smokeTest(String projectName, String gradleVersion) {
+        LOGGER.info("Executing smokeTest with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -58,16 +52,18 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.api", "build");
         assertTasksSuccessful(result, "greeter.provider", "build");
         assertTasksSuccessful(result, "greeter.provider.test", "build");
+        if(GradleVersion.version(gradleVersion).compareTo(GradleVersion.version("5.6")) >= 0) {
+            assertTasksSuccessful(result, "greeter.provider.testfixture", "build");
+        }
         assertTasksSuccessful(result, "greeter.runner", "build", "run");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    void smokeTestRun(String projectName) {
-        forAllGradleVersions(v -> doSmokeTestRun(v, projectName));
-    }
-
-    void doSmokeTestRun(String gradleVersion, String projectName) {
+    @CartesianProductTest(name = "smokeTestRun({arguments})")
+    @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
+    // Fails with Gradle versions >= 6.6. See https://github.com/java9-modularity/gradle-modules-plugin/issues/165
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0-milestone-3"*/})
+    void smokeTestRun(String projectName, String gradleVersion) {
+        LOGGER.info("Executing smokeTestRun with Gradle {}", gradleVersion);
         var writer = new StringWriter(256);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
@@ -87,12 +83,11 @@ class ModulePluginSmokeTest {
     }
 
 
-    @ParameterizedTest
-    @ValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2"})
-    void smokeTestJunit5(String junitVersionPair) {
-        forAllGradleVersions(v -> doSmokeTestJunit5(v, junitVersionPair));
-    }
-    void doSmokeTestJunit5(String gradleVersion, String junitVersionPair) {
+    @CartesianProductTest(name = "smokeTestJunit5({arguments})")
+    @CartesianValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"})
+    void smokeTestJunit5(String junitVersionPair, String gradleVersion) {
+        LOGGER.info("Executing smokeTestJunit5 with Gradle {}", gradleVersion);
         var junitVersionParts = junitVersionPair.split("/");
         var junitVersionProperty = String.format("-PjUnitVersion=%s", junitVersionParts[0]);
         var junitPlatformVersionProperty = String.format("-PjUnitPlatformVersion=%s", junitVersionParts[1]);
@@ -110,11 +105,11 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.runner", "build", "run");
     }
 
-    @Test
-    void smokeTestMixed() throws IOException {
-        forAllGradleVersions(this::doSmokeTestMixed);
-    }
-    void doSmokeTestMixed(String gradleVersion) {
+    @CartesianProductTest(name = "smokeTestMixed({arguments})")
+    // It currently fails with Gradle 7.0
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3"/*, "7.0-milestone-3"*/})
+    void smokeTestMixed(String gradleVersion) {
+        LOGGER.info("Executing smokeTestMixed with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project-mixed"))
                 .withPluginClasspath(pluginClasspath)
@@ -162,12 +157,11 @@ class ModulePluginSmokeTest {
         }
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = "test-project")
-    void smokeTestDist(String projectName) {
-        forAllGradleVersions(v -> doSmokeTestDist(v, projectName));
-    }
-    void doSmokeTestDist(String gradleVersion, String projectName) {
+    @CartesianProductTest(name = "smokeTestDist({arguments})")
+    @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"})
+    void smokeTestDist(String projectName, String gradleVersion) {
+        LOGGER.info("Executing smokeTestDist with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -189,19 +183,25 @@ class ModulePluginSmokeTest {
         Path patchedLib = patchlibsDir.resolve("jsr305-3.0.2.jar");
         assertTrue(patchedLib.toFile().exists(), "Patched lib should be in patchlibs dir");
 
-        assertEquals(0, libDir.toFile().listFiles(f -> f.getName().equals("jsr305-3.0.2.jar")).length, "Patched libs should not be in lib dir");
-        assertEquals(4, libDir.toFile().listFiles().length, "Unexpected number of jars in lib dir");
+        var libs = Arrays.stream(libDir.toFile().listFiles())
+                .map(File::getName)
+                .filter(name -> !name.startsWith("kotlin"))
+                .filter(name -> !name.startsWith("groovy"))
+                .filter(name -> !name.startsWith("annotations"))
+                .collect(Collectors.toList());
+
+        assertFalse(libs.contains("jsr305-3.0.2.jar"), "jsr305-3.0.2.jar should not be in libDir");
+        assertEquals(4, libs.size(), "Unexpected number of jars in lib dir (" + libs + ")");
 
         SmokeTestAppContext ctx = SmokeTestAppContext.ofDefault(installDir.resolve("bin"));
         assertTrue(ctx.getAppOutput("greeter.runner").contains("welcome"));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    void smokeTestRunDemo(String projectName) {
-        forAllGradleVersions(v -> doSmokeTestRunDemo(v, projectName));
-    }
-    void doSmokeTestRunDemo(String gradleVersion, String projectName) {
+    @CartesianProductTest(name = "smokeTestRunDemo({arguments})")
+    @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"})
+    void smokeTestRunDemo(String projectName, String gradleVersion) {
+        LOGGER.info("Executing smokeTestRunDemo with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -214,12 +214,12 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.javaexec", "runDemo1", "runDemo2");
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    void smokeTestRunStartScripts(String projectName) {
-        forAllGradleVersions(v -> doSmokeTestRunStartScripts(v, projectName));
-    }
-    void doSmokeTestRunStartScripts(String gradleVersion, String projectName) {
+    @CartesianProductTest(name = "smokeTestRunStartScripts({arguments})")
+    @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
+    // Fails with Gradle versions >= 6.6. See https://github.com/java9-modularity/gradle-modules-plugin/issues/165
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0-milestone-3"*/})
+    void smokeTestRunStartScripts(String projectName, String gradleVersion) {
+        LOGGER.info("Executing smokeTestRunScripts with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
