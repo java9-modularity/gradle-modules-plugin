@@ -12,8 +12,10 @@ import java.util.stream.Stream;
 
 public enum TestEngine {
     JUNIT_4("junit", "junit", "junit", "junit"),
+<<<<<<< HEAD
     JUNIT_5_API("org.junit.jupiter", ".*", "org.junit.jupiter.api", "org.junit.platform.commons"),
     JUNIT_5("org.junit.jupiter", ".*", "org.junit.jupiter.api", "org.junit.jupiter.api"),
+    JUNIT_5_PARAMS("org.junit.jupiter", "junit-jupiter-params", "org.junit.jupiter.params", "org.junit.platform.commons"),
     JUNIT_PLATFORM_COMMONS("org.junit.jupiter", ".*", "org.junit.platform.commons", "ALL-UNNAMED",
             new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"),
             new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"),
@@ -21,6 +23,7 @@ public enum TestEngine {
     ),
     TESTNG("org.testng", "testng", "org.testng", "org.testng"),
     ASSERTJ("org.assertj", "assertj-core", "org.assertj.core", "org.assertj.core"),
+    TRUTH("com.google.truth", "truth", "truth", "truth"),
     MOCKITO("org.mockito", "mockito-core", "org.mockito", "org.mockito"),
     EASYMOCK("org.easymock", "easymock", "org.easymock", "org.easymock"),
     SPOCK("org.spockframework", "spock-core", "org.spockframework.core", "org.spockframework.core",
