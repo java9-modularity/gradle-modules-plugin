@@ -38,7 +38,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTest({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-rc-1"})
     void smokeTest(String projectName, String gradleVersion) {
         LOGGER.info("Executing smokeTest with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
@@ -61,7 +61,7 @@ class ModulePluginSmokeTest {
     @CartesianProductTest(name = "smokeTestRun({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     // Fails with Gradle versions >= 6.6. See https://github.com/java9-modularity/gradle-modules-plugin/issues/165
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0-milestone-3"*/})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0-rc-1"*/})
     void smokeTestRun(String projectName, String gradleVersion) {
         LOGGER.info("Executing smokeTestRun with Gradle {}", gradleVersion);
         var writer = new StringWriter(256);
@@ -85,7 +85,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestJunit5({arguments})")
     @CartesianValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-rc-1"})
     void smokeTestJunit5(String junitVersionPair, String gradleVersion) {
         LOGGER.info("Executing smokeTestJunit5 with Gradle {}", gradleVersion);
         var junitVersionParts = junitVersionPair.split("/");
@@ -107,7 +107,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestMixed({arguments})")
     // It currently fails with Gradle 7.0
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3"/*, "7.0-milestone-3"*/})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3"/*, "7.0-rc-1"*/})
     void smokeTestMixed(String gradleVersion) {
         LOGGER.info("Executing smokeTestMixed with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
@@ -159,7 +159,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestDist({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-rc-1"})
     void smokeTestDist(String projectName, String gradleVersion) {
         LOGGER.info("Executing smokeTestDist with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
@@ -199,7 +199,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestRunDemo({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-milestone-3"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0-rc-1"})
     void smokeTestRunDemo(String projectName, String gradleVersion) {
         LOGGER.info("Executing smokeTestRunDemo with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
@@ -217,7 +217,7 @@ class ModulePluginSmokeTest {
     @CartesianProductTest(name = "smokeTestRunStartScripts({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     // Fails with Gradle versions >= 6.6. See https://github.com/java9-modularity/gradle-modules-plugin/issues/165
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0-milestone-3"*/})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0-rc-1"*/})
     void smokeTestRunStartScripts(String projectName, String gradleVersion) {
         LOGGER.info("Executing smokeTestRunScripts with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
