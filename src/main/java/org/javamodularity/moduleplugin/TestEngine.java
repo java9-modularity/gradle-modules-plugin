@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 
 public enum TestEngine {
     JUNIT_4("junit", "junit", "junit", "junit"),
-<<<<<<< HEAD
     JUNIT_5_API("org.junit.jupiter", ".*", "org.junit.jupiter.api", "org.junit.platform.commons"),
     JUNIT_5("org.junit.jupiter", ".*", "org.junit.jupiter.api", "org.junit.jupiter.api"),
     JUNIT_5_PARAMS("org.junit.jupiter", "junit-jupiter-params", "org.junit.jupiter.params", "org.junit.platform.commons"),

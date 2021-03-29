@@ -22,12 +22,12 @@ class ModuleInfoTestHelper {
 
         var files = testSourceSet.getAllSource().matching(f -> f.include("module-info.test"));
         if (files.isEmpty()) {
-            LOGGER.debug("File 'module-info.test' is not present in {}", project);
+            LOGGER.info("File 'module-info.test' is not present in {}", project);
             return;
         }
 
         var moduleInfoTestPath = files.getSingleFile().toPath();
-        LOGGER.debug("Using lines of '{}' to patch module {}...", moduleInfoTestPath, moduleName);
+        LOGGER.info("Using lines of '{}' to patch module {}...", moduleInfoTestPath, moduleName);
         try (var lines = Files.lines(moduleInfoTestPath)) {
             lines.map(String::trim)
                     .filter(line -> !line.isEmpty())
