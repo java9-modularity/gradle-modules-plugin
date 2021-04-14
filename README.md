@@ -63,7 +63,7 @@ The main build file should look as follows:
 
 ```groovy
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.7.0' apply false
+    id 'org.javamodularity.moduleplugin' version '1.8.0' apply false
 }
 
 subprojects {
@@ -398,9 +398,21 @@ Using the Application plugin
 Typically you use the `application` plugin in Gradle to run the application from Gradle and, more importantly, package it in a distributable zip/tar.
 To work with modules correctly JVM needs to be configured with the correct arguments such as `--module-path` to use the module path instead of the classpath.
 The plugin takes care of all that automatically.
-The only change compared to "normal" use of the application plugin is the format of the `mainClass`.
+
 When starting a main class from a module, the module name needs to be provided.
 To make this easier, the plugin injects a variable `$moduleName` in the build script.
+
+With Gradle 6.4 or newer, you should use the new syntax introduced by the Application plugin:
+
+```gradle
+apply plugin: 'application'
+application {
+    mainClass = "examples.Runner"
+    mainModule = moduleName
+}
+```
+
+When using older versions of Gradle (before 6.4) you can include the module name in the `mainClassName` property:
 
 ```gradle
 apply plugin: 'application'
