@@ -68,6 +68,10 @@ public enum TestEngine {
 
     private static Stream<TestEngine> select(String groupId, String artifactId) {
         return Arrays.stream(TestEngine.values())
-                .filter(engine -> groupId.matches(engine.groupId) && artifactId.matches(engine.artifactId));
+                .filter(engine ->
+                        groupId != null
+                        && artifactId != null
+                        && groupId.matches(engine.groupId)
+                        && artifactId.matches(engine.artifactId));
     }
 }
