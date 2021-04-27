@@ -57,16 +57,27 @@ public enum TestEngine {
                 .stream()
                 .map(configurations::findByName)
                 .filter(Objects::nonNull)
-                .map(Configuration::getDependencies)
-                .flatMap(DependencySet::stream)
-                .flatMap(d -> TestEngine.select(d.getGroup(), d.getName()))
+                .flatMap(TestEngine::getModuleIdentifiers)
+                .flatMap(d -> TestEngine.select(d))
                 .collect(Collectors.toSet());
         LOGGER.info("Selected test engines: " + engines);
         return engines;
 
     }
 
-    private static Stream<TestEngine> select(String groupId, String artifactId) {
+    private static Stream<ModuleIdentifier> getModuleIdentifiers(Configuration origCfg) {
+        Configuration cfg = origCfg.copyRecursive();
+        cfg.setCanBeResolved(true);
+        cfg.resolve();
+        Set<ResolvedDependency> flmDeps = cfg.getResolvedConfiguration().getFirstLevelModuleDependencies();
+        return flmDeps.stream()
+                .flatMap(dep -> Stream.concat(dep.getChildren().stream(),Stream.of(dep)))
+                .map(dep -> dep.getModule().getId().getModule());
+    }
+
+    private static Stream<TestEngine> select(ModuleIdentifier moduleId) {
+        String groupId = moduleId.getGroup();
+        String artifactId = moduleId.getName();
         return Arrays.stream(TestEngine.values())
                 .filter(engine ->
                         groupId != null
