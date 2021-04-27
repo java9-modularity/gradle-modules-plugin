@@ -40,6 +40,33 @@ public enum TestEngine {
     public final String addOpens;
     public final List<TaskOption> additionalTaskOptions;
 
+    private static class GroupArtifact {
+        final String groupId;
+        final String artifactId;
+
+        private GroupArtifact(String groupId, String artifactId) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+        }
+
+        static GroupArtifact fromModuleIdentifier(ModuleIdentifier mi) {
+            return new GroupArtifact(mi.getGroup(), mi.getName());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            GroupArtifact that = (GroupArtifact) o;
+            return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(groupId, artifactId);
+        }
+    }
+
     TestEngine(String groupId, String artifactId, String moduleName, String addOpens, TaskOption... additionalTaskOptions) {
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -65,24 +92,30 @@ public enum TestEngine {
 
     }
 
-    private static Stream<ModuleIdentifier> getModuleIdentifiers(Configuration origCfg) {
+    private static Stream<GroupArtifact> getModuleIdentifiers(Configuration origCfg) {
         Configuration cfg = origCfg.copyRecursive();
         cfg.setCanBeResolved(true);
-        cfg.resolve();
-        Set<ResolvedDependency> flmDeps = cfg.getResolvedConfiguration().getFirstLevelModuleDependencies();
-        return flmDeps.stream()
-                .flatMap(dep -> Stream.concat(dep.getChildren().stream(),Stream.of(dep)))
-                .map(dep -> dep.getModule().getId().getModule());
+        try {
+            cfg.resolve();
+            Set<ResolvedDependency> flmDeps = cfg.getResolvedConfiguration().getFirstLevelModuleDependencies();
+            return flmDeps.stream()
+                    .flatMap(dep -> Stream.concat(dep.getChildren().stream(),Stream.of(dep)))
+                    .map(dep -> GroupArtifact.fromModuleIdentifier(dep.getModule().getId().getModule()));
+        } catch (ResolveException e) {
+            LOGGER.debug("Cannot resolve transitive dependencies of configuration " + cfg.getName(), e);
+            LOGGER.info("Using direct dependencies of configuration {}.", origCfg.getName());
+            return origCfg.getDependencies().stream()
+                    .map(dep -> new GroupArtifact(dep.getGroup(), dep.getName()));
+        }
     }
 
-    private static Stream<TestEngine> select(ModuleIdentifier moduleId) {
-        String groupId = moduleId.getGroup();
-        String artifactId = moduleId.getName();
+    private static Stream<TestEngine> select(GroupArtifact ga) {
+        LOGGER.debug("TestEngine.select({}:{}", ga.groupId, ga.artifactId);
         return Arrays.stream(TestEngine.values())
                 .filter(engine ->
-                        groupId != null
-                        && artifactId != null
-                        && groupId.matches(engine.groupId)
-                        && artifactId.matches(engine.artifactId));
+                        ga.groupId != null
+                        && ga.artifactId != null
+                        && ga.groupId.matches(engine.groupId)
+                        && ga.artifactId.matches(engine.artifactId));
     }
 }
