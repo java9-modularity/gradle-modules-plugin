@@ -6,6 +6,7 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +54,7 @@ public enum TestEngine {
         }
 
         static GroupArtifact fromModuleIdentifier(ModuleIdentifier mi) {
+            LOGGER.info("fromModuleIdentifier({}:{})", mi.getGroup(), mi.getName());
             return new GroupArtifact(mi.getGroup(), mi.getName());
         }
 
@@ -78,36 +80,23 @@ public enum TestEngine {
         this.additionalTaskOptions = Arrays.asList(additionalTaskOptions);
     }
 
-//    private static List<String> COMPILE_ONLY_CONFIGURATIONS = List.of(
-//            "compileClasspath", "compileOnly",
-//            "testCompile", "testCompileClasspath",
-//            "testFixturesApi", "testFixturesCompile", "testFixturesCompileClasspath"
-//    );
-//    private static List<String> ADDITIONAL_CONFIGURATIONS = List.of(
-//            "implementation", "runtimeClasspath", "runtimeOnly",
-//            "testImplementation", "testRuntime", "testRuntimeClasspath", "testRuntimeOnly",
-//            "testFixturesImplementation", "testFixturesRuntime", "testFixturesRuntimeClasspath", "testFixturesRuntimeOnly"
-//    );
-    private static List<String> COMPILE_ONLY_CONFIGURATIONS = List.of(
-            "compileClasspath", "testCompileClasspath", "testFixturesCompileClasspath"
+    private static List<String> CONFIGURATION_NAMES = List.of(
+            "api", "compile", "compileClasspath", "compileOnly", "implementation",
+            "runtime", "runtimeClasspath", "runtimeOnly",
+            "testApi", "testCompile", "testCompileClasspath", "testCompileOnly",
+            "testImplementation", "testRuntime", "testRuntimeClasspath", "testRuntimeOnly",
+            "testFixturesApi", "testFixturesCompile", "testFixturesCompileClasspath", "testFixturesCompileOnly",
+            "testFixturesCompileOnlyApi", "testFixturesImplementation", "testFixturesRuntime",
+            "testFixturesRuntimeClasspath", "testFixturesRuntimeOnly"
     );
-    private static List<String> ADDITIONAL_CONFIGURATIONS = List.of(
-            "runtimeClasspath", "testRuntimeClasspath", "testFixturesRuntimeClasspath"
-    );
-    private static List<String> ALL_CONFIGURATIONS = new ArrayList<>();
-    static {
-        ALL_CONFIGURATIONS.addAll(COMPILE_ONLY_CONFIGURATIONS);
-        ALL_CONFIGURATIONS.addAll(ADDITIONAL_CONFIGURATIONS);
-    }
 
-    public static Collection<TestEngine> selectMultiple(Project project, boolean compileOnly) {
+    public static Collection<TestEngine> selectMultiple(Project project, Set<File> files) {
         var configurations = project.getConfigurations();
-        List<String> cfgNames = compileOnly ? COMPILE_ONLY_CONFIGURATIONS : ALL_CONFIGURATIONS;
-        var engines = cfgNames
+        var engines = CONFIGURATION_NAMES
                 .stream()
                 .map(configurations::findByName)
                 .filter(Objects::nonNull)
-                .flatMap(TestEngine::getModuleIdentifiers)
+                .flatMap(cfg -> getModuleIdentifiers(cfg, files))
                 .flatMap(d -> TestEngine.select(d))
                 .collect(Collectors.toSet());
         LOGGER.info("Selected test engines: " + engines);
@@ -115,7 +104,7 @@ public enum TestEngine {
 
     }
 
-    private static Stream<GroupArtifact> getModuleIdentifiers(Configuration origCfg) {
+    private static Stream<GroupArtifact> getModuleIdentifiers(Configuration origCfg, Set<File> files) {
         Configuration cfg = origCfg.copyRecursive();
         cfg.setCanBeResolved(true);
         try {
@@ -123,6 +112,7 @@ public enum TestEngine {
             Set<ResolvedDependency> flmDeps = cfg.getResolvedConfiguration().getFirstLevelModuleDependencies();
             return flmDeps.stream()
                     .flatMap(dep -> Stream.concat(getAllDeps(dep).stream(),Stream.of(dep)))
+                    .filter(dep -> isDependencyPresent(dep, files))
                     .map(dep -> GroupArtifact.fromModuleIdentifier(dep.getModule().getId().getModule()));
         } catch (ResolveException e) {
             LOGGER.debug("Cannot resolve transitive dependencies of configuration " + cfg.getName(), e);
@@ -130,6 +120,12 @@ public enum TestEngine {
             return origCfg.getDependencies().stream()
                     .map(dep -> new GroupArtifact(dep.getGroup(), dep.getName()));
         }
+    }
+
+    private static boolean isDependencyPresent(ResolvedDependency dep, Set<File> files) {
+        return dep.getModuleArtifacts().stream()
+                .map(ResolvedArtifact::getFile)
+                .anyMatch(files::contains);
     }
 
     private static Set<ResolvedDependency> getAllDeps(ResolvedDependency dep) {
@@ -144,7 +140,7 @@ public enum TestEngine {
     }
 
     private static Stream<TestEngine> select(GroupArtifact ga) {
-        LOGGER.debug("TestEngine.select({}:{}", ga.groupId, ga.artifactId);
+        LOGGER.info("TestEngine.select({}:{}", ga.groupId, ga.artifactId);
         return Arrays.stream(TestEngine.values())
                 .filter(engine ->
                         ga.groupId != null
