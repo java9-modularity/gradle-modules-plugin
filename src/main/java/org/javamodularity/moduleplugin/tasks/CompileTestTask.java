@@ -68,7 +68,7 @@ public class CompileTestTask extends AbstractModulePluginTask {
         allTestSourceDirs.forEach(dir -> patchModuleContainer.addDir(moduleName, dir.getAbsolutePath()));
         patchModuleContainer.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(compilerArgs));
 
-        TestEngine.selectMultiple(project).forEach(testEngine -> {
+        TestEngine.selectMultiple(project, true).forEach(testEngine -> {
             new TaskOption("--add-modules", testEngine.moduleName).mutateArgs(compilerArgs);
             new TaskOption("--add-reads", moduleName + "=" + testEngine.moduleName).mutateArgs(compilerArgs);
             testEngine.additionalTaskOptions.forEach(option -> option.mutateArgs(compilerArgs));

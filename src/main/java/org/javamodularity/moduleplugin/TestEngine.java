@@ -13,11 +13,14 @@ import java.util.stream.Stream;
 public enum TestEngine {
     JUNIT_4("junit", "junit", "junit", "junit"),
     JUNIT_5_API("org.junit.jupiter", ".*", "org.junit.jupiter.api", "org.junit.platform.commons"),
-    JUNIT_5("org.junit.jupiter", ".*", "org.junit.jupiter.api", "org.junit.jupiter.api"),
+    JUNIT_5("org.junit.jupiter", "junit-platform-commons", "org.junit.jupiter.api", "org.junit.jupiter.api"),
     JUNIT_5_PARAMS("org.junit.jupiter", "junit-jupiter-params", "org.junit.jupiter.params", "org.junit.platform.commons"),
-    JUNIT_PLATFORM_COMMONS("org.junit.jupiter", ".*", "org.junit.platform.commons", "ALL-UNNAMED",
+    JUNIT_PLATFORM_COMMONS("org.junit.platform", "junit-platform-commons", "org.junit.platform.commons", "ALL-UNNAMED",
             new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"),
-            new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"),
+            new TaskOption("--add-exports", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED")
+    ),
+    JUNIT_JUPITER_ENGINE("org.junit.jupiter", "junit-jupiter-engine", "org.junit.jupiter.engine", "ALL-UNNAMED"),
+    JUNIT_PLATFORM_ENGINE("org.junit.platform", "junit-platform-engine", "org.junit.platform.engine", "ALL-UNNAMED",
             new TaskOption("--add-exports", "org.junit.platform.engine/org.junit.platform.engine.support.filter=org.junit.jupiter.engine,ALL-UNNAMED")
     ),
     TESTNG("org.testng", "testng", "org.testng", "org.testng"),
@@ -75,12 +78,32 @@ public enum TestEngine {
         this.additionalTaskOptions = Arrays.asList(additionalTaskOptions);
     }
 
-    public static Collection<TestEngine> selectMultiple(Project project) {
+//    private static List<String> COMPILE_ONLY_CONFIGURATIONS = List.of(
+//            "compileClasspath", "compileOnly",
+//            "testCompile", "testCompileClasspath",
+//            "testFixturesApi", "testFixturesCompile", "testFixturesCompileClasspath"
+//    );
+//    private static List<String> ADDITIONAL_CONFIGURATIONS = List.of(
+//            "implementation", "runtimeClasspath", "runtimeOnly",
+//            "testImplementation", "testRuntime", "testRuntimeClasspath", "testRuntimeOnly",
+//            "testFixturesImplementation", "testFixturesRuntime", "testFixturesRuntimeClasspath", "testFixturesRuntimeOnly"
+//    );
+    private static List<String> COMPILE_ONLY_CONFIGURATIONS = List.of(
+            "compileClasspath", "testCompileClasspath", "testFixturesCompileClasspath"
+    );
+    private static List<String> ADDITIONAL_CONFIGURATIONS = List.of(
+            "runtimeClasspath", "testRuntimeClasspath", "testFixturesRuntimeClasspath"
+    );
+    private static List<String> ALL_CONFIGURATIONS = new ArrayList<>();
+    static {
+        ALL_CONFIGURATIONS.addAll(COMPILE_ONLY_CONFIGURATIONS);
+        ALL_CONFIGURATIONS.addAll(ADDITIONAL_CONFIGURATIONS);
+    }
+
+    public static Collection<TestEngine> selectMultiple(Project project, boolean compileOnly) {
         var configurations = project.getConfigurations();
-        var engines = List.of(
-                "compileClasspath", "compileOnly", "implementation", "runtimeClasspath", "runtimeOnly",
-                "testImplementation", "testCompile", "testRuntime", "testRuntimeOnly",
-                "testFixturesApi", "testFixturesCompile", "testFixturesImplementation", "testFixturesRuntime", "testFixturesRuntimeOnly")
+        List<String> cfgNames = compileOnly ? COMPILE_ONLY_CONFIGURATIONS : ALL_CONFIGURATIONS;
+        var engines = cfgNames
                 .stream()
                 .map(configurations::findByName)
                 .filter(Objects::nonNull)
@@ -99,7 +122,7 @@ public enum TestEngine {
             cfg.resolve();
             Set<ResolvedDependency> flmDeps = cfg.getResolvedConfiguration().getFirstLevelModuleDependencies();
             return flmDeps.stream()
-                    .flatMap(dep -> Stream.concat(dep.getChildren().stream(),Stream.of(dep)))
+                    .flatMap(dep -> Stream.concat(getAllDeps(dep).stream(),Stream.of(dep)))
                     .map(dep -> GroupArtifact.fromModuleIdentifier(dep.getModule().getId().getModule()));
         } catch (ResolveException e) {
             LOGGER.debug("Cannot resolve transitive dependencies of configuration " + cfg.getName(), e);
@@ -107,6 +130,17 @@ public enum TestEngine {
             return origCfg.getDependencies().stream()
                     .map(dep -> new GroupArtifact(dep.getGroup(), dep.getName()));
         }
+    }
+
+    private static Set<ResolvedDependency> getAllDeps(ResolvedDependency dep) {
+        Set<ResolvedDependency> deps = new HashSet<>();
+        addChildren(dep, deps);
+        return deps;
+    }
+
+    private static void addChildren(ResolvedDependency dep, Set<ResolvedDependency> deps) {
+        deps.add(dep);
+        dep.getChildren().forEach(d -> {if(!deps.contains(d)) addChildren(d, deps);});
     }
 
     private static Stream<TestEngine> select(GroupArtifact ga) {
