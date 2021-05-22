@@ -10,7 +10,8 @@ It makes building, testing and running modules seamless from the Gradle perspect
 It sets up compiler and jvm settings with flags such as `--module-path`, so that you can build, test and run JPMS modules without manually setting up your build files.
 
 :bulb: When using this plugin, you should not set the `--module-path` compiler option explicitly.
-Also, you should not enable the `modularity.inferModulePath` option introduced in Gradle 6.4.  
+Also, you should disable the `modularity.inferModulePath` option introduced in Gradle 6.4:
+`modularity.inferModulePath.set(false)`
 
 The plugin is designed to work in repositories that contain multiple modules.
 The plugin currently supports:
@@ -63,7 +64,7 @@ The main build file should look as follows:
 
 ```groovy
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.8.3' apply false
+    id 'org.javamodularity.moduleplugin' version '1.8.4' apply false
 }
 
 subprojects {
@@ -315,6 +316,35 @@ tasks {
     test {
         extensions.configure(TestModuleOptions::class) {
             runOnClasspath = true
+        }
+    }
+}
+```
+
+</details>
+
+You can also enable classpath mode, which essentially turns off the plugin while running tests.
+
+<details open>
+<summary>Groovy DSL</summary>
+
+```groovy
+compileTestJava {
+    moduleOptions {
+        compileOnClasspath = true
+    }
+}
+```
+
+</details>
+<details>
+<summary>Kotlin DSL</summary>
+
+```kotlin
+tasks {
+  compileTestJava {
+        extensions.configure(CompileTestModuleOptions::class) {
+            compileOnClasspath = true
         }
     }
 }
