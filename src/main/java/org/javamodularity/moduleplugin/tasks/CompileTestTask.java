@@ -36,16 +36,20 @@ public class CompileTestTask extends AbstractModulePluginTask {
     private void configureCompileTestJava(JavaCompile compileTestJava) {
         var moduleOptions = compileTestJava.getExtensions()
                 .create("moduleOptions", CompileTestModuleOptions.class, project);
-
-        // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
-        compileTestJava.doFirst(new Action<Task>() {
-            @Override
-            public void execute(Task task) {
-                var compilerArgs = buildCompilerArgs(compileTestJava, moduleOptions);
-                compileTestJava.getOptions().setCompilerArgs(compilerArgs);
-                LOGGER.info("compiler args for task {}: {}", compileTestJava.getName(),
-                        compileTestJava.getOptions().getAllCompilerArgs());
-                compileTestJava.setClasspath(project.files());
+        project.afterEvaluate(p -> {
+            LOGGER.info(compileTestJava.getName() +  ".compileOnClasspath: {}", moduleOptions.isCompileOnClasspath());
+            if(!moduleOptions.isCompileOnClasspath()) {
+                // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
+                compileTestJava.doFirst(new Action<Task>() {
+                    @Override
+                    public void execute(Task task) {
+                        var compilerArgs = buildCompilerArgs(compileTestJava, moduleOptions);
+                        compileTestJava.getOptions().setCompilerArgs(compilerArgs);
+                        LOGGER.info("compiler args for task {}: {}", compileTestJava.getName(),
+                                compileTestJava.getOptions().getAllCompilerArgs());
+                        compileTestJava.setClasspath(project.files());
+                    }
+                });
             }
         });
     }
