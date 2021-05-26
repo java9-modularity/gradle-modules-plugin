@@ -66,7 +66,7 @@ class CompileJavaTaskMutator {
 
         // Keep only valid module-path entries (https://github.com/java9-modularity/gradle-modules-plugin/issues/190)
         FileCollection filteredClasspath = project.files(compileJavaClasspath.getFiles().stream()
-                .filter(f -> f.getName().endsWith(".jar") || f.getName().endsWith(".jmod"))
+                .filter(f -> f.isDirectory() || f.getName().endsWith(".jar") || f.getName().endsWith(".jmod"))
                 .collect(Collectors.toList()).toArray());
 
         var compilerArgs = new ArrayList<>(javaCompile.getOptions().getCompilerArgs());
