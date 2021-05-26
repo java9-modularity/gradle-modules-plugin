@@ -13,6 +13,7 @@ import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RunTaskMutator extends AbstractExecutionMutator {
     private static final Logger LOGGER = Logging.getLogger(RunTaskMutator.class);
@@ -46,11 +47,14 @@ public class RunTaskMutator extends AbstractExecutionMutator {
         moduleOptions.mutateArgs(jvmArgs);
 
         FileCollection classpath = mergeClassesHelper().getMergeAdjustedClasspath(execTask.getClasspath());
+        FileCollection filteredClasspath = project.files(classpath.getFiles().stream()
+                .filter(f -> f.isDirectory() || f.getName().endsWith(".jar") || f.getName().endsWith(".jmod"))
+                .collect(Collectors.toList()).toArray());
         var patchModuleContainer = PatchModuleContainer.copyOf(
                 helper().modularityExtension().optionContainer().getPatchModuleContainer());
         patchModuleContainer.addDir(moduleName, helper().mainSourceSet().getOutput().getResourcesDir().getAbsolutePath());
-        patchModuleContainer.buildModulePathOption(classpath).ifPresent(option -> option.mutateArgs(jvmArgs));
-        patchModuleContainer.mutator(classpath).mutateArgs(jvmArgs);
+        patchModuleContainer.buildModulePathOption(filteredClasspath).ifPresent(option -> option.mutateArgs(jvmArgs));
+        patchModuleContainer.mutator(filteredClasspath).mutateArgs(jvmArgs);
 
         jvmArgs.addAll(execTask.getJvmArgs());
 
