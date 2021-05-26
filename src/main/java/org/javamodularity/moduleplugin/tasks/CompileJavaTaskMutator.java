@@ -11,8 +11,10 @@ import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 import org.javamodularity.moduleplugin.internal.MutatorHelper;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class CompileJavaTaskMutator {
     private static final Logger LOGGER = Logging.getLogger(CompileJavaTaskMutator.class);
@@ -62,10 +64,15 @@ class CompileJavaTaskMutator {
                 .map(AbstractCompile::getDestinationDir)
                 .forEach(dir -> patchModuleContainer.addDir(moduleName, dir.getAbsolutePath()));
 
+        // Keep only valid module-path entries (https://github.com/java9-modularity/gradle-modules-plugin/issues/190)
+        FileCollection filteredClasspath = project.files(compileJavaClasspath.getFiles().stream()
+                .filter(f -> f.getName().endsWith(".jar") || f.getName().endsWith(".jmod"))
+                .collect(Collectors.toList()).toArray());
+
         var compilerArgs = new ArrayList<>(javaCompile.getOptions().getCompilerArgs());
-        patchModuleContainer.buildModulePathOption(compileJavaClasspath)
+        patchModuleContainer.buildModulePathOption(filteredClasspath)
                 .ifPresent(option -> option.mutateArgs(compilerArgs));
-        patchModuleContainer.mutator(compileJavaClasspath).mutateArgs(compilerArgs);
+        patchModuleContainer.mutator(filteredClasspath).mutateArgs(compilerArgs);
 
         moduleOptions.mutateArgs(compilerArgs);
         MutatorHelper.configureModuleVersion(helper(), compilerArgs);

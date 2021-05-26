@@ -37,15 +37,6 @@ public class CompileTask extends AbstractCompileTask {
     }
 
     private void configureCompileJava(JavaCompile compileJava) {
-        project.getConfigurations().stream()
-                .flatMap(configuration -> configuration.getDependencies().stream())
-                .filter(dependency -> dependency instanceof ProjectDependency)
-                .map(dependency -> ((ProjectDependency) dependency).getDependencyProject().getTasks())
-                .map(tasks -> tasks.findByName(CompileModuleOptions.COMPILE_MODULE_INFO_TASK_NAME))
-                .filter(Objects::nonNull);
-
-
-
         var moduleOptions = compileJava.getExtensions().create("moduleOptions", CompileModuleOptions.class, project);
         project.afterEvaluate(p -> {
             adjustMainClass(compileJava);
