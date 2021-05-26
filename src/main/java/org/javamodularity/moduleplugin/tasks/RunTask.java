@@ -3,6 +3,7 @@ package org.javamodularity.moduleplugin.tasks;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.util.GradleVersion;
 
 public class RunTask extends AbstractModulePluginTask {
 
@@ -18,7 +19,11 @@ public class RunTask extends AbstractModulePluginTask {
         if(helper().shouldFixEffectiveArguments()) {
             project.getTasks().replace(ApplicationPlugin.TASK_RUN_NAME, ModularJavaExec.class);
         }
-        var mutator = new RunTaskMutator(getRunTask(), project);
+        JavaExec runTask = getRunTask();
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            runTask.getModularity().getInferModulePath().set(false);
+        }
+        var mutator = new RunTaskMutator(runTask, project);
         mutator.configureRun();
         project.afterEvaluate(p -> configureStartScripts());
     }

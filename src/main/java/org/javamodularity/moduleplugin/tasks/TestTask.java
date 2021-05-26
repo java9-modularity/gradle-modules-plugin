@@ -11,6 +11,7 @@ import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.testing.Test;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.TestEngine;
 import org.javamodularity.moduleplugin.extensions.TestModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
@@ -42,6 +43,9 @@ public class TestTask extends AbstractModulePluginTask {
     private void configureTestJava(Test testJava) {
         var testModuleOptions = testJava.getExtensions().create("moduleOptions", TestModuleOptions.class, project);
 
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            testJava.getModularity().getInferModulePath().set(false);
+        }
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         testJava.doFirst(new Action<Task>() {
             @Override
