@@ -8,6 +8,7 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.TestEngine;
 import org.javamodularity.moduleplugin.extensions.CompileTestModuleOptions;
@@ -34,6 +35,9 @@ public class CompileTestTask extends AbstractModulePluginTask {
     }
 
     private void configureCompileTestJava(JavaCompile compileTestJava) {
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            compileTestJava.getModularity().getInferModulePath().set(false);
+        }
         var moduleOptions = compileTestJava.getExtensions()
                 .create("moduleOptions", CompileTestModuleOptions.class, project);
         project.afterEvaluate(p -> {

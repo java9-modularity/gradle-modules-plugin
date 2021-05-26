@@ -6,6 +6,7 @@ import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 import org.javamodularity.moduleplugin.internal.CompileModuleInfoHelper;
 
@@ -74,7 +75,9 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
      */
     private JavaCompile preconfigureCompileModuleInfoJava(JavaCompile compileJava) {
         var compileModuleInfoJava = helper().compileJavaTask(CompileModuleOptions.COMPILE_MODULE_INFO_TASK_NAME);
-
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            compileModuleInfoJava.getModularity().getInferModulePath().set(false);
+        }
         compileModuleInfoJava.setClasspath(project.files()); // empty
         compileModuleInfoJava.setSource(pathToModuleInfoJava());
         compileModuleInfoJava.getOptions().setSourcepath(project.files(pathToModuleInfoJava().getParent()));

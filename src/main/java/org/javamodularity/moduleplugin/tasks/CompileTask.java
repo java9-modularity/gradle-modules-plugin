@@ -37,6 +37,9 @@ public class CompileTask extends AbstractCompileTask {
     }
 
     private void configureCompileJava(JavaCompile compileJava) {
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            compileJava.getModularity().getInferModulePath().set(false);
+        }
         var moduleOptions = compileJava.getExtensions().create("moduleOptions", CompileModuleOptions.class, project);
         project.afterEvaluate(p -> {
             adjustMainClass(compileJava);
