@@ -55,6 +55,8 @@ shadowJar {
 jar.enabled = false
 jar.dependsOn shadowJar
 
+processResources.duplicatesStrategy = 'exclude'
+
 configurations {
     [apiElements, runtimeElements].each {
         it.outgoing.artifacts.removeIf { it.buildDependencies.getDependencies(null).contains(jar) }
