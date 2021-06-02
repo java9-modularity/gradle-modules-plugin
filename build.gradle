@@ -33,6 +33,8 @@ dependencies {
     plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.13.5'
 
     testImplementation gradleTestKit()
+    testImplementation 'com.google.guava:guava-base:r03'
+    testImplementation 'com.google.guava:guava-io:r03'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.1'
     testImplementation 'org.junit-pioneer:junit-pioneer:1.3.8'
