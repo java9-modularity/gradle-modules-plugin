@@ -13,7 +13,7 @@ buildScan {
 }
 
 group 'org.javamodularity'
-version '1.8.7-SNAPSHOT'
+version '1.8.7'
 
 sourceCompatibility = 11
 targetCompatibility = 11
