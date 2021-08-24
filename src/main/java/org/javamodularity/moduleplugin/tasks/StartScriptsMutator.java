@@ -8,18 +8,22 @@ import org.gradle.api.distribution.Distribution;
 import org.gradle.api.distribution.DistributionContainer;
 import org.gradle.api.file.FileCopyDetails;
 import org.gradle.api.file.RelativePath;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.application.CreateStartScripts;
 import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StartScriptsMutator extends AbstractExecutionMutator {
+    private static final Logger LOGGER = Logging.getLogger(StartScriptsMutator.class);
 
     private static final String LIBS_PLACEHOLDER = "APP_HOME_LIBS_PLACEHOLDER";
     private static final String PATCH_LIBS_PLACEHOLDER = "APP_HOME_PATCH_LIBS_PLACEHOLDER";
@@ -127,13 +131,27 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
 
     private static void replaceLibsPlaceHolder(Path path, String libText, String patchLibText) {
         try {
-            String updatedScriptContent = Files.readString(path)
+            String content = getContent(path);
+            String updatedScriptContent = content
                     .replaceAll(LIBS_PLACEHOLDER, libText)
                     .replaceAll(PATCH_LIBS_PLACEHOLDER, patchLibText);
 
             Files.writeString(path, updatedScriptContent);
         } catch (IOException e) {
-            throw new GradleException("Couldn't replace placeholder in " + path);
+            throw new GradleException("Couldn't replace placeholder in " + path, e);
+        }
+    }
+
+    private static String getContent(Path path) {
+        try {
+            return Files.readString(path);
+        } catch (IOException e) {
+            try {
+                Charset cs = Charset.forName(System.getProperty("file.encoding"));
+                return Files.readString(path, cs);
+            } catch (Exception ex) {
+                throw new GradleException("Cannot read the content of " + path, ex);
+            }
         }
     }
 
