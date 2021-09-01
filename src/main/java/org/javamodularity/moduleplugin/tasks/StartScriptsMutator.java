@@ -12,6 +12,7 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.application.CreateStartScripts;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
@@ -21,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class StartScriptsMutator extends AbstractExecutionMutator {
     private static final Logger LOGGER = Logging.getLogger(StartScriptsMutator.class);
@@ -122,8 +124,14 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
         Path outputDir = startScriptsTask.getOutputDir().toPath();
         Path bashScript = outputDir.resolve(startScriptsTask.getApplicationName());
 
-        replaceScriptContent(bashScript, "eval set -- \\$DEFAULT_JVM_OPTS \\$JAVA_OPTS \\$(\\S+).*", "eval set -- \\$JAVA_OPTS \\$$1 \\$DEFAULT_JVM_OPTS \\\"\\$APP_ARGS\\\"");
-
+        if(GradleVersion.current().compareTo(GradleVersion.version("7.2")) < 0) {
+            replaceScriptContent(bashScript, "eval set -- \\$DEFAULT_JVM_OPTS \\$JAVA_OPTS \\$(\\S+).*", "eval set -- \\$JAVA_OPTS \\$$1 \\$DEFAULT_JVM_OPTS \\\"\\$APP_ARGS\\\"");
+        } else {
+            replaceScriptContent(bashScript, "app_path=\\$0", "app_path=\\$0\nAPP_ARGS=`echo \"\\$@\"`");
+            String appOpts = getAppOptsVariableName(bashScript);
+            replaceScriptContent(bashScript, "exec \"\\$JAVACMD\" \"\\$@\"",
+                    "eval set -- \\$JAVA_OPTS " + appOpts + " \\$DEFAULT_JVM_OPTS \\\"\\$APP_ARGS\\\"\nexec \"\\$JAVACMD\" \"\\$@\"");
+        }
 
         Path batFile = outputDir.resolve(startScriptsTask.getApplicationName() + ".bat");
         replaceScriptContent(batFile, "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %(\\S+)%.*", "\"%JAVA_EXE%\" %JAVA_OPTS% %$1% %DEFAULT_JVM_OPTS% %CMD_LINE_ARGS%");
@@ -153,6 +161,19 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
                 throw new GradleException("Cannot read the content of " + path, ex);
             }
         }
+    }
+
+    private static final Pattern APP_OPTS_VARIABLE_NAME = Pattern.compile("(?s).*\\$DEFAULT_JVM_OPTS \\$JAVA_OPTS \\$(\\w+).*");
+    private static String getAppOptsVariableName(Path path) {
+        try {
+            var m = APP_OPTS_VARIABLE_NAME.matcher(Files.readString(path));
+            if(m.matches()) {
+                return "\\$" + m.group(1);
+            }
+        } catch (IOException e) {
+            throw new GradleException("Couldn't read run script in " + path);
+        }
+        return "";
     }
 
     private static void replaceScriptContent(Path path, String regex, String replacement) {
