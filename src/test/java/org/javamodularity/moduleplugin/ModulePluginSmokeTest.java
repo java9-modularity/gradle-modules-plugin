@@ -199,7 +199,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestRunDemo({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
     void smokeTestRunDemo(String projectName, String gradleVersion) {
         LOGGER.info("Executing smokeTestRunDemo with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
@@ -212,6 +212,7 @@ class ModulePluginSmokeTest {
                 .build();
 
         assertTasksSuccessful(result, "greeter.javaexec", "runDemo1", "runDemo2");
+        assertFalse(result.getOutput().contains("Using Java lambdas is not supported as task inputs"));
     }
 
     @CartesianProductTest(name = "smokeTestRunStartScripts({arguments})")
