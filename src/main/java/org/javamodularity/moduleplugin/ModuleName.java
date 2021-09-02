@@ -9,7 +9,9 @@ import org.gradle.api.UnknownDomainObjectException;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.SourceSet;
+import org.gradle.util.GradleVersion;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,8 +25,15 @@ class ModuleName {
     Optional<String> findModuleName(Project project) {
         SourceSet main;
         try {
-            JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
-            main = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+            if (GradleVersion.current().compareTo(GradleVersion.version("7.1")) >= 0) {
+                // JavaPluginExtension#getSourceSets() is supported from Gradle 7.1
+                // https://docs.gradle.org/7.1/javadoc/org/gradle/api/plugins/JavaPluginExtension.html#getSourceSets--
+                JavaPluginExtension javaPluginExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+                main = javaPluginExtension.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+            } else {
+                JavaPluginConvention javaConvention = project.getConvention().getPlugin(JavaPluginConvention.class);
+                main = javaConvention.getSourceSets().getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+            }
         } catch (IllegalStateException | UnknownDomainObjectException e) {
             LOGGER.warn("Cannot obtain JavaPluginConvention", e);
             return Optional.empty();
