@@ -65,10 +65,18 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
                 jar.doFirst(new Action<Task>() {
                     @Override
                     public void execute(Task task) {
-                        File classesDir = CompileModuleInfoTask.this.helper().mainSourceSet().getJava().getOutputDir();
+                        File classesDir;
+                        if (GradleVersion.current().compareTo(GradleVersion.version("6.1")) >= 0) {
+                            // SourceDirectorySet#getClassesDirectory() is supported from Gradle 6.1
+                            // https://docs.gradle.org/6.1/javadoc/org/gradle/api/file/SourceDirectorySet.html#getClassesDirectory--
+                            classesDir = helper().mainSourceSet().getJava().getClassesDirectory().get().getAsFile();
+                        } else {
+                            classesDir = helper().mainSourceSet().getJava().getOutputDir();
+                        }
+
                         File mainModuleInfoFile = new File(classesDir, "module-info.class");
                         File customModuleInfoFile = new File(moduleInfoDir, "module-info.class");
-                        if (mainModuleInfoFile.isFile() && customModuleInfoFile.isFile()) {
+                        if(mainModuleInfoFile.isFile() && customModuleInfoFile.isFile()) {
                             mainModuleInfoFile.delete();
                         }
                     }
@@ -90,7 +98,13 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
         compileModuleInfoJava.setSource(pathToModuleInfoJava());
         compileModuleInfoJava.getOptions().setSourcepath(project.files(pathToModuleInfoJava().getParent()));
 
-        compileModuleInfoJava.setDestinationDir(helper().getModuleInfoDir());
+        if (GradleVersion.current().compareTo(GradleVersion.version("6.1")) >= 0) {
+            // AbstractCompile#getDestinationDirectory() is supported from Gradle 6.1
+            // https://docs.gradle.org/6.1/javadoc/org/gradle/api/tasks/compile/AbstractCompile.html#getDestinationDirectory--
+            compileModuleInfoJava.getDestinationDirectory().set(helper().getModuleInfoDir());
+        } else {
+            compileModuleInfoJava.setDestinationDir(helper().getModuleInfoDir());
+        }
 
         // we need all the compiled classes before compiling module-info.java
         compileModuleInfoJava.dependsOn(compileJava);
