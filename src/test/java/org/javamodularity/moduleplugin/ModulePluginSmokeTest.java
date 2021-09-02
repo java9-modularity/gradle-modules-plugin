@@ -38,7 +38,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTest({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.1", "7.2"})
     void smokeTest(String projectName, String gradleVersion) {
         LOGGER.info("Executing smokeTest with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
