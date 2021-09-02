@@ -55,17 +55,25 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
             }
         });
 
-        project.getTasks().withType(Jar.class).configureEach(jar -> {
-            File moduleInfoDir = helper().getModuleInfoDir();
-            jar.from(moduleInfoDir);
-            jar.doFirst(task -> {
-                File classesDir = helper().mainSourceSet().getJava().getOutputDir();
-                File mainModuleInfoFile = new File(classesDir, "module-info.class");
-                File customModuleInfoFile = new File(moduleInfoDir, "module-info.class");
-                if(mainModuleInfoFile.isFile() && customModuleInfoFile.isFile()) {
-                    mainModuleInfoFile.delete();
-                }
-            });
+        // don't convert to lambda: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
+        project.getTasks().withType(Jar.class).configureEach(new Action<Jar>() {
+            @Override
+            public void execute(Jar jar) {
+                File moduleInfoDir = CompileModuleInfoTask.this.helper().getModuleInfoDir();
+                jar.from(moduleInfoDir);
+                // don't convert to lambda: https://docs.gradle.org/7.2/userguide/validation_problems.html#implementation_unknown
+                jar.doFirst(new Action<Task>() {
+                    @Override
+                    public void execute(Task task) {
+                        File classesDir = CompileModuleInfoTask.this.helper().mainSourceSet().getJava().getOutputDir();
+                        File mainModuleInfoFile = new File(classesDir, "module-info.class");
+                        File customModuleInfoFile = new File(moduleInfoDir, "module-info.class");
+                        if (mainModuleInfoFile.isFile() && customModuleInfoFile.isFile()) {
+                            mainModuleInfoFile.delete();
+                        }
+                    }
+                });
+            }
         });
     }
 
