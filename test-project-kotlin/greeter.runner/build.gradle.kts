@@ -15,7 +15,8 @@ dependencies {
 }
 
 application {
-    mainClassName = "$moduleName/examples.RunnerKt"
+    mainClass.set("examples.RunnerKt")
+    mainModule.set(moduleName)
     applicationDefaultJvmArgs = listOf("-Dgreeter.sender=gradle-modules-plugin")
 }
 

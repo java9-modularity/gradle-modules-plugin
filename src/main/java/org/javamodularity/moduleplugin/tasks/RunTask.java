@@ -21,7 +21,7 @@ public class RunTask extends AbstractModulePluginTask {
         }
         JavaExec runTask = getRunTask();
         if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
-            runTask.getModularity().getInferModulePath().set(false);
+            runTask.getModularity().getInferModulePath().set(true);
         }
         var mutator = new RunTaskMutator(runTask, project);
         mutator.configureRun();

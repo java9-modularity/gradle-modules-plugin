@@ -7,6 +7,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
@@ -58,7 +59,9 @@ public class RunTaskMutator extends AbstractExecutionMutator {
 
         jvmArgs.addAll(execTask.getJvmArgs());
 
-        new TaskOption("--module", getMainClassName()).mutateArgs(jvmArgs);
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) < 0) {
+            new TaskOption("--module", getMainClassName()).mutateArgs(jvmArgs);
+        }
 
         LOGGER.info("jvmArgs for task {}: {}", execTask.getName(), jvmArgs);
 

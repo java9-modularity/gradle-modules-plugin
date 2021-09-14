@@ -49,7 +49,7 @@ public final class JavaProjectHelper {
     }
 
     public boolean shouldFixEffectiveArguments() {
-        return GradleVersion.current().compareTo(GradleVersion.version("6.6")) < 0
+        return GradleVersion.current().compareTo(GradleVersion.version("6.4")) < 0
                 && modularityExtension().optionContainer().isEffectiveArgumentsAdjustmentEnabled();
     }
 

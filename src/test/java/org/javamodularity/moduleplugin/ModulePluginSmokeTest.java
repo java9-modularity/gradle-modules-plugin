@@ -40,7 +40,8 @@ class ModulePluginSmokeTest {
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.1", "7.2"})
     void smokeTest(String projectName, String gradleVersion) {
-        LOGGER.info("Executing smokeTest with Gradle {}", gradleVersion);
+        LOGGER.lifecycle("Executing smokeTest of {} with Gradle {}", projectName, gradleVersion);
+        if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -60,10 +61,10 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestRun({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    // Fails with Gradle versions >= 6.6. See https://github.com/java9-modularity/gradle-modules-plugin/issues/165
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0"*/})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
     void smokeTestRun(String projectName, String gradleVersion) {
-        LOGGER.info("Executing smokeTestRun with Gradle {}", gradleVersion);
+        LOGGER.lifecycle("Executing smokeTestRun of {} with Gradle {}", projectName, gradleVersion);
+        if(!checkCombination(projectName, gradleVersion)) return;
         var writer = new StringWriter(256);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
@@ -87,7 +88,7 @@ class ModulePluginSmokeTest {
     @CartesianValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1"})
     @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0"})
     void smokeTestJunit5(String junitVersionPair, String gradleVersion) {
-        LOGGER.info("Executing smokeTestJunit5 with Gradle {}", gradleVersion);
+        LOGGER.lifecycle("Executing smokeTestJunit5 with junitVersionPair {} and Gradle {}", junitVersionPair, gradleVersion);
         var junitVersionParts = junitVersionPair.split("/");
         var junitVersionProperty = String.format("-PjUnitVersion=%s", junitVersionParts[0]);
         var junitPlatformVersionProperty = String.format("-PjUnitPlatformVersion=%s", junitVersionParts[1]);
@@ -109,7 +110,7 @@ class ModulePluginSmokeTest {
     // It currently fails with Gradle 7.0
     @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3"/*, "7.0"*/})
     void smokeTestMixed(String gradleVersion) {
-        LOGGER.info("Executing smokeTestMixed with Gradle {}", gradleVersion);
+        LOGGER.lifecycle("Executing smokeTestMixed with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project-mixed"))
                 .withPluginClasspath(pluginClasspath)
@@ -159,9 +160,10 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestDist({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
     void smokeTestDist(String projectName, String gradleVersion) {
-        LOGGER.info("Executing smokeTestDist with Gradle {}", gradleVersion);
+        LOGGER.lifecycle("Executing smokeTestDist of {} with Gradle {}", projectName, gradleVersion);
+        if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -201,7 +203,8 @@ class ModulePluginSmokeTest {
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
     @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
     void smokeTestRunDemo(String projectName, String gradleVersion) {
-        LOGGER.info("Executing smokeTestRunDemo with Gradle {}", gradleVersion);
+        LOGGER.lifecycle("Executing smokeTestRunDemo of {} with Gradle {}", projectName, gradleVersion);
+        if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -217,10 +220,11 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestRunStartScripts({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    // Fails with Gradle versions >= 6.6. See https://github.com/java9-modularity/gradle-modules-plugin/issues/165
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0"*/})
+    // Fails with Gradle versions >= 6.6.
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0", "7.2"*/})
     void smokeTestRunStartScripts(String projectName, String gradleVersion) {
-        LOGGER.info("Executing smokeTestRunScripts with Gradle {}", gradleVersion);
+        LOGGER.lifecycle("Executing smokeTestRunScripts of {} with Gradle {}", projectName, gradleVersion);
+        if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -245,4 +249,11 @@ class ModulePluginSmokeTest {
         }
     }
 
+    private static boolean checkCombination(String projectName, String gradleVersion) {
+        if(projectName.equals("test-project-kotlin") && gradleVersion.compareTo("6.4") < 0) {
+            LOGGER.lifecycle("Unsupported combination: {} / Gradle {}. Test skipped", projectName, gradleVersion);
+            return false;
+        }
+        return true;
+    }
 }
