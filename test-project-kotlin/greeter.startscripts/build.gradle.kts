@@ -21,7 +21,8 @@ modularity {
 }
 
 application {
-    mainClassName = "$moduleName/startscripts.MainDemoKt"
+    mainClass.set("startscripts.MainDemoKt")
+    mainModule.set(moduleName)
     applicationName = "demo"
     applicationDefaultJvmArgs = listOf("-Xmx128m")
 }

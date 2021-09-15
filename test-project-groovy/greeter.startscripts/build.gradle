@@ -1,3 +1,4 @@
+import org.gradle.util.GradleVersion
 import org.javamodularity.moduleplugin.tasks.ModularJavaExec
 import org.javamodularity.moduleplugin.tasks.ModularCreateStartScripts
 
@@ -16,7 +17,12 @@ modularity {
 }
 
 application {
-    mainClassName = 'greeter.startscripts/startscripts.MainDemo'
+    if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) < 0) {
+        mainClassName = 'greeter.startscripts/startscripts.MainDemo'
+    } else {
+        mainClass = 'startscripts.MainDemo'
+        mainModule = 'greeter.startscripts'
+    }
     applicationName = 'demo'
     applicationDefaultJvmArgs = ['-Xmx128m']
 }
