@@ -72,10 +72,6 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
             if (ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME.equals(startScriptsTask.getMainClassName())) {
                 startScriptsTask.setMainClassName(execTask.getMain());
             }
-        } else {
-            if (ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME.equals(startScriptsTask.getMainClass().getOrElse(ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME))) {
-                startScriptsTask.getMainClass().set(execTask.getMainClass().getOrElse(ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME));
-            }
         }
     }
 
