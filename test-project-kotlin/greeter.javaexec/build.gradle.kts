@@ -21,7 +21,8 @@ File("${project.projectDir}/src/main/kotlin/demo")
             tasks.create<ModularJavaExec>("run$demoClassName") {
                 group = "Demo"
                 description = "Run the $demoClassName program"
-                main = "$moduleName/demo.${demoClassName}Kt"
+                mainClass.set("demo.${demoClassName}Kt")
+                mainModule.set(moduleName)
                 jvmArgs = listOf("-Xmx128m")
             }
         }

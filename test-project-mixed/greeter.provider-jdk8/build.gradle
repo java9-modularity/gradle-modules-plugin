@@ -1,3 +1,7 @@
 modularity.mixedJavaRelease 8
 
 apply from: "$rootDir/gradle/shared/greeter.provider.gradle"
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}

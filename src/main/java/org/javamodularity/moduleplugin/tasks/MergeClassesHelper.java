@@ -1,6 +1,7 @@
 package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.Project;
+import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -64,7 +65,9 @@ public class MergeClassesHelper {
     }
 
     public Sync createMergeClassesTask() {
-        return project.getTasks().create(MERGE_CLASSES_TASK_NAME, Sync.class);
+        Sync sync = project.getTasks().create(MERGE_CLASSES_TASK_NAME, Sync.class);
+        sync.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
+        return sync;
     }
 
     public FileCollection getMergeAdjustedClasspath(FileCollection classpath) {

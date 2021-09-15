@@ -25,6 +25,12 @@ public class ModularJavaExec extends JavaExec {
     @Internal
     private final List<String> ownJvmArgs = new ArrayList<>();
 
+    public ModularJavaExec() {
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
+            this.getModularity().getInferModulePath().set(true);
+        }
+    }
+
     List<String> getOwnJvmArgs() {
         return ownJvmArgs;
     }

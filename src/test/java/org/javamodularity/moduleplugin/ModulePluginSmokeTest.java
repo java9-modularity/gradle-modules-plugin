@@ -38,7 +38,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTest({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.1", "7.2"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
     void smokeTest(String projectName, String gradleVersion) {
         LOGGER.lifecycle("Executing smokeTest of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
@@ -86,7 +86,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestJunit5({arguments})")
     @CartesianValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0"})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
     void smokeTestJunit5(String junitVersionPair, String gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestJunit5 with junitVersionPair {} and Gradle {}", junitVersionPair, gradleVersion);
         var junitVersionParts = junitVersionPair.split("/");
@@ -107,8 +107,7 @@ class ModulePluginSmokeTest {
     }
 
     @CartesianProductTest(name = "smokeTestMixed({arguments})")
-    // It currently fails with Gradle 7.0
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3"/*, "7.0"*/})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
     void smokeTestMixed(String gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestMixed with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
@@ -220,8 +219,7 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestRunStartScripts({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin", "test-project-groovy"})
-    // Fails with Gradle versions >= 6.6.
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1"/*, "6.8.3", "7.0", "7.2"*/})
+    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
     void smokeTestRunStartScripts(String projectName, String gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunScripts of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;

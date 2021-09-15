@@ -1,3 +1,4 @@
+import org.gradle.util.GradleVersion
 import org.javamodularity.moduleplugin.tasks.ModularJavaExec
 
 dependencies {
@@ -17,7 +18,12 @@ new File("$projectDir/src/main/groovy/demo").eachFileMatch(~/Demo.*\.groovy/) { 
     task "run$demoClassName"(type: ModularJavaExec) {
         group = 'Demo'
         description = "Run the $demoClassName program"
-        main = "greeter.javaexec/demo.$demoClassName"
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) < 0) {
+            main = "greeter.javaexec/demo.$demoClassName"
+        } else {
+            mainClass = "demo.$demoClassName"
+            mainModule = 'greeter.javaexec'
+        }
         jvmArgs = ['-Dgreeter.sender=gradle-modules-plugin']
     }
 }
