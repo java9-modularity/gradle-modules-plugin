@@ -22,17 +22,28 @@ abstract class AbstractExecutionMutator {
     }
 
     protected final String getMainClassName() {
-        String mainClassName = Objects.requireNonNull(
-                execTask.getMain(),
-                "Main class name not found. Try setting 'application.mainClassName' in your Gradle build file."
-        );
-        if (!mainClassName.contains("/")) {
-            if(GradleVersion.current().compareTo(GradleVersion.version("6.3")) <= 0) {
-                LOGGER.warn("No module was provided for main class, assuming the current module. Prefer providing 'mainClassName' in the following format: '$moduleName/a.b.Main'");
+        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) < 0) {
+            String mainClassName = Objects.requireNonNull(
+                    execTask.getMain(),
+                    "Main class name not found. Try setting 'application.mainClassName' in your Gradle build file."
+            );
+            if (!mainClassName.contains("/")) {
+                    LOGGER.warn("No module was provided for main class, assuming the current module. Prefer providing 'mainClassName' in the following format: '$moduleName/a.b.Main'");
+                return helper().moduleName() + "/" + mainClassName;
             }
-            return helper().moduleName() + "/" + mainClassName;
+            return mainClassName;
+        } else {
+            String mainClassName = Objects.requireNonNull(
+                    execTask.getMainClass().getOrNull(),
+                    "Main class name not found. Try setting 'application.mainClass' in your Gradle build file."
+            );
+            String mainModuleName = execTask.getMainModule().getOrNull();
+            if(mainModuleName == null) {
+                LOGGER.warn("Main module name not found. Try setting 'application.mainModule' in your Gradle build file.");
+                mainModuleName = helper().moduleName();
+            }
+            return mainModuleName + "/" + mainClassName;
         }
-        return mainClassName;
     }
 
     protected final JavaProjectHelper helper() {
