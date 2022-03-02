@@ -4,8 +4,10 @@ import java.util.List;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.invocation.Gradle;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.tasks.ClasspathFile;
 
@@ -86,8 +88,23 @@ public class DefaultModularityExtension implements ModularityExtension {
             throw new IllegalStateException("--release option is already set in compiler args");
         }
 
-        compilerArgs.add("--release");
-        compilerArgs.add(String.valueOf(javaRelease));
+        if (releaseOptionIsSupported()) {
+            // using the `convention(Integer)` method instead of the `set(Integer)` method, to let users set overwrite explicitly
+            javaCompile.getOptions().getRelease().convention(javaRelease);
+        } else {
+            compilerArgs.add("--release");
+            compilerArgs.add(String.valueOf(javaRelease));
+        }
+    }
+
+    /**
+     * @see <a href="https://github.com/gradle/gradle/issues/2510#issuecomment-657436188">The comment on GitHub issue that says {@code --release} option is added in Gradle 6.6</a>
+     * @return true if the version of Gradle is 6.6 or later
+     */
+    private boolean releaseOptionIsSupported() {
+        boolean supported = GradleVersion.current().compareTo(GradleVersion.version("6.6")) >= 0;
+        project.getLogger().debug("Is releaseOptionSupported? {}", supported);
+        return supported;
     }
 
     private JavaProjectHelper helper() {
