@@ -16,6 +16,6 @@ include 'greeter.runner'
 include 'greeter.javaexec'
 include 'greeter.startscripts'
 
-if(GradleVersion.current().compareTo(GradleVersion.version("6.7")) >= 0) {
+if(GradleVersion.current().compareTo(GradleVersion.version("6.6")) >= 0) {
     include 'greeter.toolchain'
 }
