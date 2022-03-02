@@ -6,7 +6,9 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.jvm.toolchain.JavaToolchainSpec;
 import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.tasks.ClasspathFile;
@@ -76,6 +78,17 @@ public class DefaultModularityExtension implements ModularityExtension {
     // TODO: Remove this method when Gradle supports it natively:  https://github.com/gradle/gradle/issues/2510
     private void setJavaRelease(JavaCompile javaCompile, int javaRelease) {
         String currentJavaVersion = JavaVersion.current().toString();
+        if (toolchainIsSupported()) {
+            JavaToolchainSpec toolchain = project.getExtensions().getByType(JavaPluginExtension.class).getToolchain();
+            if (toolchain != null) {
+                // If toolchain is enabled, the version of java compiler is NOT same to the version of JVM running Gradle
+                // so we need to get the version of toolchain explicitly as follows
+                String toolchainVersion = toolchain.getLanguageVersion().map(Object::toString).getOrNull();
+                if (toolchainVersion != null) {
+                    currentJavaVersion = toolchainVersion;
+                }
+            }
+        }
         if (!javaCompile.getSourceCompatibility().equals(currentJavaVersion)) {
             throw new IllegalStateException("sourceCompatibility should not be set together with --release option");
         }
@@ -102,9 +115,15 @@ public class DefaultModularityExtension implements ModularityExtension {
      * @return true if the version of Gradle is 6.6 or later
      */
     private boolean releaseOptionIsSupported() {
-        boolean supported = GradleVersion.current().compareTo(GradleVersion.version("6.6")) >= 0;
-        project.getLogger().debug("Is releaseOptionSupported? {}", supported);
-        return supported;
+        return GradleVersion.current().compareTo(GradleVersion.version("6.6")) >= 0;
+    }
+
+    /**
+     * @see <a href="https://docs.gradle.org/6.7/javadoc/org/gradle/api/plugins/JavaPluginExtension.html#getToolchain--">The Javadoc that says {@code JavaPluginExtension.getToolchain()} is added in Gradle 6.7</a>
+     * @return true if the version of Gradle is 6.7 or later
+     */
+    private boolean toolchainIsSupported() {
+        return GradleVersion.current().compareTo(GradleVersion.version("6.7")) >= 0;
     }
 
     private JavaProjectHelper helper() {
