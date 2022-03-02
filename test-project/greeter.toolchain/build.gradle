@@ -1,7 +1,7 @@
 //region NO-OP (DSL testing)
 
 // one of the supported Java version (prefer LTS version)
-def toolchainVer = 17
+def toolchainVer = 11
 
 java {
     toolchain {
