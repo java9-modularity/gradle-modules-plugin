@@ -12,6 +12,7 @@ import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
 import org.javamodularity.moduleplugin.internal.TaskOption;
 
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +54,10 @@ public class RunTaskMutator extends AbstractExecutionMutator {
                 .collect(Collectors.toList()).toArray());
         var patchModuleContainer = PatchModuleContainer.copyOf(
                 helper().modularityExtension().optionContainer().getPatchModuleContainer());
-        patchModuleContainer.addDir(moduleName, helper().mainSourceSet().getOutput().getResourcesDir().getAbsolutePath());
+        var resourceDir = helper().mainSourceSet().getOutput().getResourcesDir();
+        if (resourceDir != null && Files.isDirectory(resourceDir.toPath())) {
+            patchModuleContainer.addDir(moduleName, resourceDir.getAbsolutePath());
+        }
         patchModuleContainer.buildModulePathOption(filteredClasspath).ifPresent(option -> option.mutateArgs(jvmArgs));
         patchModuleContainer.mutator(filteredClasspath).mutateArgs(jvmArgs);
 

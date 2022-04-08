@@ -104,12 +104,17 @@ public class TestTask extends AbstractModulePluginTask {
         sourceSets.add(mainSourceSet);
         sourceSets.addAll(classesSourceSets);
 
-        Stream<File> classesFileStream = classesSourceSets.stream()
-                .flatMap(sourceSet -> sourceSet.getOutput().getClassesDirs().getFiles().stream());
-        Stream<File> resourceFileStream = sourceSets.stream()
-                .map(sourceSet -> sourceSet.getOutput().getResourcesDir());
+        Stream<Path> classesFileStream = classesSourceSets.stream()
+                .flatMap(sourceSet -> sourceSet.getOutput().getClassesDirs().getFiles().stream())
+                .map(File::toPath);
 
-        return Stream.concat(classesFileStream, resourceFileStream).map(File::toPath);
+        Stream<Path> resourceFileStream = sourceSets.stream()
+                .map(sourceSet -> sourceSet.getOutput().getResourcesDir())
+                .filter(Objects::nonNull)
+                .map(File::toPath)
+                .filter(Files::isDirectory);
+
+        return Stream.concat(classesFileStream, resourceFileStream);
     }
 
     private TaskOption buildAddReadsOption(TestEngine testEngine) {
