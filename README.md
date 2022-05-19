@@ -64,7 +64,7 @@ The main build file should look as follows:
 
 ```groovy
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.8.10' apply false
+    id 'org.javamodularity.moduleplugin' version '1.8.11' apply false
 }
 
 subprojects {
