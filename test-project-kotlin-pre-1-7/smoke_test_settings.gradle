@@ -1,0 +1,11 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal().with {
+            content {
+                excludeGroup 'org.javamodularity.moduleplugin' // added to the classpath by the smoke test
+            }
+        }
+    }
+}
+
+apply from: 'settings.gradle'
