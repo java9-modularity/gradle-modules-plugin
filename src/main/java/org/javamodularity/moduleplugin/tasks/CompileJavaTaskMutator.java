@@ -4,12 +4,12 @@ import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 import org.javamodularity.moduleplugin.internal.MutatorHelper;
+import org.javamodularity.moduleplugin.tasks.MergeClassesHelper.CompileTaskWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +60,7 @@ class CompileJavaTaskMutator {
                 helper().modularityExtension().optionContainer().getPatchModuleContainer());
         String moduleName = helper().moduleName();
         new MergeClassesHelper(project).otherCompileTaskStream()
-                .map(AbstractCompile::getDestinationDir)
+                .map(CompileTaskWrapper::getDestinationDir)
                 .forEach(dir -> patchModuleContainer.addDir(moduleName, dir.getAbsolutePath()));
 
         // Keep only valid module-path entries (https://github.com/java9-modularity/gradle-modules-plugin/issues/190)

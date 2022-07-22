@@ -26,14 +26,14 @@ public class MergeClassesTask extends AbstractModulePluginTask {
     public void configureMergeClassesAfterEvaluate() {
         var mergeClasses = mergeClassesHelper().createMergeClassesTask();
 
-        mergeClassesHelper().allCompileTaskStream().forEach(task -> {
+        mergeClassesHelper().allCompileTaskStream().forEach(taskWrapper -> {
             List<String> modularTasks = List.of(JavaPlugin.COMPILE_JAVA_TASK_NAME, CompileModuleOptions.COMPILE_MODULE_INFO_TASK_NAME);
-            if(modularTasks.contains(task.getName())) {
-                mergeClasses.from(task.getDestinationDir());
+            if(modularTasks.contains(taskWrapper.getTask().getName())) {
+                mergeClasses.from(taskWrapper.getDestinationDir());
             } else {
-                mergeClasses.from(task.getDestinationDir(), copySpec -> copySpec.exclude("**/module-info.class"));
+                mergeClasses.from(taskWrapper.getDestinationDir(), copySpec -> copySpec.exclude("**/module-info.class"));
             }
-            mergeClasses.dependsOn(task);
+            mergeClasses.dependsOn(taskWrapper.getTask());
         });
         mergeClasses.into(helper().getMergedDir());
         mergeClasses.onlyIf(task -> mergeClassesHelper().isMergeRequired());
