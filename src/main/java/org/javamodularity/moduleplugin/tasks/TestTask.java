@@ -40,6 +40,7 @@ public class TestTask extends AbstractModulePluginTask {
                 .ifPresent(this::configureTestJava);
     }
 
+    @SuppressWarnings("Convert2Lambda")
     private void configureTestJava(Test testJava) {
         var testModuleOptions = testJava.getExtensions().create("moduleOptions", TestModuleOptions.class, project);
 
@@ -47,7 +48,7 @@ public class TestTask extends AbstractModulePluginTask {
             testJava.getModularity().getInferModulePath().set(false);
         }
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
-        testJava.doFirst(new Action<Task>() {
+        testJava.doFirst(new Action<>() {
             @Override
             public void execute(Task task) {
                 if (testModuleOptions.getRunOnClasspath()) {
@@ -86,7 +87,7 @@ public class TestTask extends AbstractModulePluginTask {
             testEngine.additionalTaskOptions.forEach(option -> option.mutateArgs(jvmArgs));
         });
 
-        ModuleInfoTestHelper.mutateArgs(project, jvmArgs::add);
+        ModuleInfoTestHelper.mutateArgs(project, false, jvmArgs::add);
 
         return jvmArgs;
     }

@@ -57,6 +57,7 @@ class ModulePluginSmokeTest {
             assertTasksSuccessful(result, "greeter.provider.testfixture", "build");
         }
         assertTasksSuccessful(result, "greeter.runner", "build", "run");
+        assertOutputDoesNotContain(result, "warning: [options] --add-opens has no effect at compile time");
     }
 
     @CartesianProductTest(name = "smokeTestRun({arguments})")
@@ -245,6 +246,11 @@ class ModulePluginSmokeTest {
         for (String taskName : taskNames) {
             SmokeTestHelper.assertTaskSuccessful(result, subprojectName, taskName);
         }
+    }
+
+    private static void assertOutputDoesNotContain(BuildResult result, String text) {
+        final String output = result.getOutput();
+        assertFalse(output.contains(text), "Output should not contain '" + text + "', but was: " + output);
     }
 
     private static boolean checkCombination(String projectName, String gradleVersion) {
