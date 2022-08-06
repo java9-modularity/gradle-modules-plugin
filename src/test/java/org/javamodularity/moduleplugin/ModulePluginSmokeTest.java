@@ -6,8 +6,9 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
-import org.gradle.util.GradleVersion;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.CartesianEnumSource;
 import org.junitpioneer.jupiter.CartesianProductTest;
 import org.junitpioneer.jupiter.CartesianValueSource;
 
@@ -22,12 +23,35 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * If you're locally seeing the error:
+ * {@code Could not create an instance of type org.gradle.initialization.DefaultSettings_Decorated.}
+ * when running these test it will because you're using a recent version of Java and running into:
+ * https://github.com/gradle/gradle/issues/10248.
+ *
+ * <p>Either switch to pre JDK-14 or <b>locally</b> comment out v5_1 and v5_2 in the {@link GradleVersion} enum.
+ */
 @SuppressWarnings("ConstantConditions")
 class ModulePluginSmokeTest {
     private static final Logger LOGGER = Logging.getLogger(ModulePluginSmokeTest.class);
 
     private List<File> pluginClasspath;
 
+    @SuppressWarnings("unused")
+    private enum GradleVersion {
+        // Locally comment out the 5.x versions if running JDK-14+
+        v5_1, v5_6,
+        v6_3, v6_4_1, v6_5_1, v6_8_3,
+        v7_0, v7_2
+        ;
+
+        @Override
+        public String toString() {
+            return  name().substring(1).replaceAll("_", ".");
+        }
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
     @BeforeEach
     void before() throws IOException {
         pluginClasspath = Resources.readLines(Resources.getResource("plugin-classpath.txt"), Charsets.UTF_8)
@@ -38,14 +62,14 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTest({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
-    void smokeTest(String projectName, String gradleVersion) {
+    @CartesianEnumSource(GradleVersion.class)
+    void smokeTest(String projectName, GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTest of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(gradleVersion)
+                .withGradleVersion(gradleVersion.toString())
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();
@@ -53,7 +77,7 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.api", "build");
         assertTasksSuccessful(result, "greeter.provider", "build");
         assertTasksSuccessful(result, "greeter.provider.test", "build");
-        if(GradleVersion.version(gradleVersion).compareTo(GradleVersion.version("5.6")) >= 0) {
+        if(org.gradle.util.GradleVersion.version(gradleVersion.toString()).compareTo(org.gradle.util.GradleVersion.version("5.6")) >= 0) {
             assertTasksSuccessful(result, "greeter.provider.testfixture", "build");
         }
         assertTasksSuccessful(result, "greeter.runner", "build", "run");
@@ -61,15 +85,15 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestRun({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
-    void smokeTestRun(String projectName, String gradleVersion) {
+    @CartesianEnumSource(GradleVersion.class)
+    void smokeTestRun(String projectName, GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRun of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var writer = new StringWriter(256);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(gradleVersion)
+                .withGradleVersion(gradleVersion.toString())
                 .withArguments("-q", "-c", "smoke_test_settings.gradle", "clean", ":greeter.runner:run", "--args", "aaa bbb")
                 .forwardStdOutput(writer)
                 .forwardStdError(writer)
@@ -83,11 +107,10 @@ class ModulePluginSmokeTest {
         assertEquals("welcome", lines.get(2));
     }
 
-
     @CartesianProductTest(name = "smokeTestJunit5({arguments})")
     @CartesianValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
-    void smokeTestJunit5(String junitVersionPair, String gradleVersion) {
+    @CartesianEnumSource(GradleVersion.class)
+    void smokeTestJunit5(String junitVersionPair, GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestJunit5 with junitVersionPair {} and Gradle {}", junitVersionPair, gradleVersion);
         var junitVersionParts = junitVersionPair.split("/");
         var junitVersionProperty = String.format("-PjUnitVersion=%s", junitVersionParts[0]);
@@ -95,7 +118,7 @@ class ModulePluginSmokeTest {
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(gradleVersion)
+                .withGradleVersion(gradleVersion.toString())
                 .withArguments("-c", "smoke_test_settings.gradle", junitVersionProperty, junitPlatformVersionProperty, "clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();
@@ -107,13 +130,13 @@ class ModulePluginSmokeTest {
     }
 
     @CartesianProductTest(name = "smokeTestMixed({arguments})")
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
-    void smokeTestMixed(String gradleVersion) {
+    @CartesianEnumSource(GradleVersion.class)
+    void smokeTestMixed(GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestMixed with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project-mixed"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(gradleVersion)
+                .withGradleVersion(gradleVersion.toString())
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "--stacktrace")
                 .forwardOutput()
                 .build();
@@ -159,14 +182,14 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestDist({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
-    void smokeTestDist(String projectName, String gradleVersion) {
+    @CartesianEnumSource(GradleVersion.class)
+    void smokeTestDist(String projectName, GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestDist of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(gradleVersion)
+                .withGradleVersion(gradleVersion.toString())
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", ":greeter.runner:installDist", "--stacktrace")
                 .forwardOutput()
                 .build();
@@ -200,14 +223,14 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestRunDemo({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
-    void smokeTestRunDemo(String projectName, String gradleVersion) {
+    @CartesianEnumSource(GradleVersion.class)
+    void smokeTestRunDemo(String projectName, GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunDemo of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(gradleVersion)
+                .withGradleVersion(gradleVersion.toString())
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", "build",
                         ":greeter.javaexec:runDemo1", ":greeter.javaexec:runDemo2", "--info", "--stacktrace")
                 .forwardOutput()
@@ -219,14 +242,14 @@ class ModulePluginSmokeTest {
 
     @CartesianProductTest(name = "smokeTestRunStartScripts({arguments})")
     @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianValueSource(strings = {"5.1", "5.6", "6.3", "6.4.1", "6.5.1", "6.8.3", "7.0", "7.2"})
-    void smokeTestRunStartScripts(String projectName, String gradleVersion) {
+    @CartesianEnumSource(GradleVersion.class)
+    void smokeTestRunStartScripts(String projectName, GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunScripts of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
-                .withGradleVersion(gradleVersion)
+                .withGradleVersion(gradleVersion.toString())
                 .withArguments("-c", "smoke_test_settings.gradle", "clean", ":greeter.startscripts:installDist", "--info", "--stacktrace")
                 .forwardOutput()
                 .build();
@@ -241,15 +264,20 @@ class ModulePluginSmokeTest {
         assertEquals("Demo2: welcome home, Alice and Bob!", ctx.getAppOutput("demo2"));
     }
 
+    @Test
+    void shouldNotCheckInWithCommentedOutVersions() {
+        assertEquals(8, GradleVersion.values().length);
+    }
+
     private static void assertTasksSuccessful(BuildResult result, String subprojectName, String... taskNames) {
         for (String taskName : taskNames) {
             SmokeTestHelper.assertTaskSuccessful(result, subprojectName, taskName);
         }
     }
 
-    private static boolean checkCombination(String projectName, String gradleVersion) {
-        final boolean kotlin_NotSupported = projectName.startsWith("test-project-kotlin") && gradleVersion.compareTo("6.4") < 0;
-        final boolean kotlin1_7_NotSupported = projectName.equals("test-project-kotlin") && gradleVersion.compareTo("6.6") < 0;
+    private static boolean checkCombination(String projectName, GradleVersion gradleVersion) {
+        final boolean kotlin_NotSupported = projectName.startsWith("test-project-kotlin") && gradleVersion.toString().compareTo("6.4") < 0;
+        final boolean kotlin1_7_NotSupported = projectName.equals("test-project-kotlin") && gradleVersion.toString().compareTo("6.6") < 0;
         if (kotlin_NotSupported || kotlin1_7_NotSupported) {
             LOGGER.lifecycle("Unsupported combination: {} / Gradle {}. Test skipped", projectName, gradleVersion);
             return false;
