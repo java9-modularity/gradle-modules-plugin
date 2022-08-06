@@ -1,0 +1,16 @@
+import org.gradle.util.GradleVersion
+
+rootProject.name = 'test-project-kotlin-pre-1-7'
+
+include 'greeter.api'
+
+include 'greeter.provider'
+include 'greeter.provider.test'
+
+if(GradleVersion.current().compareTo(GradleVersion.version("5.6")) >= 0) {
+    include 'greeter.provider.testfixture'
+}
+
+include 'greeter.runner'
+include 'greeter.javaexec'
+include 'greeter.startscripts'
