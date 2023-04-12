@@ -5,6 +5,7 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskAction;
@@ -63,6 +64,7 @@ public class ModularJavaExec extends JavaExec {
         super.setJvmArgs(arguments);
     }
 
+    @Input
     @Override
     public String getMain() {
         if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
