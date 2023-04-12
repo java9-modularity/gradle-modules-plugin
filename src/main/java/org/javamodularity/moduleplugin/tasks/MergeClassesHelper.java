@@ -12,6 +12,7 @@ import org.gradle.api.tasks.Sync;
 import org.gradle.api.tasks.compile.AbstractCompile;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.jvm.tasks.Jar;
+import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 import org.javamodularity.moduleplugin.extensions.CompileModuleOptions;
 import org.javamodularity.moduleplugin.internal.StreamHelper;
@@ -128,6 +129,11 @@ public class MergeClassesHelper {
 
         @Override
         public File getDestinationDir() {
+            if (GradleVersion.current().compareTo(GradleVersion.version("6.1")) >= 0) {
+                // AbstractCompile#getDestinationDirectory() is supported from Gradle 6.1
+                // https://docs.gradle.org/6.1/javadoc/org/gradle/api/tasks/compile/AbstractCompile.html#getDestinationDirectory--
+                return task.getDestinationDirectory().get().getAsFile();
+            }
             return task.getDestinationDir();
         }
 
