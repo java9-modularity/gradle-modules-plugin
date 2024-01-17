@@ -10,4 +10,12 @@ class GreeterTest {
         val greeter = GreeterLocator().findGreeter()
         assertFalse(greeter.hello().isBlank())
     }
+
+    @Test
+    fun testGeneratedResource() {
+        val resource = object: Any() {}.javaClass.getResourceAsStream("/generated-resource.txt")
+        if (resource == null) {
+            throw RuntimeException("Couldn't load generated resource")
+        }
+    }
 }
