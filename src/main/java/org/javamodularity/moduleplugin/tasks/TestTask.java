@@ -115,7 +115,12 @@ public class TestTask extends AbstractModulePluginTask {
                 .map(File::toPath)
                 .filter(Files::isDirectory);
 
-        return Stream.concat(classesFileStream, resourceFileStream);
+        Stream<Path> additionalResourceFileStream = sourceSets.stream()
+                .flatMap(sourceSet -> sourceSet.getOutput().getDirs().getFiles().stream())
+                .map(File::toPath)
+                .filter(Files::isDirectory);
+
+        return Stream.concat(Stream.concat(classesFileStream, resourceFileStream), additionalResourceFileStream);
     }
 
     private TaskOption buildAddReadsOption(TestEngine testEngine) {
