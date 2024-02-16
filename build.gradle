@@ -29,7 +29,7 @@ configurations {
 
 dependencies {
     implementation gradleApi()
-    implementation 'org.jooq:joor:0.9.13'
+    implementation 'org.jooq:joor:0.9.15'
     plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.13.5'
 
     testImplementation gradleTestKit()
