@@ -2,8 +2,8 @@ plugins {
     id 'eclipse'
     id 'java-gradle-plugin'
     id 'maven-publish' // used for publishing to local maven repository
-    id 'com.gradle.plugin-publish' version '0.12.0'
-    id 'com.github.johnrengelman.shadow' version '5.0.0'
+    id 'com.gradle.plugin-publish' version '1.2.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'com.github.ben-manes.versions' version '0.51.0'
 }
 
@@ -44,7 +44,7 @@ dependencies {
 
 shadowJar {
     configurations = [project.configurations.plugin]
-    classifier = null
+    archiveClassifier = null
     dependencies {
         include(dependency('com.github.javaparser:javaparser-symbol-solver-core'))
         include(dependency('com.github.javaparser:javaparser-symbol-solver-logic'))
