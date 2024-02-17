@@ -22,11 +22,27 @@ updates:
     schedule:
       interval: monthly
   - package-ecosystem: gradle
-    directory: /docs-examples
+    directory: /test-project
     open-pull-requests-limit: 50
     schedule:
-      interval: weekly
-  - package-ecosystem: docker
-    directory: /test-service
+      interval: monthly
+  - package-ecosystem: gradle
+    directory: /test-project-groovy
+    open-pull-requests-limit: 50
+    schedule:
+      interval: monthly
+  - package-ecosystem: gradle
+    directory: /test-project-kotlin
+    open-pull-requests-limit: 50
+    schedule:
+      interval: monthly
+  - package-ecosystem: gradle
+    directory: /test-project-kotlin-pre-1-7
+    open-pull-requests-limit: 50
+    schedule:
+      interval: monthly
+  - package-ecosystem: gradle
+    directory: /test-project-mixed
+    open-pull-requests-limit: 50
     schedule:
       interval: monthly
