@@ -27,6 +27,7 @@ public class ModuleSystemPlugin implements Plugin<Project> {
         new ModuleName().findModuleName(project).ifPresent(moduleName -> configureModularity(project, moduleName));
     }
 
+    @SuppressWarnings("deprecation")
     private void configureModularity(Project project, String moduleName) {
         ExtensionContainer extensions = project.getExtensions();
         extensions.add("moduleName", moduleName);

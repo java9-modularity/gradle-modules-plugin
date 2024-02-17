@@ -73,6 +73,7 @@ public class PatchModuleContainer {
         project.afterEvaluate(container::configureAfterEvaluate);
     }
 
+    @SuppressWarnings("deprecation")
     private void configureAfterEvaluate(Project project) {
         PatchModuleExtension patchModuleExtension = new JavaProjectHelper(project).extension(PatchModuleExtension.class);
         patchModuleExtension.getConfig().forEach( config -> {
