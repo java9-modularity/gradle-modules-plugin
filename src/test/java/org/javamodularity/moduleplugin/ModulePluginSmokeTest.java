@@ -8,9 +8,7 @@ import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.CartesianEnumSource;
-import org.junitpioneer.jupiter.CartesianProductTest;
-import org.junitpioneer.jupiter.CartesianValueSource;
+import org.junitpioneer.jupiter.cartesian.CartesianTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,10 +58,10 @@ class ModulePluginSmokeTest {
                 .collect(Collectors.toList());
     }
 
-    @CartesianProductTest(name = "smokeTest({arguments})")
-    @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianEnumSource(GradleVersion.class)
-    void smokeTest(String projectName, GradleVersion gradleVersion) {
+    @CartesianTest(name = "smokeTest({arguments})")
+    void smokeTest(
+            @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
+            @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTest of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
@@ -84,10 +82,10 @@ class ModulePluginSmokeTest {
         assertOutputDoesNotContain(result, "warning: [options] --add-opens has no effect at compile time");
     }
 
-    @CartesianProductTest(name = "smokeTestRun({arguments})")
-    @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianEnumSource(GradleVersion.class)
-    void smokeTestRun(String projectName, GradleVersion gradleVersion) {
+    @CartesianTest(name = "smokeTestRun({arguments})")
+    void smokeTestRun(
+            @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
+            @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRun of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var writer = new StringWriter(256);
@@ -108,10 +106,10 @@ class ModulePluginSmokeTest {
         assertEquals("welcome", lines.get(2));
     }
 
-    @CartesianProductTest(name = "smokeTestJunit5({arguments})")
-    @CartesianValueSource(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1"})
-    @CartesianEnumSource(GradleVersion.class)
-    void smokeTestJunit5(String junitVersionPair, GradleVersion gradleVersion) {
+    @CartesianTest(name = "smokeTestJunit5({arguments})")
+    void smokeTestJunit5(
+            @CartesianTest.Values(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1"}) String junitVersionPair,
+            @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestJunit5 with junitVersionPair {} and Gradle {}", junitVersionPair, gradleVersion);
         var junitVersionParts = junitVersionPair.split("/");
         var junitVersionProperty = String.format("-PjUnitVersion=%s", junitVersionParts[0]);
@@ -130,9 +128,8 @@ class ModulePluginSmokeTest {
         assertTasksSuccessful(result, "greeter.runner", "build", "run");
     }
 
-    @CartesianProductTest(name = "smokeTestMixed({arguments})")
-    @CartesianEnumSource(GradleVersion.class)
-    void smokeTestMixed(GradleVersion gradleVersion) {
+    @CartesianTest(name = "smokeTestMixed({arguments})")
+    void smokeTestMixed(@CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestMixed with Gradle {}", gradleVersion);
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project-mixed"))
@@ -181,10 +178,10 @@ class ModulePluginSmokeTest {
         }
     }
 
-    @CartesianProductTest(name = "smokeTestDist({arguments})")
-    @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianEnumSource(GradleVersion.class)
-    void smokeTestDist(String projectName, GradleVersion gradleVersion) {
+    @CartesianTest(name = "smokeTestDist({arguments})")
+    void smokeTestDist(
+            @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
+            @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestDist of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
@@ -222,10 +219,10 @@ class ModulePluginSmokeTest {
         assertTrue(ctx.getAppOutput("greeter.runner").contains("welcome"));
     }
 
-    @CartesianProductTest(name = "smokeTestRunDemo({arguments})")
-    @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianEnumSource(GradleVersion.class)
-    void smokeTestRunDemo(String projectName, GradleVersion gradleVersion) {
+    @CartesianTest(name = "smokeTestRunDemo({arguments})")
+    void smokeTestRunDemo(
+            @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
+            @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunDemo of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
@@ -241,10 +238,10 @@ class ModulePluginSmokeTest {
         assertFalse(result.getOutput().contains("Using Java lambdas is not supported as task inputs"));
     }
 
-    @CartesianProductTest(name = "smokeTestRunStartScripts({arguments})")
-    @CartesianValueSource(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"})
-    @CartesianEnumSource(GradleVersion.class)
-    void smokeTestRunStartScripts(String projectName, GradleVersion gradleVersion) {
+    @CartesianTest(name = "smokeTestRunStartScripts({arguments})")
+    void smokeTestRunStartScripts(
+            @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
+            @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunScripts of {} with Gradle {}", projectName, gradleVersion);
         if(!checkCombination(projectName, gradleVersion)) return;
         var result = GradleRunner.create()
