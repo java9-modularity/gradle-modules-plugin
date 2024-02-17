@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CompileJavaTaskMutatorTest {
 
+    @SuppressWarnings("deprecation")
     @Test
     void modularizeJavaCompileTask() {
         // given

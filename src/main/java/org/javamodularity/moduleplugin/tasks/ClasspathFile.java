@@ -4,6 +4,7 @@ import groovy.util.Node;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Stream;
 import org.gradle.api.Task;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -132,8 +133,7 @@ public final class ClasspathFile {
     //   </attributes>
     // </classpathentry>
 
-    rootNode.children().stream()                                // loop over all children
-        .filter(i  -> i instanceof Node)                        // better safe than sorry
+    children(rootNode)                                          // loop over all children
         .filter(i  -> NAME_ITEM.equals(((Node)i).name()))       // with name "classpathentry"
         .filter(i  -> isKindOf((Node)i, "lib"))                 // kind of "lib"
         .filter(i  -> getGradleScope((Node)i).contains("main")) // appropriate gradle scope
@@ -169,8 +169,7 @@ public final class ClasspathFile {
     //   </attributes>
     // </classpathentry>
 
-    rootNode.children().stream()                              // loop over all children
-        .filter(i  -> i instanceof Node)                      // better safe than sorry
+    children(rootNode)                                        // loop over all children
         .filter(i  -> NAME_ITEM.equals(((Node)i).name()))     // with name "classpathentry"
         .filter(i  -> "test".equals(getGradleScope((Node)i))) // appropriate gradle scope
         .filter(i  -> hasNoAttributeTest((Node)i))            // without "test" information
@@ -193,8 +192,7 @@ public final class ClasspathFile {
    *        XML-content to be improved
    */
   /* package */ void putJreOnModulePath(final Node rootNode) {
-    rootNode.children().stream()                          // loop over all children
-        .filter(i  -> i instanceof Node)                  // better safe than sorry
+    children(rootNode)                                    // loop over all children
         .filter(i  -> NAME_ITEM.equals(((Node)i).name())) // with name "classpathentry"
         .filter(i  -> isJre((Node)i))                     // indicating JRE
         .filter(i  -> hasNoAttributeModule((Node)i))      // without "module" information
@@ -225,8 +223,7 @@ public final class ClasspathFile {
 
     // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
 
-    final Optional<Node> oChild = item.children().stream() // loop over all children
-        .filter(c -> c instanceof Node)                    // better safe than sorry
+    final Optional<Node> oChild = children(item)           // loop over all children
         .filter(c -> NAME_CHILD.equals(((Node)c).name()))  // with name "attributes"
         .findFirst();                                      // first child named "attributes"
 
@@ -267,8 +264,7 @@ public final class ClasspathFile {
   /* package */ Optional<Node> getAttributeNamed(final Node child, final String name) {
     // ... Note 1: In real usage (i.e. no test scenario) node has name "attributes".
 
-    return child.children().stream()                           // loop over all children
-        .filter(g -> g instanceof Node)                        // better safe than sorry
+    return children(child)                                     // loop over all children
         .filter(g -> NAME_GRAND.equals(((Node)g).name()))      // nodes with name "attribute"
         .filter(g -> name.equals(((Node)g).attribute("name"))) // nodes with appropriate attribute
         .findFirst();
@@ -287,8 +283,7 @@ public final class ClasspathFile {
   /* package */ boolean hasNoAttributeModule(final Node item) {
     // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
 
-    return item.children().stream()                        // loop over all children
-        .filter(c -> c instanceof Node)                    // better safe than sorry
+    return children(item)                                  // loop over all children
         .filter(c -> NAME_CHILD.equals(((Node)c).name()))  // child named "attributes"
         .filter(c -> hasAttributeNamed((Node)c, "module")) // grand-child with attribute "module"
         .findFirst()
@@ -308,8 +303,7 @@ public final class ClasspathFile {
   /* package */ boolean hasNoAttributeTest(final Node item) {
     // ... Note 1: In real usage (i.e. no test scenario) item has name "classpathentry".
 
-    return item.children().stream()                       // loop over all children
-        .filter(c -> c instanceof Node)                   // better safe than sorry
+    return children(item)                                 // loop over all children
         .filter(c -> NAME_CHILD.equals(((Node)c).name())) // child named "attributes"
         .filter(c -> hasAttributeNamed((Node)c, "test"))  // grand-child with attribute "test"
         .findFirst()
@@ -437,8 +431,7 @@ public final class ClasspathFile {
     map.put("value", "true");
 
     // --- find first child named "attributes"
-    item.children().stream()                              // loop over all children
-        .filter(c -> c instanceof Node)                   // better safe than sorry
+    children(item)                                        // loop over all children
         .filter(c -> NAME_CHILD.equals(((Node)c).name())) // nodes with name "attributes"
         .findFirst()
         .ifPresentOrElse(
@@ -452,4 +445,11 @@ public final class ClasspathFile {
             new AddAttribute(item, map)
     ); // end ifPresentOrElse(...)
   } // end method */
+
+  @SuppressWarnings("unchecked")
+  private static Stream<Node> children(final Node item) {
+    return item.children().stream()
+            .filter(c -> c instanceof Node)
+            .map(Node.class::cast);
+  }
 } // end class

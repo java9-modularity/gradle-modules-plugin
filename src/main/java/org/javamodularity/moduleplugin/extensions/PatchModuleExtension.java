@@ -27,12 +27,14 @@ public class PatchModuleExtension {
     }
 
     /** @deprecated As of 1.7.0, this method is no longer used and can be removed */
+    @SuppressWarnings("removal")
     @Deprecated(since = "1.7.0", forRemoval = true)
     public PatchModuleResolver resolvePatched(FileCollection classpath) {
         return resolvePatched(jarName -> classpath.filter(jar -> jar.getName().endsWith(jarName)).getAsPath());
     }
 
     /** @deprecated As of 1.7.0, this method is no longer used and can be removed */
+    @SuppressWarnings("removal")
     @Deprecated(since = "1.7.0", forRemoval = true)
     public PatchModuleResolver resolvePatched(UnaryOperator<String> jarNameResolver) {
         return new PatchModuleResolver(this, jarNameResolver);
