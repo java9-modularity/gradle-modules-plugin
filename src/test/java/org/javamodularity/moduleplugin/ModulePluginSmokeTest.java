@@ -263,7 +263,7 @@ class ModulePluginSmokeTest {
 
     @Test
     void shouldNotCheckInWithCommentedOutVersions() {
-        assertEquals(10, GradleVersion.values().length);
+        assertEquals(8, GradleVersion.values().length);
     }
 
     private static void assertTasksSuccessful(BuildResult result, String subprojectName, String... taskNames) {

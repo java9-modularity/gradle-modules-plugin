@@ -5,7 +5,14 @@ import examples.greeter.api.Greeter;
 import java.util.Arrays;
 import java.util.ServiceLoader;
 
+/**
+ * Test docs
+ */
 public class Runner {
+    /**
+     * Test docs
+     * @param args test docs
+     */
     public static void main(String[] args) {
         System.out.println("args: " + Arrays.asList(args));
         System.out.println("greeter.sender: " + System.getProperty("greeter.sender"));
