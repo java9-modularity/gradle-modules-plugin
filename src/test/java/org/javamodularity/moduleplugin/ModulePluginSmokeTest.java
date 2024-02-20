@@ -32,7 +32,7 @@ class ModulePluginSmokeTest {
     private enum GradleVersion {
         v5_1, v5_6,
         v6_3, v6_4_1, v6_5_1, v6_8_3,
-        v7_0, v7_5_1
+        v7_0, v7_6_4
         ;
 
         @Override

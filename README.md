@@ -37,22 +37,23 @@ Compatability
 
 The plugin is compatible with the following Gradle versions:
 
-| Gradle version | Min plugin version                                                                     | Max plugin version |
-|----------------|----------------------------------------------------------------------------------------|--------------------|
-| 5.* -> 7.5.+   | 1.+                                                                                    |                    |
-| 7.6+           | See [issue #258](https://github.com/java9-modularity/gradle-modules-plugin/issues/258) |                    |
+| Gradle version | Min plugin version                                                                     |
+|----------------|----------------------------------------------------------------------------------------|
+| 5.* -> 7.5.+   | 1.+                                                                                    |
+| 7.6+           | 1.8.14                                                                                 |
+| 8.+            | See [issue #260](https://github.com/java9-modularity/gradle-modules-plugin/issues/260) |
 
 The plugin is compatible with the following Java versions:
 
 | Java version | Min plugin version |
 |--------------|--------------------|
-| 11+          | 1.0.0              |
+| 11+          | 1.+                |
 
 The plugin is compatible with the following Kotlin versions:
 
 | Kotlin version | Min plugin version |
 |----------------|--------------------|
-| 1.0.* -> 1.6.* | 1.0.0              |
+| 1.0.* -> 1.6.* | 1.+                |
 | 1.7+           | 1.8.12             |
 
 Setup

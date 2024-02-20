@@ -38,7 +38,10 @@ public class MergeClassesTask extends AbstractModulePluginTask {
         mergeClasses.into(helper().getMergedDir());
         mergeClasses.onlyIf(task -> mergeClassesHelper().isMergeRequired());
 
-        Stream.of(ApplicationPlugin.TASK_RUN_NAME, JavaPlugin.TEST_TASK_NAME, JavaProjectHelper.COMPILE_TEST_FIXTURES_JAVA_TASK_NAME)
+        Stream.of(ApplicationPlugin.TASK_RUN_NAME,
+                        JavaPlugin.TEST_TASK_NAME,
+                        JavaPlugin.COMPILE_TEST_JAVA_TASK_NAME,
+                        JavaProjectHelper.COMPILE_TEST_FIXTURES_JAVA_TASK_NAME)
                 .map(helper()::findTask)
                 .flatMap(Optional::stream)
                 .forEach(task -> task.dependsOn(mergeClasses));
