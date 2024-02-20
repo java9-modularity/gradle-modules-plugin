@@ -32,6 +32,29 @@ The plugin supports the following test engines:
 
 An example application using this plugin is available [here](https://github.com/java9-modularity/gradle-modules-plugin-example).
 
+Compatability
+===
+
+The plugin is compatible with the following Gradle versions:
+
+| Gradle version | Min plugin version                                                                     | Max plugin version |
+|----------------|----------------------------------------------------------------------------------------|--------------------|
+| 5.* -> 7.5.+   | 1.+                                                                                    |                    |
+| 7.6+           | See [issue #258](https://github.com/java9-modularity/gradle-modules-plugin/issues/258) |                    |
+
+The plugin is compatible with the following Java versions:
+
+| Java version | Min plugin version |
+|--------------|--------------------|
+| 11+          | 1.0.0              |
+
+The plugin is compatible with the following Kotlin versions:
+
+| Kotlin version | Min plugin version |
+|----------------|--------------------|
+| 1.0.* -> 1.6.* | 1.0.0              |
+| 1.7+           | 1.8.12             |
+
 Setup
 ===
 
@@ -636,7 +659,7 @@ Using the ModularJavaExec task
 ===
 The `application` plugin can handle only one executable application.
 To start multiple applications, you typically need to create a `JavaExec` task for each executable application.
-The module plugin offers a similar task named `ModularJavaExec`, which helps executing modular applications.
+The module plugin offers a similar task named `ModularJavaExec`, which helps to execute modular applications.
 This task automatically configures the JVM with the correct arguments such as `--module-path`.
 It exposes the same properties and methods as the [`JavaExec`](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.JavaExec.html) task,
 the only difference being that the module name should also be provided when setting the `main` property.  
