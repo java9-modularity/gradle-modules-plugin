@@ -20,15 +20,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-/**
- * If you're locally seeing the error:
- * {@code Could not create an instance of type org.gradle.initialization.DefaultSettings_Decorated.}
- * when running these test it will because you're using a recent version of Java and running into:
- * https://github.com/gradle/gradle/issues/10248.
- *
- * <p>Either switch to pre JDK-14 or <b>locally</b> comment out v5_1 and v5_2 in the {@link GradleVersion} enum.
- */
 @SuppressWarnings("ConstantConditions")
 class ModulePluginSmokeTest {
     private static final Logger LOGGER = Logging.getLogger(ModulePluginSmokeTest.class);
@@ -37,7 +30,6 @@ class ModulePluginSmokeTest {
 
     @SuppressWarnings("unused")
     private enum GradleVersion {
-        // Locally comment out the 5.x versions if running JDK-14+
         v5_1, v5_6,
         v6_3, v6_4_1, v6_5_1, v6_8_3,
         v7_0, v7_2
@@ -63,7 +55,8 @@ class ModulePluginSmokeTest {
             @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTest of {} with Gradle {}", projectName, gradleVersion);
-        if(!checkCombination(projectName, gradleVersion)) return;
+        assumeTrue(jdkSupported(gradleVersion));
+        assumeTrue(checkCombination(projectName, gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -87,7 +80,8 @@ class ModulePluginSmokeTest {
             @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRun of {} with Gradle {}", projectName, gradleVersion);
-        if(!checkCombination(projectName, gradleVersion)) return;
+        assumeTrue(jdkSupported(gradleVersion));
+        assumeTrue(checkCombination(projectName, gradleVersion));
         var writer = new StringWriter(256);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
@@ -108,9 +102,10 @@ class ModulePluginSmokeTest {
 
     @CartesianTest(name = "smokeTestJunit5({arguments})")
     void smokeTestJunit5(
-            @CartesianTest.Values(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1"}) String junitVersionPair,
+            @CartesianTest.Values(strings = {"5.4.2/1.4.2", "5.5.2/1.5.2", "5.7.1/1.7.1", "5.10.2/1.10.2"}) String junitVersionPair,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestJunit5 with junitVersionPair {} and Gradle {}", junitVersionPair, gradleVersion);
+        assumeTrue(jdkSupported(gradleVersion));
         var junitVersionParts = junitVersionPair.split("/");
         var junitVersionProperty = String.format("-PjUnitVersion=%s", junitVersionParts[0]);
         var junitPlatformVersionProperty = String.format("-PjUnitPlatformVersion=%s", junitVersionParts[1]);
@@ -131,6 +126,7 @@ class ModulePluginSmokeTest {
     @CartesianTest(name = "smokeTestMixed({arguments})")
     void smokeTestMixed(@CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestMixed with Gradle {}", gradleVersion);
+        assumeTrue(jdkSupported(gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project-mixed"))
                 .withPluginClasspath(pluginClasspath)
@@ -183,7 +179,8 @@ class ModulePluginSmokeTest {
             @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestDist of {} with Gradle {}", projectName, gradleVersion);
-        if(!checkCombination(projectName, gradleVersion)) return;
+        assumeTrue(jdkSupported(gradleVersion));
+        assumeTrue(checkCombination(projectName, gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -224,7 +221,8 @@ class ModulePluginSmokeTest {
             @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunDemo of {} with Gradle {}", projectName, gradleVersion);
-        if(!checkCombination(projectName, gradleVersion)) return;
+        assumeTrue(jdkSupported(gradleVersion));
+        assumeTrue(checkCombination(projectName, gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -243,7 +241,8 @@ class ModulePluginSmokeTest {
             @CartesianTest.Values(strings = {"test-project", "test-project-kotlin-pre-1-7", "test-project-kotlin", "test-project-groovy"}) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunScripts of {} with Gradle {}", projectName, gradleVersion);
-        if(!checkCombination(projectName, gradleVersion)) return;
+        assumeTrue(jdkSupported(gradleVersion));
+        assumeTrue(checkCombination(projectName, gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -286,5 +285,29 @@ class ModulePluginSmokeTest {
             return false;
         }
         return true;
+    }
+
+    private static int javaMajorVersion() {
+        final String version = System.getProperty("java.version");
+        return Integer.parseInt(version.substring(0, version.indexOf(".")));
+    }
+
+    private boolean jdkSupported(final GradleVersion gradleVersion) {
+        switch (gradleVersion) {
+            // CI build runs with early JDK that supports these Gradle version
+            // But don't fail locally if running local JDK.
+            // Running JDK 14+ with Gradle 5 runs into:
+            // https://github.com/gradle/gradle/issues/10248
+            case v5_1:
+            case v5_6:
+                final int major = javaMajorVersion();
+                if (major >= 14) {
+                    LOGGER.lifecycle("Unsupported JDK version '{}' for Gradle 5: Test skipped", major);
+                    return false;
+                }
+                return true;
+            default:
+                return true;
+        }
     }
 }

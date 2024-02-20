@@ -5,7 +5,13 @@ import java.io.*;
 import java.util.*;
 import javax.annotation.Nonnull;
 
+/**
+ * Test docs
+ */
 public class Friendly implements Greeter {
+    /**
+     * Test docs
+     */
     @Override @Nonnull
     public String hello() {
         InputStream stream = this.getClass().getResourceAsStream("/greeting.txt");
