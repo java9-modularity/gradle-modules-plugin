@@ -90,7 +90,7 @@ The main build file should look as follows:
 
 ```groovy
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.8.13' apply false
+    id 'org.javamodularity.moduleplugin' version '1.8.14' apply false
 }
 
 subprojects {
@@ -127,7 +127,7 @@ subprojects {
 
 ```kotlin
 plugins {
-    id("org.javamodularity.moduleplugin") version "1.8.13" apply false
+    id("org.javamodularity.moduleplugin") version "1.8.14" apply false
 }
 
 subprojects {
