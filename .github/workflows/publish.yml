@@ -1,3 +1,15 @@
+# A workflow for publishing the plugin to the Gradle Plugin Portal
+#
+# Release Process:
+# 1. Update the version number in root build.gradle to the next non-SNAPSHOT version.
+#     e.g. replace `version '1.2.3-SNAPSHOT' with '1.2.3'
+# 2. Replace all references to the last release number with the new release number.
+#     e.g. search for `1.2.2` and replace with `1.2.3`.
+# 3. Commit changes in PR and merge.
+# 4. Run this workflow to publish the plugin.
+# 5. Update the version number in root build.gradle to the next -SNAPSHOT version.
+##    e.g. replace `version '1.2.3' with '1.2.4-SNAPSHOT'
+
 name: Publish to the Gradle Plugin Portal
 
 on: [workflow_dispatch]
