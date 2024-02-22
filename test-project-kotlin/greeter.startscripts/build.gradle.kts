@@ -35,7 +35,12 @@ File("${project.projectDir}/src/main/kotlin/startscripts")
             val runDemo = tasks.create<ModularJavaExec>("run$demoClassName") {
                 group = "Demo"
                 description = "Run the $demoClassName program"
-                main = "$moduleName/startscripts.${demoClassName}Kt"
+                if (gradle.gradleVersion >= "8.0") {
+                    mainClass.set("startscripts.${demoClassName}Kt")
+                    mainModule.set(moduleName)
+                } else {
+                    main = "$moduleName/startscripts.${demoClassName}Kt"
+                }
                 jvmArgs = listOf("-Xmx128m")
             }
 

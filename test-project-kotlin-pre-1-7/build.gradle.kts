@@ -5,6 +5,11 @@ plugins {
     id("org.javamodularity.moduleplugin") version "1.8.14" apply false
 }
 
+if (gradle.gradleVersion >= "8.0") {
+    throw GradleException("The Kotlin version used in this build isn't compatible with Gradle 8. " +
+            "This project should be excluded when testing with Gradle version 8 and above.")
+}
+
 subprojects {
     apply(plugin = "kotlin")
     apply(plugin = "org.javamodularity.moduleplugin")

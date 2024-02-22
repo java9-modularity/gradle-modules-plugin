@@ -11,8 +11,6 @@ subprojects {
 
     //region https://docs.gradle.org/current/userguide/kotlin_dsl.html#using_kotlin_delegated_properties
     val test by tasks.existing(Test::class)
-    val build by tasks
-    val javadoc by tasks
 
     val implementation by configurations
     val testImplementation by configurations
@@ -23,9 +21,18 @@ subprojects {
     //endregion
 
     //region KOTLIN
-    tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
+    if (gradle.gradleVersion >= "8.0") {
+        configure<JavaPluginExtension> {
+            toolchain {
+                languageVersion.set(JavaLanguageVersion.of(11))
+            }
+        }
+    } else {
+        tasks.withType<KotlinCompile> {
+            kotlinOptions.jvmTarget = "1.8"
+        }
     }
+
     dependencies {
         implementation(kotlin("stdlib-jdk8"))
     }
@@ -54,6 +61,4 @@ subprojects {
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$jUnitVersion")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher:$jUnitPlatformVersion")
     }
-
-//    build.dependsOn(javadoc) // TODO: No public or protected classes found to document
 }
