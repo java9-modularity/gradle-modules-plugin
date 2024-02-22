@@ -27,6 +27,8 @@ configurations {
     compile.extendsFrom plugin
 }
 
+def jUnitVersion = '5.10.2'
+
 dependencies {
     implementation gradleApi()
     implementation 'org.jooq:joor:0.9.15'
@@ -35,11 +37,11 @@ dependencies {
     testImplementation gradleTestKit()
     testImplementation 'com.google.guava:guava-base:r03'
     testImplementation 'com.google.guava:guava-io:r03'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$jUnitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$jUnitVersion"
     testImplementation 'org.junit-pioneer:junit-pioneer:2.2.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2' // required when testing in Eclipse
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$jUnitVersion"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // required when testing in Eclipse
 }
 
 shadowJar {
@@ -57,7 +59,7 @@ shadowJar {
 jar.enabled = false
 jar.dependsOn shadowJar
 
-processResources.duplicatesStrategy = 'exclude'
+processResources.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
 configurations {
     [apiElements, runtimeElements].each {

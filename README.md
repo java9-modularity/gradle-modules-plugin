@@ -35,26 +35,12 @@ An example application using this plugin is available [here](https://github.com/
 Compatability
 ===
 
-The plugin is compatible with the following Gradle versions:
-
-| Gradle version | Min plugin version                                                                     |
-|----------------|----------------------------------------------------------------------------------------|
-| 5.* -> 7.5.+   | 1.+                                                                                    |
-| 7.6+           | 1.8.14                                                                                 |
-| 8.+            | See [issue #260](https://github.com/java9-modularity/gradle-modules-plugin/issues/260) |
-
-The plugin is compatible with the following Java versions:
-
-| Java version | Min plugin version |
-|--------------|--------------------|
-| 11+          | 1.+                |
-
-The plugin is compatible with the following Kotlin versions:
-
-| Kotlin version | Min plugin version |
-|----------------|--------------------|
-| 1.0.* -> 1.6.* | 1.+                |
-| 1.7+           | 1.8.12             |
+| Plugin Version     | Gradle Versions | Java Version | Kotlin Version | Notes                                                                                      |
+|--------------------|-----------------|--------------|----------------|--------------------------------------------------------------------------------------------|
+| - -> 1.18.12       | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.6.+ |                                                                                            |
+| 1.18.12 -> 1.18.13 | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.9.+ | Adds support for Kotlin 1.7 and above.                                                     |
+| 1.18.14            | 5.+ -> 7.6.+    | 11+          | 1.0.+ -> 1.9.+ | Fixes compatibility issue with Gradle 7.6                                                  |
+| 1.18.15 -> +       | 5.+ -> 8.6.+    | 11+          | 1.6.+ -> 1.9.+ | Fixes compatibility issues with Gradle 8.0.<br>Use JUnit v5.8.0 or above if using Gradle 8 |
 
 Setup
 ===
