@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.10" apply false
+    kotlin("jvm") version "1.9.22" apply false
     id("org.javamodularity.moduleplugin") version "1.8.13" apply false
 }
 
