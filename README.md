@@ -35,12 +35,12 @@ An example application using this plugin is available [here](https://github.com/
 Compatability
 ===
 
-| Plugin Version     | Gradle Versions | Java Version | Kotlin Version | Notes                                                                                      |
-|--------------------|-----------------|--------------|----------------|--------------------------------------------------------------------------------------------|
-| - -> 1.18.12       | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.6.+ |                                                                                            |
-| 1.18.12 -> 1.18.13 | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.9.+ | Adds support for Kotlin 1.7 and above.                                                     |
-| 1.18.14            | 5.+ -> 7.6.+    | 11+          | 1.0.+ -> 1.9.+ | Fixes compatibility issue with Gradle 7.6                                                  |
-| 1.18.15 -> +       | 5.+ -> 8.6.+    | 11+          | 1.6.+ -> 1.9.+ | Fixes compatibility issues with Gradle 8.0.<br>Use JUnit v5.8.0 or above if using Gradle 8 |
+| Plugin Version   | Gradle Versions | Java Version | Kotlin Version | Notes                                                                                      |
+|------------------|-----------------|--------------|----------------|--------------------------------------------------------------------------------------------|
+| - -> 1.8.12      | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.6.+ |                                                                                            |
+| 1.8.12 -> 1.8.13 | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.9.+ | Adds support for Kotlin 1.7 and above.                                                     |
+| 1.8.14           | 5.+ -> 7.6.+    | 11+          | 1.0.+ -> 1.9.+ | Fixes compatibility issue with Gradle 7.6                                                  |
+| 1.8.15 -> +      | 5.+ -> 8.6.+    | 11+          | 1.6.+ -> 1.9.+ | Fixes compatibility issues with Gradle 8.0.<br>Use JUnit v5.8.0 or above if using Gradle 8 |
 
 Setup
 ===
@@ -76,7 +76,7 @@ The main build file should look as follows:
 
 ```groovy
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.8.14' apply false
+    id 'org.javamodularity.moduleplugin' version '1.8.15' apply false
 }
 
 subprojects {
@@ -113,7 +113,7 @@ subprojects {
 
 ```kotlin
 plugins {
-    id("org.javamodularity.moduleplugin") version "1.8.14" apply false
+    id("org.javamodularity.moduleplugin") version "1.8.15" apply false
 }
 
 subprojects {

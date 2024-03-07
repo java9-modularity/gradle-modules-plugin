@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.3.72" apply false
-    id("org.javamodularity.moduleplugin") version "1.8.14" apply false
+    id("org.javamodularity.moduleplugin") version "1.8.15" apply false
 }
 
 if (gradle.gradleVersion >= "8.0") {
