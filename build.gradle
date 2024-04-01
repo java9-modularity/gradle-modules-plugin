@@ -32,7 +32,7 @@ def jUnitVersion = '5.10.2'
 dependencies {
     implementation gradleApi()
     implementation 'org.jooq:joor:0.9.15'
-    plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.25.8'
+    plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.25.9'
 
     testImplementation gradleTestKit()
     testImplementation 'com.google.guava:guava-base:r03'
