@@ -36,4 +36,17 @@ subprojects {
             exclude module: 'groovy-xml'
         }
     }
+
+    test {
+        moduleOptions {
+            runOnClasspath = false
+        }
+    }
+
+    compileTestJava {
+        moduleOptions {
+            compileOnClasspath = false
+        }
+    }
+
 }
