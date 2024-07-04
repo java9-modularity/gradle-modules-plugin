@@ -63,6 +63,7 @@ public class RunTaskMutator extends AbstractExecutionMutator {
                     newJvmArgs.add("@" + parameterFile.toAbsolutePath());
                     execTask.setJvmArgs(newJvmArgs);
                     LOGGER.info("Patched jvmArgs for task {}: {}", execTask.getName(), newJvmArgs);
+                    parameterFile.toFile().deleteOnExit();
                 } catch (IOException e) {
                     LOGGER.warn("Could not create temporary file for jvmArgs. Falling back to default behavior.", e);
                     execTask.setJvmArgs(jvmArgs);
