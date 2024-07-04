@@ -19,9 +19,9 @@ public class ModuleSystemPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         if(GradleVersion.current().compareTo(GradleVersion.version("5.1")) < 0) {
-            LOGGER.warn("WARNING: You use " + GradleVersion.current() +
-                    ". The minimum version supported (with some limitations) by this plugin is 5.1." +
-                    "  It is strongly recommended to use at least Gradle 5.6.");
+            LOGGER.warn("WARNING: You use {}." +
+                    " The minimum version supported (with some limitations) by this plugin is 5.1." +
+                    " It is strongly recommended to use at least Gradle 5.6.", GradleVersion.current());
         }
         project.getPlugins().apply(JavaPlugin.class);
         new ModuleName().findModuleName(project).ifPresent(moduleName -> configureModularity(project, moduleName));
