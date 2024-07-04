@@ -64,6 +64,7 @@ public class RunTaskMutator extends AbstractExecutionMutator {
                     execTask.setJvmArgs(newJvmArgs);
                     LOGGER.info("Patched jvmArgs for task {}: {}", execTask.getName(), newJvmArgs);
                 } catch (IOException e) {
+                    LOGGER.warn("Could not create temporary file for jvmArgs. Falling back to default behavior.", e);
                     execTask.setJvmArgs(jvmArgs);
                 }
                 execTask.setClasspath(project.files());
