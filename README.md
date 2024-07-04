@@ -943,6 +943,24 @@ Examples on how and where Gradle's eclipse-plugin could (and should) be improved
 `.classpath`-file is affected if the feature is enabled are available on
 [GitHub](https://github.com/Alfred-65/gradle-modules-plugin.investigation).
 
+Preventing "command line too long" errors
+===
+When using many modules, the command line for `--module-path` can become too long.
+A workaround is to use Java's [Command-Line Argument Files](https://docs.oracle.com/javase/9/tools/java.htm#JSWOR-GUID-4856361B-8BFD-4964-AE84-121F5F6CF111).
+The workaround can be enabled by setting `createCommandLineArgumentFile` to `true` in the `moduleOptions` part in the `run` configuration.
+
+<details open>
+<summary>Groovy DSL</summary>
+
+```groovy
+run {
+    moduleOptions {
+        createCommandLineArgumentFile = true
+    }
+}
+```
+</details>
+
 
 Limitations
 ===

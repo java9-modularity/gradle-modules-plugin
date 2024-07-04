@@ -7,7 +7,6 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.JavaExec;
-import org.gradle.internal.os.OperatingSystem;
 import org.gradle.util.GradleVersion;
 import org.javamodularity.moduleplugin.extensions.PatchModuleContainer;
 import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
@@ -30,24 +29,23 @@ public class RunTaskMutator extends AbstractExecutionMutator {
     }
 
     public void configureRun() {
-        execTask.getExtensions().create("moduleOptions", RunModuleOptions.class, project);
-        updateJavaExecTask();
+        RunModuleOptions moduleOptions = execTask.getExtensions().create("moduleOptions", RunModuleOptions.class, project);
+        updateJavaExecTask(moduleOptions);
     }
 
-    private void updateJavaExecTask() {
+    private void updateJavaExecTask(RunModuleOptions moduleOptions) {
         // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
         execTask.doFirst(new Action<Task>() {
             @Override
             public void execute(Task task) {
                 List<String> jvmArgs = buildJavaExecJvmArgs();
 
-                if (!OperatingSystem.current().isWindows()) {
-                    // No need for patching
+                if (!moduleOptions.getCreateCommandLineArgumentFile()) {
                     execTask.setJvmArgs(jvmArgs);
                     execTask.setClasspath(project.files());
                 }
 
-                // https://github.com/java9-modularity/gradle-modules-plugin/issues/281
+                // Workaround for 206 command line too long - https://github.com/java9-modularity/gradle-modules-plugin/issues/281
 
                 List<String> newJvmArgs = new ArrayList<>();
 
