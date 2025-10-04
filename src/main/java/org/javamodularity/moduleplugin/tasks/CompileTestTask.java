@@ -42,8 +42,8 @@ public class CompileTestTask extends AbstractModulePluginTask {
         var moduleOptions = compileTestJava.getExtensions()
                 .create("moduleOptions", CompileTestModuleOptions.class, project);
         project.afterEvaluate(p -> {
-            LOGGER.info(compileTestJava.getName() +  ".compileOnClasspath: {}", moduleOptions.isCompileOnClasspath());
-            if(!moduleOptions.isCompileOnClasspath()) {
+            LOGGER.info(compileTestJava.getName() +  ".compileOnClasspath: {}", moduleOptions.getCompileOnClasspath());
+            if(!moduleOptions.getCompileOnClasspath()) {
                 // don't convert to lambda: https://github.com/java9-modularity/gradle-modules-plugin/issues/54
                 compileTestJava.doFirst(new Action<>() {
                     @Override

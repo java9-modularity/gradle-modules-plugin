@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.22" apply false
+    kotlin("jvm") version "2.0.0" apply false
     id("org.javamodularity.moduleplugin") version "2.0.0" apply false
 }
 
@@ -11,6 +11,7 @@ subprojects {
 
     //region https://docs.gradle.org/current/userguide/kotlin_dsl.html#using_kotlin_delegated_properties
     val test by tasks.existing(Test::class)
+    val compileTestJava by tasks.existing(JavaCompile::class)
 
     val implementation by configurations
     val testImplementation by configurations
@@ -52,6 +53,16 @@ subprojects {
 
         testLogging {
             events("PASSED", "FAILED", "SKIPPED", "STANDARD_OUT")
+        }
+
+        extensions.configure(org.javamodularity.moduleplugin.extensions.TestModuleOptions::class) {
+            runOnClasspath = false
+        }
+    }
+
+    compileTestJava {
+        extensions.configure(org.javamodularity.moduleplugin.extensions.CompileTestModuleOptions::class) {
+            compileOnClasspath = false
         }
     }
 
