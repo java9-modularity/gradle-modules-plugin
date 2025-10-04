@@ -24,7 +24,7 @@ abstract class AbstractExecutionMutator {
     protected final String getMainClassName() {
         if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) < 0) {
             String mainClassName = Objects.requireNonNull(
-                    execTask.getMain(),
+                    execTask.getMainClass().getOrNull(),
                     "Main class name not found. Try setting 'application.mainClassName' in your Gradle build file."
             );
             if (!mainClassName.contains("/")) {

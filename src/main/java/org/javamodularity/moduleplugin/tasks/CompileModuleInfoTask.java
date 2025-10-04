@@ -71,7 +71,7 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
                             // https://docs.gradle.org/6.1/javadoc/org/gradle/api/file/SourceDirectorySet.html#getClassesDirectory--
                             classesDir = helper().mainSourceSet().getJava().getClassesDirectory().get().getAsFile();
                         } else {
-                            classesDir = helper().mainSourceSet().getJava().getOutputDir();
+                            classesDir = helper().mainSourceSet().getJava().getDestinationDirectory().get().getAsFile();
                         }
 
                         File mainModuleInfoFile = new File(classesDir, "module-info.class");
