@@ -4,7 +4,7 @@ dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'javax.annotation:jsr250-api:1.0'
 
-    testImplementation 'org.hamcrest:hamcrest:2.2+'
+    testImplementation 'org.hamcrest:hamcrest:3.0+'
 }
 
 patchModules.config = [
