@@ -956,7 +956,7 @@ Please file issues if you run into any problems or have additional requirements!
 Requirements
 ===
 
-This plugin requires JDK 17 or newer to be used when running Gradle.
+This latest version of this plugin requires JDK 17 or newer to be used when running Gradle. Older versions support JDK 11.
 
 The minimum Gradle version supported by this plugin is 5.1.
 However, we strongly recommend to use at least Gradle 6.0, because there are a few special cases that cannot be handled correctly when using older versions.
