@@ -35,7 +35,7 @@ class ModulePluginSmokeTest {
 
     @SuppressWarnings("unused")
     private enum GradleVersion {
-        v8_11,
+        v8_11, v8_14_3,
         v9_1_0
         ;
 
