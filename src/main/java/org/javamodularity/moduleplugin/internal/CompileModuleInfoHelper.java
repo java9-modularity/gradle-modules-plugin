@@ -37,9 +37,8 @@ public final class CompileModuleInfoHelper {
      */
     private static Stream<Task> dependentCompileModuleInfoJavaTaskStream(Project project) {
         final Function<Dependency, TaskContainer> mapToTaskContainer = dependency ->
-                GradleVersion.current().compareTo(GradleVersion.version("8.11")) < 0
-                        ? ((ProjectDependency) dependency).getDependencyProject().getTasks()
-                        : project.project(((ProjectDependency) dependency).getPath()).getTasks();
+                project.project(((ProjectDependency) dependency)
+                        .getPath() /* ProjectDependency.getPath() introduced in Gradle 8.11 */).getTasks();
 
         return project.getConfigurations().stream()
                 .flatMap(configuration -> configuration.getDependencies().stream())

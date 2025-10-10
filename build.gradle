@@ -7,17 +7,19 @@ plugins {
     id 'com.github.ben-manes.versions' version '0.51.0'
 }
 
-buildScan {
-    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
+develocity {
+    buildScan {
+        termsOfUseUrl   = 'https://gradle.com/help/legal-terms-of-use'
+        termsOfUseAgree = 'yes'
+    }
 }
 
 group 'org.javamodularity'
 version '2.0.0'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 repositories {

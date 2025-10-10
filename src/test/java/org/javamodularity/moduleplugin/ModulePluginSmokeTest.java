@@ -300,7 +300,7 @@ class ModulePluginSmokeTest {
 
     @Test
     void shouldNotCheckInWithCommentedOutVersions() {
-        assertEquals(2, GradleVersion.values().length);
+        assertEquals(4, GradleVersion.values().length);
     }
 
     private static void assertTasksSuccessful(BuildResult result, String subprojectName, String... taskNames) {
@@ -341,19 +341,15 @@ class ModulePluginSmokeTest {
 
     private static int javaMajorVersion() {
         final String version = System.getProperty("java.version");
-        if (version.startsWith("1.")) {
-            // Java 8 and earlier (1.8.0_xxx format) - not supported anymore but keep for completeness
-            return Integer.parseInt(version.substring(2, version.indexOf(".", 2)));
-        } else {
-            // Java 9+ (9.0.1, 11.0.2, 17.0.2 format)
-            int dotIndex = version.indexOf(".");
-            if (dotIndex == -1) {
-                // Handle cases like "17" without dot
-                return Integer.parseInt(version);
-            }
-            return Integer.parseInt(version.substring(0, dotIndex));
+
+        // Java 9+ (9.0.1, 11.0.2, 17.0.2 format)
+        int dotIndex = version.indexOf(".");
+        if (dotIndex == -1) {
+            // Handle cases like "17" without dot
+            return Integer.parseInt(version);
         }
 
+        return Integer.parseInt(version.substring(0, dotIndex));
     }
 
     private boolean jdkSupported(final GradleVersion gradleVersion) {
