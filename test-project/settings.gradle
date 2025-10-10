@@ -1,3 +1,13 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal().with {
+            content {
+                excludeGroup 'org.javamodularity.moduleplugin' // added to the classpath by the smoke test
+            }
+        }
+    }
+}
+
 import org.gradle.util.GradleVersion
 
 rootProject.name = 'test-project'

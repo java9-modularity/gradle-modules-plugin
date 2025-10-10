@@ -65,22 +65,12 @@ public class ModularJavaExec extends JavaExec {
     }
 
     @Input
-    @Override
     public String getMain() {
-        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
-            return stripModule(getMainClass().getOrNull());
-        } else {
-            return super.getMain();
-        }
+        return stripModule(getMainClass().getOrNull());
     }
 
-    @Override
     public JavaExec setMain(String mainClassName) {
-        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) >= 0) {
-            getMainClass().set(stripModule(mainClassName));
-        } else {
-            super.setMain(mainClassName);
-        }
+        getMainClass().set(stripModule(mainClassName));
         return this;
     }
 

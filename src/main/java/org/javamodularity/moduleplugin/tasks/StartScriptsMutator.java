@@ -68,10 +68,9 @@ public class StartScriptsMutator extends AbstractExecutionMutator {
         startScriptsTask.setDefaultJvmOpts(jvmArgs);
         startScriptsTask.setClasspath(project.files());
 
-        if(GradleVersion.current().compareTo(GradleVersion.version("6.4")) < 0) {
-            if (ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME.equals(startScriptsTask.getMainClassName())) {
-                startScriptsTask.setMainClassName(execTask.getMain());
-            }
+        final var mainClass = startScriptsTask.getMainClass();
+        if (ModularCreateStartScripts.UNDEFINED_MAIN_CLASS_NAME.equals(mainClass.getOrNull())) {
+            mainClass.set(execTask.getMainClass());
         }
     }
 

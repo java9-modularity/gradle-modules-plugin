@@ -32,15 +32,16 @@ The plugin supports the following test engines:
 
 An example application using this plugin is available [here](https://github.com/java9-modularity/gradle-modules-plugin-example).
 
-Compatability
+Compatibility
 ===
 
-| Plugin Version   | Gradle Versions | Java Version | Kotlin Version | Notes                                                                                      |
-|------------------|-----------------|--------------|----------------|--------------------------------------------------------------------------------------------|
-| - -> 1.8.12      | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.6.+ |                                                                                            |
-| 1.8.12 -> 1.8.13 | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.9.+ | Adds support for Kotlin 1.7 and above.                                                     |
-| 1.8.14           | 5.+ -> 7.6.+    | 11+          | 1.0.+ -> 1.9.+ | Fixes compatibility issue with Gradle 7.6                                                  |
-| 1.8.15 -> +      | 5.+ -> 8.6.+    | 11+          | 1.6.+ -> 1.9.+ | Fixes compatibility issues with Gradle 8.0.<br>Use JUnit v5.8.0 or above if using Gradle 8 |
+| Plugin Version   | Gradle Versions | Java Version | Kotlin Version | Notes                                                        |
+| ---------------- | --------------- | ------------ | -------------- | ------------------------------------------------------------ |
+| - -> 1.8.12      | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.6.+ |                                                              |
+| 1.8.12 -> 1.8.13 | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.9.+ | Adds support for Kotlin 1.7 and above.                       |
+| 1.8.14           | 5.+ -> 7.6.+    | 11+          | 1.0.+ -> 1.9.+ | Fixes compatibility issue with Gradle 7.6                    |
+| 1.8.15 -> 1.8.x  | 5.+ -> 8.6.+    | 11+          | 1.6.+ -> 1.9.+ | Fixes compatibility issues with Gradle 8.0.<br>Use JUnit v5.8.0 or above if using Gradle 8 |
+| 2.0.0            | 8.11.+ -> 9.+   | 17+          | 1.8.+ -> 2.x+  | Adds support for Gradle 9.x.<br>Minimum Java version raised to 17 |
 
 Setup
 ===
@@ -76,7 +77,7 @@ The main build file should look as follows:
 
 ```groovy
 plugins {
-    id 'org.javamodularity.moduleplugin' version '1.8.15' apply false
+    id 'org.javamodularity.moduleplugin' version '2.0.0' apply false
 }
 
 subprojects {
@@ -85,8 +86,8 @@ subprojects {
 
     version "1.0-SNAPSHOT"
 
-    sourceCompatibility = 11
-    targetCompatibility = 11
+    sourceCompatibility = 17
+    targetCompatibility = 17
 
     repositories {
         mavenCentral()
@@ -101,19 +102,21 @@ subprojects {
     }
 
     dependencies {
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.3.1'
-        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
+        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.2"
     }
 }
 ```
 </details>
+
 <details>
 <summary>Kotlin DSL</summary>
 
 ```kotlin
 plugins {
-    id("org.javamodularity.moduleplugin") version "1.8.15" apply false
+    id("org.javamodularity.moduleplugin") version "2.0.0" apply false
 }
 
 subprojects {
@@ -124,7 +127,7 @@ subprojects {
 
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(11))
+            languageVersion.set(JavaLanguageVersion.of(17))
         }
     }
 
@@ -141,9 +144,10 @@ subprojects {
     }
 
     dependencies {
-        testImplementation("org.junit.jupiter:junit-jupiter-api:5.3.1")
-        testImplementation("org.junit.jupiter:junit-jupiter-params:5.3.1")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.1")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
+        testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
     }
 }
 ```
@@ -952,7 +956,7 @@ Please file issues if you run into any problems or have additional requirements!
 Requirements
 ===
 
-This plugin requires JDK 11 or newer to be used when running Gradle.
+This latest version of this plugin requires JDK 17 or newer to be used when running Gradle. Older versions support JDK 11.
 
 The minimum Gradle version supported by this plugin is 5.1.
 However, we strongly recommend to use at least Gradle 6.0, because there are a few special cases that cannot be handled correctly when using older versions.

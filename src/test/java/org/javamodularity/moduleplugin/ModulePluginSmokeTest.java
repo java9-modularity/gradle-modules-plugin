@@ -13,7 +13,9 @@ import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,10 +35,8 @@ class ModulePluginSmokeTest {
 
     @SuppressWarnings("unused")
     private enum GradleVersion {
-        v5_1, v5_6,
-        v6_3, v6_4_1, v6_5_1, v6_8_3,
-        v7_0, v7_6_4,
-        v8_0, v8_6
+        v8_11, v8_14_3,
+        v9_0, v9_1_0
         ;
 
         @Override
@@ -70,7 +70,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion(gradleVersion.toString())
-                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "run", "--stacktrace")
+                .withArguments("clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();
 
@@ -101,7 +101,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion(gradleVersion.toString())
-                .withArguments("-q", "-c", "smoke_test_settings.gradle", "clean", ":greeter.runner:run", "--args", "aaa bbb")
+                .withArguments("-q", "clean", ":greeter.runner:run", "--args", "aaa bbb")
                 .forwardStdOutput(writer)
                 .forwardStdError(writer)
                 .build();
@@ -135,7 +135,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File("test-project/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion(gradleVersion.toString())
-                .withArguments("-c", "smoke_test_settings.gradle", junitVersionProperty, junitPlatformVersionProperty, "clean", "build", "run", "--stacktrace")
+                .withArguments(junitVersionProperty, junitPlatformVersionProperty, "clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();
 
@@ -153,7 +153,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File("test-project-mixed"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion(gradleVersion.toString())
-                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", "--stacktrace")
+                .withArguments("clean", "build", "--stacktrace")
                 .forwardOutput()
                 .build();
 
@@ -212,7 +212,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion(gradleVersion.toString())
-                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build", ":greeter.runner:installDist", "--stacktrace")
+                .withArguments("clean", "build", ":greeter.runner:installDist", "--stacktrace")
                 .forwardOutput()
                 .build();
 
@@ -259,7 +259,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion(gradleVersion.toString())
-                .withArguments("-c", "smoke_test_settings.gradle", "clean", "build",
+                .withArguments("clean", "build",
                         ":greeter.javaexec:runDemo1", ":greeter.javaexec:runDemo2", "--info", "--stacktrace")
                 .forwardOutput()
                 .build();
@@ -284,7 +284,7 @@ class ModulePluginSmokeTest {
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
                 .withGradleVersion(gradleVersion.toString())
-                .withArguments("-c", "smoke_test_settings.gradle", "clean", ":greeter.startscripts:installDist", "--info", "--stacktrace")
+                .withArguments("clean", ":greeter.startscripts:installDist", "--info", "--stacktrace")
                 .forwardOutput()
                 .build();
 
@@ -300,7 +300,7 @@ class ModulePluginSmokeTest {
 
     @Test
     void shouldNotCheckInWithCommentedOutVersions() {
-        assertEquals(10, GradleVersion.values().length);
+        assertEquals(4, GradleVersion.values().length);
     }
 
     private static void assertTasksSuccessful(BuildResult result, String subprojectName, String... taskNames) {
@@ -326,7 +326,7 @@ class ModulePluginSmokeTest {
     }
 
     private boolean checkJUnitCombination(final String junitVersion, final GradleVersion gradleVersion) {
-        final boolean gradleEighthPlus = gradleVersion.ordinal() >= GradleVersion.v8_0.ordinal();
+        final boolean gradleEighthPlus = gradleVersion.ordinal() >= GradleVersion.v8_11.ordinal();
         final Matcher m = SEMANTIC_VERSION.matcher(junitVersion);
         assumeTrue(m.matches(), "JUnit version not semantic: " + junitVersion);
         final boolean junitOlderThan5_8_0 = Integer.parseInt(m.group("major")) < 5 ||
@@ -341,25 +341,26 @@ class ModulePluginSmokeTest {
 
     private static int javaMajorVersion() {
         final String version = System.getProperty("java.version");
-        return Integer.parseInt(version.substring(0, version.indexOf(".")));
+
+        // Java 9+ (9.0.1, 11.0.2, 17.0.2 format)
+        int dotIndex = version.indexOf(".");
+        if (dotIndex == -1) {
+            // Handle cases like "17" without dot
+            return Integer.parseInt(version);
+        }
+
+        return Integer.parseInt(version.substring(0, dotIndex));
     }
 
     private boolean jdkSupported(final GradleVersion gradleVersion) {
-        switch (gradleVersion) {
-            // CI build runs with early JDK that supports these Gradle version
-            // But don't fail locally if running local JDK.
-            // Running JDK 14+ with Gradle 5 runs into:
-            // https://github.com/gradle/gradle/issues/10248
-            case v5_1:
-            case v5_6:
-                final int major = javaMajorVersion();
-                if (major > 13) {
-                    LOGGER.lifecycle("Unsupported JDK version '{}' for Gradle 5: Test skipped", major);
-                    return false;
-                }
-                return true;
-            default:
-                return true;
+        final int javaMajor = javaMajorVersion();
+
+        // All supported Gradle versions (8.11+) require Java 17+
+        if (javaMajor < 17) {
+            LOGGER.lifecycle("Gradle {} requires Java 17+, but running Java {}: Test skipped", gradleVersion, javaMajor);
+            return false;
         }
+
+        return true;
     }
 }
