@@ -1,3 +1,13 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal().with {
+            content {
+                excludeGroup 'org.javamodularity.moduleplugin' // added to the classpath by the smoke test
+            }
+        }
+    }
+}
+
 rootProject.name = 'test-project-mixed'
 
 include 'greeter.api-jdk8'

@@ -3,20 +3,24 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish' // used for publishing to local maven repository
     id 'com.gradle.plugin-publish' version '1.2.1'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.gradleup.shadow' version '9.2.2'
     id 'com.github.ben-manes.versions' version '0.51.0'
 }
 
-buildScan {
-    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
+develocity {
+    buildScan {
+        termsOfUseUrl   = 'https://gradle.com/help/legal-terms-of-use'
+        termsOfUseAgree = 'yes'
+    }
 }
 
 group 'org.javamodularity'
-version '1.8.16-SNAPSHOT'
+version '2.0.0'
 
-sourceCompatibility = 11
-targetCompatibility = 11
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
 repositories {
     mavenCentral()
@@ -39,8 +43,8 @@ dependencies {
     testImplementation 'com.google.guava:guava-io:r03'
     testImplementation "org.junit.jupiter:junit-jupiter-api:$jUnitVersion"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$jUnitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$jUnitVersion"
     testImplementation 'org.junit-pioneer:junit-pioneer:2.3.0'
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$jUnitVersion"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher' // required when testing in Eclipse
 }
 
@@ -96,19 +100,16 @@ dependencies {
 
 gradlePlugin {
     plugins {
+        website = 'https://github.com/java9-modularity/gradle-modules-plugin'
+        vcsUrl = 'https://github.com/java9-modularity/gradle-modules-plugin'
         modulesPlugin {
             id = 'org.javamodularity.moduleplugin'
             displayName = 'Java Modularity Gradle Plugin'
             description = 'Plugin that makes it easy to work with the Java Platform Module System'
             implementationClass = 'org.javamodularity.moduleplugin.ModuleSystemPlugin'
+            tags = ['java', 'modules', 'jpms', 'modularity']
         }
     }
-}
-
-pluginBundle {
-    website = 'https://github.com/java9-modularity/gradle-modules-plugin'
-    vcsUrl = 'https://github.com/java9-modularity/gradle-modules-plugin'
-    tags = ['java', 'modules', 'jpms', 'modularity']
 }
 
 publishing { // used for publishing to local maven repository
