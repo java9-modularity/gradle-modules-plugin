@@ -33,3 +33,15 @@ jobs:
       run: echo -e "gradle.publish.key=$GRADLE_PUBLISH_KEY\ngradle.publish.secret=$GRADLE_PUBLISH_SECRET" > gradle.properties
     - name: Build with Gradle
       run: ./gradlew build -x test publishPlugins
+
+  create-gh-release:
+    needs: [publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v3.0.0
+      - name: Create GitHut Release
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v0.1.15
+        with:
+          generate_release_notes: true
