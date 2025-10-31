@@ -1,0 +1,20 @@
+changelog:
+  exclude:
+    labels:
+      - chore
+      - github_actions
+  categories:
+    - title: Breaking Changes 🛠
+      labels: [ breaking-change ]
+
+    - title: Exciting New Features 🎉
+      labels: [ enhancement ]
+
+    - title: Bug Fixes 🎉
+      labels: [ bug ]
+
+    - title: Dependency Updates
+      labels: [ dependencies ]
+
+    - title: Less Exciting Things
+      labels: [ "*" ]
