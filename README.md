@@ -851,9 +851,9 @@ Compilation
 Compilation to a specific Java release
 ----
 
-You might want to run your builds on a recent JDK (e.g. JDK 12), but target an older version of Java, e.g.:
-- Java 11, which is the current [Long-Term Support (LTS) release](https://www.oracle.com/technetwork/java/java-se-support-roadmap.html),
-- Java 8, whose production use in 2018 was almost 85%, according to [this survey](https://www.baeldung.com/java-in-2018).
+You might want to run your builds on a recent JDK (e.g. JDK 17), but target an older version of Java, e.g.:
+- Java 25, which is the current [Long-Term Support (LTS) release](https://www.oracle.com/technetwork/java/java-se-support-roadmap.html) at time of writing,
+- Java 17, which is the minimum Java version the latest.
 
 You can do that by setting the Java compiler [`--release`][javacRelease] option
 (e.g. to `6` for Java 6, etc.). Note that when you build using:
@@ -963,17 +963,16 @@ However, we strongly recommend to use at least Gradle 6.0, because there are a f
 
 Contributing
 ===
-
+Update...
 Please tell us if you're using the plugin on [@javamodularity](https://twitter.com/javamodularity)!
 We would also like to hear about any issues or limitations you run into.
 Please file issues in the GitHub project.
 Bonus points for providing a test case that illustrates the issue.
 
-Contributions are very much welcome.
+This plugin is now maintained by the community. Hence, contributions are very much welcome.
 Please open a Pull Request with your changes.
 Make sure to rebase before creating the PR so that the PR only contains your changes, this makes the review process much easier.
-Again, bonus points for providing tests for your changes.
-
+Please ensure PRs contain appropriate test cases and documentation changes.
 
 [javacRelease]: http://openjdk.java.net/jeps/247
 [ModularityExtension]: src/main/java/org/javamodularity/moduleplugin/extensions/ModularityExtension.java
