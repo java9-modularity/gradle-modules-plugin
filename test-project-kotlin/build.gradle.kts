@@ -22,15 +22,9 @@ subprojects {
     //endregion
 
     //region KOTLIN
-    if (gradle.gradleVersion >= "8.0") {
-        configure<JavaPluginExtension> {
-            toolchain {
-                languageVersion.set(JavaLanguageVersion.of(11))
-            }
-        }
-    } else {
-        tasks.withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = "1.8"
+    configure<JavaPluginExtension> {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(11))
         }
     }
 
