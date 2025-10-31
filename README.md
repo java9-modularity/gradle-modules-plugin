@@ -22,8 +22,8 @@ The plugin currently supports:
 
 The plugin supports the following test engines:
 
-* JUnit 5
-* JUnit 4
+* JUnit 5 (for JUnit versions before 5.8.0 use plugin version v1.8.15, higher versions of JUnit 5 can use the latest version of the plugin)
+* JUnit 4 (Use plugin version v1.8.15)
 * TestNG
 * ![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen) Spock 2 with Groovy 3
 * ![Since 1.7.0](https://img.shields.io/badge/since-1.7.0-brightgreen) AssertJ
@@ -102,10 +102,10 @@ subprojects {
     }
 
     dependencies {
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
-        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
-        testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.2"
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.0'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.14.0'
+        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.14.0'
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.14.0"
     }
 }
 ```
@@ -144,10 +144,10 @@ subprojects {
     }
 
     dependencies {
-        testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.1")
-        testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
-        testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
+        testImplementation("org.junit.jupiter:junit-jupiter-api:5.14.0")
+        testImplementation("org.junit.jupiter:junit-jupiter-params:5.14.0")
+        testImplementation("org.junit.jupiter:junit-jupiter-engine:5.14.0")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.14.0")
     }
 }
 ```

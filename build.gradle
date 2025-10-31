@@ -31,7 +31,7 @@ configurations {
     compile.extendsFrom plugin
 }
 
-def jUnitVersion = '5.10.2'
+def jUnitVersion = '5.14.0'
 
 dependencies {
     implementation gradleApi()

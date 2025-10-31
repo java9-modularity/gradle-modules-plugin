@@ -37,15 +37,6 @@ updates:
     schedule:
       interval: monthly
   - package-ecosystem: gradle
-    directory: /test-project-kotlin-pre-1-7
-    open-pull-requests-limit: 50
-    schedule:
-      interval: monthly
-    ignore:
-      - dependency-name: "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin"
-        # This pre-Kotlin-1.7 project must not have the Kotlin major version updated:
-        update-types: [ "version-update:semver-major" ]
-  - package-ecosystem: gradle
     directory: /test-project-mixed
     open-pull-requests-limit: 50
     schedule:

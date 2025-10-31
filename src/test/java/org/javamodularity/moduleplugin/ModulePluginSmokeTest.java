@@ -36,7 +36,7 @@ class ModulePluginSmokeTest {
     @SuppressWarnings("unused")
     private enum GradleVersion {
         v8_11, v8_14_3,
-        v9_0, v9_1_0
+        v9_0, v9_2_0
         ;
 
         @Override
@@ -58,14 +58,11 @@ class ModulePluginSmokeTest {
     void smokeTest(
             @CartesianTest.Values(strings = {
                     "test-project",
-                    "test-project-kotlin-pre-1-7",
                     "test-project-kotlin",
                     "test-project-groovy"
             }) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTest of {} with Gradle {}", projectName, gradleVersion);
-        assumeTrue(jdkSupported(gradleVersion));
-        assumeTrue(checkKotlinCombination(projectName, gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -88,14 +85,11 @@ class ModulePluginSmokeTest {
     void smokeTestRun(
             @CartesianTest.Values(strings = {
                     "test-project",
-                    "test-project-kotlin-pre-1-7",
                     "test-project-kotlin",
                     "test-project-groovy"
             }) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRun of {} with Gradle {}", projectName, gradleVersion);
-        assumeTrue(jdkSupported(gradleVersion));
-        assumeTrue(checkKotlinCombination(projectName, gradleVersion));
         var writer = new StringWriter(256);
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
@@ -117,18 +111,14 @@ class ModulePluginSmokeTest {
     @CartesianTest(name = "smokeTestJunit5({arguments})")
     void smokeTestJunit5(
             @CartesianTest.Values(strings = {
-                    "5.4.2/1.4.2",
-                    "5.5.2/1.5.2",
-                    "5.7.1/1.7.1",
                     "5.8.0/1.8.0",
-                    "5.10.2/1.10.2"
+                    "5.10.2/1.10.2",
+                    "5.14.0/1.14.0"
             }) String junitVersionPair,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestJunit5 with junitVersionPair {} and Gradle {}", junitVersionPair, gradleVersion);
-        assumeTrue(jdkSupported(gradleVersion));
         var junitVersionParts = junitVersionPair.split("/");
         final String junitVersion = junitVersionParts[0];
-        assumeTrue(checkJUnitCombination(junitVersion, gradleVersion));
         var junitVersionProperty = String.format("-PjUnitVersion=%s", junitVersion);
         var junitPlatformVersionProperty = String.format("-PjUnitPlatformVersion=%s", junitVersionParts[1]);
         var result = GradleRunner.create()
@@ -148,7 +138,6 @@ class ModulePluginSmokeTest {
     @CartesianTest(name = "smokeTestMixed({arguments})")
     void smokeTestMixed(@CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestMixed with Gradle {}", gradleVersion);
-        assumeTrue(jdkSupported(gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project-mixed"))
                 .withPluginClasspath(pluginClasspath)
@@ -200,14 +189,11 @@ class ModulePluginSmokeTest {
     void smokeTestDist(
             @CartesianTest.Values(strings = {
                     "test-project",
-                    "test-project-kotlin-pre-1-7",
                     "test-project-kotlin",
                     "test-project-groovy"
             }) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestDist of {} with Gradle {}", projectName, gradleVersion);
-        assumeTrue(jdkSupported(gradleVersion));
-        assumeTrue(checkKotlinCombination(projectName, gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -247,14 +233,11 @@ class ModulePluginSmokeTest {
     void smokeTestRunDemo(
             @CartesianTest.Values(strings = {
                     "test-project",
-                    "test-project-kotlin-pre-1-7",
                     "test-project-kotlin",
                     "test-project-groovy"
             }) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunDemo of {} with Gradle {}", projectName, gradleVersion);
-        assumeTrue(jdkSupported(gradleVersion));
-        assumeTrue(checkKotlinCombination(projectName, gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -272,14 +255,11 @@ class ModulePluginSmokeTest {
     void smokeTestRunStartScripts(
             @CartesianTest.Values(strings = {
                     "test-project",
-                    "test-project-kotlin-pre-1-7",
                     "test-project-kotlin",
                     "test-project-groovy"
             }) String projectName,
             @CartesianTest.Enum GradleVersion gradleVersion) {
         LOGGER.lifecycle("Executing smokeTestRunScripts of {} with Gradle {}", projectName, gradleVersion);
-        assumeTrue(jdkSupported(gradleVersion));
-        assumeTrue(checkKotlinCombination(projectName, gradleVersion));
         var result = GradleRunner.create()
                 .withProjectDir(new File(projectName + "/"))
                 .withPluginClasspath(pluginClasspath)
@@ -312,55 +292,5 @@ class ModulePluginSmokeTest {
     private static void assertOutputDoesNotContain(BuildResult result, String text) {
         final String output = result.getOutput();
         assertFalse(output.contains(text), "Output should not contain '" + text + "', but was: " + output);
-    }
-
-    private static boolean checkKotlinCombination(String projectName, GradleVersion gradleVersion) {
-        final boolean kotlin_NotSupported = projectName.startsWith("test-project-kotlin") && gradleVersion.toString().compareTo("6.4") < 0;
-        final boolean kotlinPost1_7_NotSupported = projectName.equals("test-project-kotlin") && gradleVersion.toString().compareTo("6.6") < 0;
-        final boolean kotlinPre1_7_NotSupported = projectName.equals("test-project-kotlin-pre-1-7") && gradleVersion.toString().compareTo("8.0") >= 0;
-        if (kotlin_NotSupported || kotlinPost1_7_NotSupported || kotlinPre1_7_NotSupported) {
-            LOGGER.lifecycle("Unsupported combination: {} / Gradle {}. Test skipped", projectName, gradleVersion);
-            return false;
-        }
-        return true;
-    }
-
-    private boolean checkJUnitCombination(final String junitVersion, final GradleVersion gradleVersion) {
-        final boolean gradleEighthPlus = gradleVersion.ordinal() >= GradleVersion.v8_11.ordinal();
-        final Matcher m = SEMANTIC_VERSION.matcher(junitVersion);
-        assumeTrue(m.matches(), "JUnit version not semantic: " + junitVersion);
-        final boolean junitOlderThan5_8_0 = Integer.parseInt(m.group("major")) < 5 ||
-                (Integer.parseInt(m.group("major")) == 5 && Integer.parseInt(m.group("minor")) < 8);
-
-        if (gradleEighthPlus && junitOlderThan5_8_0) {
-            LOGGER.lifecycle("Unsupported JUnit and Gradle combination. Gradle: {}, JUnit: {}: Test skipped", gradleVersion, junitVersion);
-            return false;
-        }
-        return true;
-    }
-
-    private static int javaMajorVersion() {
-        final String version = System.getProperty("java.version");
-
-        // Java 9+ (9.0.1, 11.0.2, 17.0.2 format)
-        int dotIndex = version.indexOf(".");
-        if (dotIndex == -1) {
-            // Handle cases like "17" without dot
-            return Integer.parseInt(version);
-        }
-
-        return Integer.parseInt(version.substring(0, dotIndex));
-    }
-
-    private boolean jdkSupported(final GradleVersion gradleVersion) {
-        final int javaMajor = javaMajorVersion();
-
-        // All supported Gradle versions (8.11+) require Java 17+
-        if (javaMajor < 17) {
-            LOGGER.lifecycle("Gradle {} requires Java 17+, but running Java {}: Test skipped", gradleVersion, javaMajor);
-            return false;
-        }
-
-        return true;
     }
 }
