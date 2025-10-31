@@ -81,15 +81,16 @@ test {
     }
 }
 
-task createClasspathManifest {
-    File outputDir = file("$buildDir/$name")
+tasks.register('createClasspathManifest') {
+    var outputDir = layout.buildDirectory.dir(name)
 
     inputs.files sourceSets.main.runtimeClasspath
     outputs.dir outputDir
 
     doLast {
-        outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join('\n')
+        File dir = outputDir.get().asFile
+        dir.mkdirs()
+        file("$dir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join('\n')
     }
 }
 
@@ -114,10 +115,12 @@ gradlePlugin {
 
 publishing { // used for publishing to local maven repository
     publications {
-        pluginMaven(MavenPublication) {
+        create("pluginMaven", MavenPublication) {
             groupId = 'org.javamodularity'
             artifactId = 'moduleplugin'
             version = project.version
         }
     }
 }
+
+defaultTasks("check")
