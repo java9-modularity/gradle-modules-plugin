@@ -82,15 +82,15 @@ test {
 }
 
 tasks.register('createClasspathManifest') {
-    var outputFile = layout.buildDirectory.file("$name/plugin-classpath.txt")
+    var outputDir = layout.buildDirectory.dir(name)
 
     inputs.files sourceSets.main.runtimeClasspath
-    outputs.file outputFile
+    outputs.dir outputDir
 
     doLast {
-        File file = outputFile.get().asFile
-        file.parentFile.mkdirs()
-        file.text = sourceSets.main.runtimeClasspath.join('\n')
+        File dir = outputDir.get().asFile
+        dir.mkdirs()
+        file("$dir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join('\n')
     }
 }
 
