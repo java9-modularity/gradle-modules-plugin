@@ -1,5 +1,6 @@
 package org.javamodularity.moduleplugin;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.*;
 import org.gradle.api.logging.Logger;
@@ -115,17 +116,17 @@ public enum TestEngine {
             return getDirectDependencies(origCfg);
         }
 
-        Configuration cfg = origCfg.copyRecursive();
-        cfg.setCanBeResolved(true);
         try {
+            Configuration cfg = origCfg.copyRecursive();
+            cfg.setCanBeResolved(true);
             cfg.resolve();
             Set<ResolvedDependency> flmDeps = cfg.getResolvedConfiguration().getFirstLevelModuleDependencies();
             return flmDeps.stream()
                     .flatMap(dep -> Stream.concat(getAllDeps(dep).stream(),Stream.of(dep)))
                     .filter(dep -> isDependencyPresent(dep, files))
                     .map(dep -> GroupArtifact.fromModuleIdentifier(dep.getModule().getId().getModule()));
-        } catch (ResolveException e) {
-            LOGGER.debug("Cannot resolve transitive dependencies of configuration " + cfg.getName(), e);
+        } catch (GradleException e) {
+            LOGGER.debug("Cannot resolve transitive dependencies of configuration " + origCfg.getName(), e);
             return getDirectDependencies(origCfg);
         }
     }
