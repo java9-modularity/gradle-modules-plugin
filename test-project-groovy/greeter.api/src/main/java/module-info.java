@@ -1,5 +1,5 @@
 module greeter.api {
     exports examples.greeter.api;
 
-    requires org.codehaus.groovy;
+    requires org.apache.groovy;
 }
