@@ -38,7 +38,7 @@ def jUnitVersion = '6.1.0'
 dependencies {
     implementation gradleApi()
     implementation 'org.jooq:joor:0.9.15'
-    plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.28.0'
+    plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.28.2'
 
     testImplementation gradleTestKit()
     testImplementation 'com.google.guava:guava-base:r03'
