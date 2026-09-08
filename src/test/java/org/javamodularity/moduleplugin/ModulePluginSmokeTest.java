@@ -36,7 +36,7 @@ class ModulePluginSmokeTest {
     @SuppressWarnings("unused")
     private enum GradleVersion {
         v8_11, v8_14_3,
-        v9_0, v9_2_0
+        v9_0, v9_2_0, v9_7_1
         ;
 
         @Override
@@ -280,7 +280,7 @@ class ModulePluginSmokeTest {
 
     @Test
     void shouldNotCheckInWithCommentedOutVersions() {
-        assertEquals(4, GradleVersion.values().length);
+        assertEquals(5, GradleVersion.values().length);
     }
 
     private static void assertTasksSuccessful(BuildResult result, String subprojectName, String... taskNames) {

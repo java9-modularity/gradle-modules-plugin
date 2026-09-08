@@ -36,7 +36,7 @@ configurations {
 def jUnitVersion = '6.1.3'
 
 dependencies {
-    implementation gradleApi()
+    compileOnly gradleApi()
     implementation 'org.jooq:joor:0.9.15'
     plugin 'com.github.javaparser:javaparser-symbol-solver-core:3.28.2'
 
@@ -100,13 +100,18 @@ test {
 tasks.register('createClasspathManifest') {
     var outputDir = layout.buildDirectory.dir(name)
 
-    inputs.files sourceSets.main.runtimeClasspath
+    // gradleApi() is deliberately absent: TestKit's target Gradle supplies its own API, and
+    // including it puts that Gradle's bytecode (Java 25 classes in 9.7.x) on the plugin
+    // classpath, which older Gradle versions cannot instrument.
+    // configurations.plugin carries javaparser, which shadowJar relocates into the published jar.
+    inputs.files sourceSets.main.runtimeClasspath, configurations.plugin
     outputs.dir outputDir
 
     doLast {
         File dir = outputDir.get().asFile
         dir.mkdirs()
-        file("$dir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join('\n')
+        file("$dir/plugin-classpath.txt").text =
+                (sourceSets.main.runtimeClasspath + configurations.plugin).join('\n')
     }
 }
 

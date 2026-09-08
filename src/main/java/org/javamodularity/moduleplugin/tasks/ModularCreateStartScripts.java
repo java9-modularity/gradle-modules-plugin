@@ -2,17 +2,18 @@ package org.javamodularity.moduleplugin.tasks;
 
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.ApplicationPluginConvention;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.application.CreateStartScripts;
+import org.gradle.work.DisableCachingByDefault;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 
-public class ModularCreateStartScripts extends CreateStartScripts {
+@DisableCachingByDefault(because = "Not worth caching, as with the CreateStartScripts task it extends")
+public abstract class ModularCreateStartScripts extends CreateStartScripts {
     public static final String UNDEFINED_MAIN_CLASS_NAME = "<undefined>";
 
     private String changedMain;
@@ -29,7 +30,7 @@ public class ModularCreateStartScripts extends CreateStartScripts {
     public String getMainClassName() {
         String main = changedMain;
         if(main == null) {
-            main = super.getMainClass().getOrNull();
+            main = getMainClass().getOrNull();
         }
         if(main == null) {
             main = UNDEFINED_MAIN_CLASS_NAME;
