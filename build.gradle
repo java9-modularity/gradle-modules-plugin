@@ -100,10 +100,6 @@ test {
 tasks.register('createClasspathManifest') {
     var outputDir = layout.buildDirectory.dir(name)
 
-    // gradleApi() is deliberately absent: TestKit's target Gradle supplies its own API, and
-    // including it puts that Gradle's bytecode (Java 25 classes in 9.7.x) on the plugin
-    // classpath, which older Gradle versions cannot instrument.
-    // configurations.plugin carries javaparser, which shadowJar relocates into the published jar.
     inputs.files sourceSets.main.runtimeClasspath, configurations.plugin
     outputs.dir outputDir
 

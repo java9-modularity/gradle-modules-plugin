@@ -42,13 +42,6 @@ abstract class AbstractExecutionMutator {
                 LOGGER.warn("Main module name not found. Try setting 'application.mainModule' in your Gradle build file.");
                 mainModuleName = helper().moduleName();
             }
-            // mainClassName may already carry a "module/" prefix. ModularJavaExec.setMain() strips it,
-            // but that override is not always the one that runs: when the plugin is compiled against
-            // Gradle 9.x, JavaExecSpec.setMain(String) no longer exists, so javac emits no covariant
-            // bridge for it, and a Groovy DSL `main = "module/Class"` assignment reaching the task
-            // through the JavaExecSpec contract lands on Gradle's own setMain instead of ours.
-            // Stripping here makes the result independent of which setter ran; stripModule is a no-op
-            // when there is no prefix.
             return mainModuleName + "/" + ModularJavaExec.stripModule(mainClassName);
         }
     }
