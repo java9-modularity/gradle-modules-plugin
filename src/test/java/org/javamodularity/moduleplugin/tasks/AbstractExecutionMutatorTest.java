@@ -25,14 +25,7 @@ class AbstractExecutionMutatorTest {
     void alreadyQualifiedMainClassIsNotQualifiedTwice() {
         JavaExec execTask = execTask(MODULE + "/" + MAIN_CLASS);
 
-        assertEquals(MODULE + "/" + MAIN_CLASS, mutatorFor(execTask).getMainClassName(),
-                "mainClass can arrive already module-qualified: ModularJavaExec.setMain() strips the "
-                        + "prefix, but it is not always the setter that runs. Compiled against Gradle 9, "
-                        + "where JavaExecSpec.setMain(String) no longer exists, javac emits no covariant "
-                        + "bridge for the override, so on Gradle 8.x a Groovy DSL `main = \"module/Class\"` "
-                        + "assignment reaches Gradle's own setMain instead. Qualifying twice yields "
-                        + "`--module module/module/Class`, and the JVM then fails with "
-                        + "\"Could not find or load main class module/Class in module module\".");
+        assertEquals(MODULE + "/" + MAIN_CLASS, mutatorFor(execTask).getMainClassName());
     }
 
     @Test
