@@ -13,18 +13,17 @@ import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @SuppressWarnings("ConstantConditions")
 class ModulePluginSmokeTest {
@@ -36,12 +35,12 @@ class ModulePluginSmokeTest {
     @SuppressWarnings("unused")
     private enum GradleVersion {
         v8_11, v8_14_3,
-        v9_0, v9_2_0
+        v9_0, v9_4_1
         ;
 
         @Override
         public String toString() {
-            return  name().substring(1).replaceAll("_", ".");
+            return  name().substring(1).replace("_", ".");
         }
     }
 

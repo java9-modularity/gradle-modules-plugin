@@ -35,13 +35,14 @@ An example application using this plugin is available [here](https://github.com/
 Compatibility
 ===
 
-| Plugin Version   | Gradle Versions | Java Version | Kotlin Version | Notes                                                                                      |
-|------------------|-----------------|--------------|----------------|--------------------------------------------------------------------------------------------|
-| - -> 1.8.12      | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.6.+ |                                                                                            |
-| 1.8.12 -> 1.8.13 | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.9.+ | Adds support for Kotlin 1.7 and above.                                                     |
-| 1.8.14           | 5.+ -> 7.6.+    | 11+          | 1.0.+ -> 1.9.+ | Fixes compatibility issue with Gradle 7.6                                                  |
-| 1.8.15 -> 1.8.x  | 5.+ -> 8.6.+    | 11+          | 1.6.+ -> 1.9.+ | Fixes compatibility issues with Gradle 8.0.<br>Use JUnit v5.8.0 or above if using Gradle 8 |
-| 2.0.0            | 8.11.+ -> 9.+   | 11+ [^1]     | 1.8.+ -> 2.x+  | Adds support for Gradle 9.x.<br>Drops support for older Gradle and Kotlin versions         |
+| Plugin Version   | Gradle Versions | Java Version | Kotlin Version | Notes                                                                                                 |
+|------------------|-----------------|--------------|----------------|-------------------------------------------------------------------------------------------------------|
+| - -> 1.8.12      | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.6.+ |                                                                                                       |
+| 1.8.12 -> 1.8.13 | 5.+ -> 7.5.+    | 11+          | 1.0.+ -> 1.9.+ | Adds support for Kotlin 1.7 and above.                                                                |
+| 1.8.14           | 5.+ -> 7.6.+    | 11+          | 1.0.+ -> 1.9.+ | Fixes compatibility issue with Gradle 7.6                                                             |
+| 1.8.15 -> 1.8.x  | 5.+ -> 8.6.+    | 11+          | 1.6.+ -> 1.9.+ | Fixes compatibility issues with Gradle 8.0.<br>Use JUnit v5.8.0 or above if using Gradle 8            |
+| 2.0.0            | 8.11 -> 9.4.1   | 11+ [^1]     | 1.8.+ -> 2.x+  | Adds support for Gradle 9.x.<br>Drops support for older Gradle and Kotlin versions.                   |
+| Upcoming release | 8.11 -> 9.7.1   | 11+ [^1]     | 1.8.+ -> 2.x+  | Fixes for Gradle 9.5+ see [#375](https://github.com/java9-modularity/gradle-modules-plugin/pull/375). |
 
 [^1]: Gradle 9.x itself requires JDK 17+ to run, regardless of the plugin's own Java version support. See the [Gradle 9 upgrade guide](https://docs.gradle.org/current/userguide/upgrading_major_version_9.html). This applies to all plugin versions that support Gradle 9.x and above.
 
