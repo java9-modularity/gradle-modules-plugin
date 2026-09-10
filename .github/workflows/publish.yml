@@ -6,11 +6,13 @@
 # 2. Replace all references to the last release number with the new release number.
 #     e.g. search for `1.2.2` and replace with `1.2.3`.
 # 3. Commit changes in PR and merge.
-# 4. Run this workflow to publish the plugin.
-# 5. Update the version number in root build.gradle to the next -SNAPSHOT version.
+# 4. Tag the merge commit with the release version and push the tag.
+#     e.g. `git tag v1.2.3 <merge-commit-sha> && git push origin v1.2.3`
+# 5. Run this workflow to publish the plugin.
+# 6. Update the version number in root build.gradle to the next -SNAPSHOT version.
 #     e.g. replace `version '1.2.3' with '1.2.4-SNAPSHOT'
-# 6. Add the new release to the Compatibility Matrix in the README.md file.
-# 7. Commit changes in PR and merge.
+# 7. Add the new release to the Compatibility Matrix in the README.md file.
+# 8. Commit changes in PR and merge.
 
 name: Publish to the Gradle Plugin Portal
 
