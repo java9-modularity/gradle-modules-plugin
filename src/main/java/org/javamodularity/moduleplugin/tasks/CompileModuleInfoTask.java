@@ -98,13 +98,7 @@ public class CompileModuleInfoTask extends AbstractCompileTask {
         compileModuleInfoJava.setSource(pathToModuleInfoJava());
         compileModuleInfoJava.getOptions().setSourcepath(project.files(pathToModuleInfoJava().getParent()));
 
-        if (GradleVersion.current().compareTo(GradleVersion.version("6.1")) >= 0) {
-            // AbstractCompile#getDestinationDirectory() is supported from Gradle 6.1
-            // https://docs.gradle.org/6.1/javadoc/org/gradle/api/tasks/compile/AbstractCompile.html#getDestinationDirectory--
-            compileModuleInfoJava.getDestinationDirectory().set(helper().getModuleInfoDir());
-        } else {
-            compileModuleInfoJava.setDestinationDir(helper().getModuleInfoDir());
-        }
+        compileModuleInfoJava.getDestinationDirectory().set(helper().getModuleInfoDir());
 
         // we need all the compiled classes before compiling module-info.java
         compileModuleInfoJava.dependsOn(compileJava);

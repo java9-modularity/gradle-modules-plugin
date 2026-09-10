@@ -12,6 +12,7 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.process.ExecResult;
 import org.gradle.util.GradleVersion;
+import org.gradle.work.DisableCachingByDefault;
 import org.javamodularity.moduleplugin.JavaProjectHelper;
 
 import java.util.ArrayList;
@@ -20,7 +21,8 @@ import java.util.List;
 import static org.joor.Reflect.on;
 import static org.joor.Reflect.onClass;
 
-public class ModularJavaExec extends JavaExec {
+@DisableCachingByDefault(because = "Application execution should not be cached, as with the JavaExec task it extends")
+public abstract class ModularJavaExec extends JavaExec {
     private static final Logger LOGGER = Logging.getLogger(ModularJavaExec.class);
 
     @Internal
@@ -74,7 +76,7 @@ public class ModularJavaExec extends JavaExec {
         return this;
     }
 
-    private static String stripModule(String main) {
+    static String stripModule(String main) {
         if(main == null) return main;
         int idx = main.indexOf('/');
         return (idx < 0) ? main : main.substring(idx + 1);

@@ -35,7 +35,7 @@ class ModulePluginSmokeTest {
     @SuppressWarnings("unused")
     private enum GradleVersion {
         v8_11, v8_14_3,
-        v9_0, v9_4_1
+        v9_0, v9_7_1
         ;
 
         @Override
@@ -279,7 +279,30 @@ class ModulePluginSmokeTest {
 
     @Test
     void shouldNotCheckInWithCommentedOutVersions() {
-        assertEquals(4, GradleVersion.values().length);
+        assertEquals(5, GradleVersion.values().length);
+    }
+
+    @Test
+    void pluginClasspathShouldNotContainTheGradleApi() {
+        assertTrue(
+                pluginClasspath.stream().noneMatch(file -> file.getName().startsWith("gradle-api-")),
+                () -> "The Gradle API must stay off the plugin classpath: each Gradle under test supplies "
+                        + "its own, and shipping ours puts that version's bytecode in front of every other "
+                        + "version. gradle-api-9.7.1.jar holds class files at major version 69, which "
+                        + "Gradle below 9.2 cannot instrument, failing every smoke test on the older "
+                        + "versions with 'Unsupported class file major version 69'. Classpath was: "
+                        + pluginClasspath);
+    }
+
+    @Test
+    void pluginClasspathShouldContainJavaParser() {
+        assertTrue(
+                pluginClasspath.stream().anyMatch(file -> file.getName().startsWith("javaparser-core")),
+                () -> "javaparser is a runtime dependency of the plugin and reached TestKit only as a "
+                        + "passenger of the Gradle API, so it has to be put on the classpath explicitly. "
+                        + "Without it every build under test fails with "
+                        + "NoClassDefFoundError: com/github/javaparser/JavaParser. Classpath was: "
+                        + pluginClasspath);
     }
 
     private static void assertTasksSuccessful(BuildResult result, String subprojectName, String... taskNames) {

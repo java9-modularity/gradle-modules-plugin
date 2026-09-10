@@ -42,7 +42,7 @@ abstract class AbstractExecutionMutator {
                 LOGGER.warn("Main module name not found. Try setting 'application.mainModule' in your Gradle build file.");
                 mainModuleName = helper().moduleName();
             }
-            return mainModuleName + "/" + mainClassName;
+            return mainModuleName + "/" + ModularJavaExec.stripModule(mainClassName);
         }
     }
 
