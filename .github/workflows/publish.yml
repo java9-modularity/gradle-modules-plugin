@@ -1,22 +1,31 @@
 # A workflow for publishing the plugin to the Gradle Plugin Portal
 #
 # Release Process:
-# 1. Update the version number in root build.gradle to the next non-SNAPSHOT version.
-#     e.g. replace `version '1.2.3-SNAPSHOT' with '1.2.3'
-# 2. Replace all references to the last release number with the new release number.
-#     e.g. search for `1.2.2` and replace with `1.2.3`.
-# 3. Commit changes in PR and merge.
-# 4. Tag the merge commit with the release version and push the tag.
-#     e.g. `git tag v1.2.3 <merge-commit-sha> && git push origin v1.2.3`
-# 5. Run this workflow to publish the plugin.
-# 6. Update the version number in root build.gradle to the next -SNAPSHOT version.
-#     e.g. replace `version '1.2.3' with '1.2.4-SNAPSHOT'
-# 7. Add the new release to the Compatibility Matrix in the README.md file.
-# 8. Commit changes in PR and merge.
+# 1. Pre-release:
+#   1. Update the version number in root build.gradle to the next non-SNAPSHOT version.
+#       e.g. replace `version '1.2.3-SNAPSHOT' with '1.2.3'
+#   2. Replace all references to the last release number with the new release number.
+#       e.g. search for `1.2.2` and replace with `1.2.3`.
+#   3. Commit changes in PR and merge.
+# 2. Release
+#   1. Checkout the main branch and pull the latest changes.
+#   2. Create and push the release version tag.
+#     e.g. `git tag v1.2.3 && git push origin v1.2.3`
+#     Pushing the tag triggers this workflow, which publishes the plugin
+#     and creates the GitHub Release.
+#   3. Ensure the publishing run passes
+# 3. Post-release:
+#   1. Update the version number in root build.gradle to the next -SNAPSHOT version.
+#       e.g. replace `version '1.2.3' with '1.2.4-SNAPSHOT'
+#   2. Add the new release to the Compatibility Matrix in the README.md file.
+#   3. Commit changes in PR and merge.
 
 name: Publish to the Gradle Plugin Portal
 
-on: [workflow_dispatch]
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   publish:
